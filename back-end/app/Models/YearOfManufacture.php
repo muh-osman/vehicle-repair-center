@@ -10,4 +10,15 @@ class YearOfManufacture extends Model
     use HasFactory;
 
     protected $fillable = ['year'];
+
+
+    public function carModel()
+    {
+        return $this->belongsTo(CarModel::class);
+    }
+
+    public function prices()
+    {
+        return $this->hasMany(Price::class);
+    }
 }

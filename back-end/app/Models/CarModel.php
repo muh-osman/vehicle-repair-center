@@ -15,4 +15,14 @@ class CarModel extends Model
     {
         return $this->belongsTo(Manufacturer::class);
     }
+
+    public function yearsOfManufacture()
+    {
+        return $this->hasMany(YearOfManufacture::class);
+    }
+
+    public function prices()
+    {
+        return $this->hasMany(Price::class);
+    }
 }
