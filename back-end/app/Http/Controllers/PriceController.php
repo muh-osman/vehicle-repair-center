@@ -36,6 +36,15 @@ class PriceController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+        $existingPrice = Price::where('car_model_id', $request->car_model_id)
+            ->where('year_id', $request->year_id)
+            ->where('service_id', $request->service_id)
+            ->first();
+
+        if ($existingPrice) {
+            return response()->json(['message' => 'Price for this combination already exists'], 400);
+        }
+
         $price = Price::create($request->all());
         return response()->json($price, 201);
     }

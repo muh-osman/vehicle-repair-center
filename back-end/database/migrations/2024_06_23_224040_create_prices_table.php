@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreign('car_model_id')->references('id')->on('car_models')->onDelete('cascade');
             $table->foreign('year_id')->references('id')->on('year_of_manufactures')->onDelete('cascade');
             $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');
+            $table->unique(['car_model_id', 'year_id', 'service_id']);
             $table->timestamps();
         });
     }
