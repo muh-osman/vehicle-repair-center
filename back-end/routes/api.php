@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\ManufacturerController;
+use App\Http\Controllers\YearOfManufactureController;
 
 
 
@@ -40,6 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('countries', CountryController::class);
     // Manufacturers Resource Routes
     Route::apiResource('manufacturers', ManufacturerController::class);
+    // Car Models Resource Routes
+    Route::apiResource('car-models', CarModelController::class);
+    // Year of Manufacture Resource Routes
+    Route::apiResource('year-of-manufacture', YearOfManufactureController::class);
 });
 
 
