@@ -8,17 +8,68 @@ import { useEffect, useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import ListItemText from '@mui/material/ListItemText';
+import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
 // Toastify
 import { toast } from "react-toastify";
 // API
 import useGetCountriesApi from "../../API/useGetCountriesApi";
 import useGetManufacturesApi from "../../API/useGetManufacturesApi";
 import useGetModelsApi from "../../API/useGetModelsApi";
+import useGetYearsApi from "../../API/useGetYearsApi";
+import useGetServicesApi from "../../API/useGetServicesApi";
+
+
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+const names = [
+  'Oliver Hansen',
+  'Van Henry',
+  'April Tucker',
+  'Ralph Hubbard',
+  'Omar Alexander',
+  'Carlos Abbott',
+  'Miriam Wagner',
+  'Bradley Wilkerson',
+  'Virginia Andrews',
+  'Kelly Snyder',
+];
 
 export default function Dashboard() {
+
+
+  const [personName, setPersonName] = useState([]);
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setPersonName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
+
+
+
   // Countries logic
   const {
     data: countries,
@@ -33,6 +84,10 @@ export default function Dashboard() {
     const countryId = e.target.value;
     setSelectedCountryId(countryId);
     setSelectedManufacturerId(""); // Reset selected manufacturer ID
+    setSelectedModelId(""); // Reset selected model ID
+    setSelectedYearId(""); // Reset selected year ID
+    setSelectedServicesId(""); // Reset selected service ID
+    setPrice(""); // Reset the price
   }
 
   // Manufactures logic
@@ -54,14 +109,11 @@ export default function Dashboard() {
   function handleManufacturerChange(e) {
     const manufacturerId = e.target.value;
     setSelectedManufacturerId(manufacturerId);
-    setSelectedModelId(""); // Reset selected manufacturer ID
+    setSelectedModelId(""); // Reset selected model ID
+    setSelectedYearId(""); // Reset selected year ID
+    setSelectedServicesId(""); // Reset selected service ID
+    setPrice(""); // Reset the price
   }
-
-  // useEffect(() => {
-  //   if (selectedManufacturerId) {
-  //     fetchModels(selectedManufacturerId);
-  //   }
-  // }, [selectedManufacturerId]);
 
   // Models logic
   const [selectedModelId, setSelectedModelId] = useState("");
@@ -82,19 +134,76 @@ export default function Dashboard() {
   function handleModelChange(e) {
     const modelId = e.target.value;
     setSelectedModelId(modelId);
-    // setSelectedYearId(""); // Reset selected manufacturer ID
+    setSelectedYearId(""); // Reset selected year ID
+    setSelectedServicesId(""); // Reset selected service ID
+    setPrice(""); // Reset the price
   }
 
-  // useEffect(() => {
-  //   if (selectedModelId) {
-  //     fetchYears(selectedModelId);
-  //   }
-  // }, [selectedModelId]);
+  // Years logic
+  const [selectedYearId, setSelectedYearId] = useState("");
+  const {
+    refetch: fetchYears,
+    data: years,
+    isPending: isGetYearsPending,
+    isSuccess: isGetYearsSuccess,
+    fetchStatus: yearsFetchStatus,
+  } = useGetYearsApi(selectedModelId);
+
+  useEffect(() => {
+    if (selectedModelId) {
+      fetchYears(selectedModelId);
+    }
+  }, [selectedModelId]);
+
+  function handleYearChange(e) {
+    const yearId = e.target.value;
+    setSelectedYearId(yearId);
+    setSelectedServicesId(""); // Reset selected service ID
+    setPrice(""); // Reset the price
+  }
+
+  // Services logic
+  const [selectedServicesId, setSelectedServicesId] = useState("");
+  const {
+    refetch: fetchServices,
+    data: services,
+    isPending: isGetServicesPending,
+    isSuccess: isGetServicesSuccess,
+    fetchStatus: servicesFetchStatus,
+  } = useGetServicesApi(selectedYearId);
+
+  useEffect(() => {
+    if (selectedYearId) {
+      fetchServices(selectedYearId);
+    }
+  }, [selectedYearId]);
+
+  function handleServiceChange(e) {
+    const serviceId = e.target.value;
+    setSelectedServicesId(serviceId);
+  }
+
+  // Price logic
+  const [price, setPrice] = useState("");
+  const {
+    refetch: fetchPrice,
+    data: priceData,
+    isPending: isGetPricePending,
+    isSuccess: isGetPriceSuccess,
+    fetchStatus: priceFetchStatus,
+  } = useGetServicesApi(selectedYearId);
+
+  useEffect(() => {
+    if (selectedServicesId) {
+      fetchPrice(selectedServicesId);
+    }
+
+    setPrice(priceData);
+  }, [selectedServicesId]);
 
   // Submit all Form
   const formRef = useRef();
   const handleSubmit = (e) => {
-    e.preventDefault();
     // required input
     const countriesFormValidate = formRef.current.reportValidity();
     if (!countriesFormValidate) return;
@@ -102,20 +211,45 @@ export default function Dashboard() {
     // mutate(selectedPostId);
   };
 
+  const progress = () => {
+    if (
+      countriesFetchStatus === "fetching" ||
+      manufacturesFetchStatus === "fetching" ||
+      modelsFetchStatus === "fetching" ||
+      yearsFetchStatus === "fetching" ||
+      servicesFetchStatus === "fetching" ||
+      priceFetchStatus === "fetching"
+    ) {
+      return (
+        <div className={style.progressContainer}>
+          <LinearProgress />
+        </div>
+      );
+    } else {
+      return null;
+    }
+  };
+
+  // const warning = () => {
+  //   if (
+  //     (isGetCountriesSuccess && countries?.length === 0) ||
+  //     (isGetManufacturesSuccess && manufactures?.length === 0) ||
+  //     (isGetModelsSuccess && models?.length === 0) ||
+  //     (isGetYearsSuccess && years?.length === 0) ||
+  //     (isGetServicesSuccess && services?.length === 0)
+  //     (isGetPriceSuccess && priceData?.length === 0)
+  //   ) {
+  //     return <p>No data to show.</p>;
+  //   } else {
+  //     return null;
+  //   }
+  // };
+
   return (
     <div className={style.container}>
-      {countriesFetchStatus === "fetching" ||
-        manufacturesFetchStatus === "fetching" ||
-        (modelsFetchStatus === "fetching" && (
-          <div className={style.progressContainer}>
-            <LinearProgress />
-          </div>
-        ))}
+      {progress()}
 
       <h1>Dashboard</h1>
-      {(isGetCountriesSuccess && countries?.length === 0) ||
-        (isGetManufacturesSuccess && manufactures?.length === 0) ||
-        (isGetModelsSuccess && models?.length === 0 && <p>No data to show.</p>)}
 
       {/* Start Form  */}
       <div className={style.container_box}>
@@ -130,10 +264,11 @@ export default function Dashboard() {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12}>
               <TextField
+                dir="rtl"
                 required
                 fullWidth
                 select
-                label="Select"
+                label="Country"
                 helperText="Please select the country"
                 value={selectedCountryId}
                 onChange={handleCountriesChange}
@@ -154,7 +289,7 @@ export default function Dashboard() {
                 {countries !== undefined &&
                   countries?.length !== 0 &&
                   countries.map((country) => (
-                    <MenuItem key={country.id} value={country.id}>
+                    <MenuItem dir="rtl" key={country.id} value={country.id}>
                       {country.country_name}
                     </MenuItem>
                   ))}
@@ -168,10 +303,11 @@ export default function Dashboard() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12}>
                 <TextField
+                  dir="rtl"
                   required
                   fullWidth
                   select
-                  label="Select"
+                  label="Manufacturer"
                   helperText="Please select the manufacturer"
                   value={selectedManufacturerId}
                   onChange={handleManufacturerChange}
@@ -192,7 +328,11 @@ export default function Dashboard() {
                   {manufactures !== undefined &&
                     manufactures?.length !== 0 &&
                     manufactures?.map((manufacturer) => (
-                      <MenuItem key={manufacturer.id} value={manufacturer.id}>
+                      <MenuItem
+                        dir="rtl"
+                        key={manufacturer.id}
+                        value={manufacturer.id}
+                      >
                         {manufacturer.manufacture_name}
                       </MenuItem>
                     ))}
@@ -207,10 +347,11 @@ export default function Dashboard() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12}>
                 <TextField
+                  dir="rtl"
                   required
                   fullWidth
                   select
-                  label="Select"
+                  label="Model"
                   helperText="Please select the model"
                   value={selectedModelId}
                   onChange={handleModelChange}
@@ -231,7 +372,7 @@ export default function Dashboard() {
                   {models !== undefined &&
                     models?.length !== 0 &&
                     models?.map((model) => (
-                      <MenuItem key={model.id} value={model.id}>
+                      <MenuItem dir="rtl" key={model.id} value={model.id}>
                         {model.model_name}
                       </MenuItem>
                     ))}
@@ -241,17 +382,124 @@ export default function Dashboard() {
           )}
           {/* End Models input */}
 
-          <LoadingButton
-            type="submit"
-            fullWidth
-            variant="contained"
-            disableRipple
-            loading={false} // Need Change
-            disabled={true} // Need Change
-            sx={{ mt: 3, mb: 2, transition: "0.1s" }}
-          >
-            Search
-          </LoadingButton>
+          {/* Start Years input */}
+          {years && (
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <TextField
+                  dir="rtl"
+                  required
+                  fullWidth
+                  select
+                  label="Year"
+                  helperText="Please select the year"
+                  value={selectedYearId}
+                  onChange={handleYearChange}
+                  disabled={isGetYearsPending}
+                >
+                  {years === undefined && (
+                    <MenuItem value="">
+                      <em>Loading...</em>
+                    </MenuItem>
+                  )}
+
+                  {years?.length === 0 && (
+                    <MenuItem value="">
+                      <em>No years to show.</em>
+                    </MenuItem>
+                  )}
+
+                  {years !== undefined &&
+                    years?.length !== 0 &&
+                    years?.map((year) => (
+                      <MenuItem dir="rtl" key={year.id} value={year.id}>
+                        {year.year}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          )}
+          {/* End Years input */}
+
+          {/* Start Services input */}
+          {services && (
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <TextField
+                  dir="rtl"
+                  required
+                  fullWidth
+                  select
+                  label="Service"
+                  helperText="Please select the services"
+                  value={selectedServicesId}
+                  onChange={handleServiceChange}
+                  disabled={isGetServicesPending}
+                >
+                  {services === undefined && (
+                    <MenuItem value="">
+                      <em>Loading...</em>
+                    </MenuItem>
+                  )}
+
+                  {services?.length === 0 && (
+                    <MenuItem value="">
+                      <em>No services to show.</em>
+                    </MenuItem>
+                  )}
+
+                  {services !== undefined &&
+                    services?.length !== 0 &&
+                    services?.map((service) => (
+                      <MenuItem dir="rtl" key={service.id} value={service.id}>
+                        {service.service_name}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          )}
+          {/* End Services input */}
+
+          {/*  */}
+          <div>
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="demo-multiple-checkbox-label">Tag</InputLabel>
+        <Select
+          labelId="demo-multiple-checkbox-label"
+          id="demo-multiple-checkbox"
+          multiple
+          value={personName}
+          onChange={handleChange}
+          input={<OutlinedInput label="Tag" />}
+          renderValue={(selected) => selected.join(', ')}
+          MenuProps={MenuProps}
+        >
+          {names.map((name) => (
+            <MenuItem key={name} value={name}>
+              <Checkbox checked={personName.indexOf(name) > -1} />
+              <ListItemText primary={name} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </div>
+          {/*  */}
+
+          {/* Start Price */}
+
+          {price && (
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <h1>
+                  {price} <span>ريال</span>
+                </h1>
+              </Grid>
+            </Grid>
+          )}
+
+          {/* End Price */}
         </Box>
       </div>
       {/* End Form  */}

@@ -37,7 +37,7 @@ class YearOfManufactureController extends Controller
      */
     public function show(YearOfManufacture $yearOfManufacture)
     {
-        return response()->json(['year' => $yearOfManufacture], 200);
+        return response()->json(['year' => [$yearOfManufacture]], 200);
     }
 
     /**
@@ -64,5 +64,14 @@ class YearOfManufactureController extends Controller
         $yearOfManufacture->delete();
 
         return response()->json(['message' => 'Year deleted successfully'], 200);
+    }
+
+    public function getYearsByCarModel($carModelId)
+    {
+        $years = YearOfManufacture::whereHas('carModel', function ($query) use ($carModelId) {
+            $query->where('id', $carModelId);
+        })->get();
+
+        return response()->json(['years' => $years], 200);
     }
 }
