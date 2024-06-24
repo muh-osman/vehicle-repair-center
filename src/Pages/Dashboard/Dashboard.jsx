@@ -1,24 +1,19 @@
 // Dashboard.jsx
 import style from "./Dashboard.module.scss";
-// React router
-import { Link } from "react-router-dom";
 // React
 import { useEffect, useRef, useState } from "react";
 // MUI
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import ListItemText from '@mui/material/ListItemText';
-import Select from '@mui/material/Select';
-import Checkbox from '@mui/material/Checkbox';
-// Toastify
-import { toast } from "react-toastify";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import ListItemText from "@mui/material/ListItemText";
+import Select from "@mui/material/Select";
+import Checkbox from "@mui/material/Checkbox";
 // API
 import useGetCountriesApi from "../../API/useGetCountriesApi";
 import useGetManufacturesApi from "../../API/useGetManufacturesApi";
@@ -26,50 +21,19 @@ import useGetModelsApi from "../../API/useGetModelsApi";
 import useGetYearsApi from "../../API/useGetYearsApi";
 import useGetServicesApi from "../../API/useGetServicesApi";
 
-
-
-const ITEM_HEIGHT = 48;
+const ITEM_HEIGHT = 68;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
       width: 250,
+      direction: "rtl",
     },
   },
 };
 
-const names = [
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];
-
 export default function Dashboard() {
-
-
-  const [personName, setPersonName] = useState([]);
-
-  const handleChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPersonName(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
-  };
-
-
-
-
   // Countries logic
   const {
     data: countries,
@@ -86,7 +50,7 @@ export default function Dashboard() {
     setSelectedManufacturerId(""); // Reset selected manufacturer ID
     setSelectedModelId(""); // Reset selected model ID
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
+    setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
   }
 
@@ -111,7 +75,7 @@ export default function Dashboard() {
     setSelectedManufacturerId(manufacturerId);
     setSelectedModelId(""); // Reset selected model ID
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
+    setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
   }
 
@@ -135,7 +99,7 @@ export default function Dashboard() {
     const modelId = e.target.value;
     setSelectedModelId(modelId);
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
+    setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
   }
 
@@ -158,12 +122,12 @@ export default function Dashboard() {
   function handleYearChange(e) {
     const yearId = e.target.value;
     setSelectedYearId(yearId);
-    setSelectedServicesId(""); // Reset selected service ID
+    setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
   }
 
   // Services logic
-  const [selectedServicesId, setSelectedServicesId] = useState("");
+  const [selectedServicesId, setSelectedServicesId] = useState([]);
   const {
     refetch: fetchServices,
     data: services,
@@ -179,8 +143,18 @@ export default function Dashboard() {
   }, [selectedYearId]);
 
   function handleServiceChange(e) {
-    const serviceId = e.target.value;
-    setSelectedServicesId(serviceId);
+    // const serviceId = e.target.value;
+    // setSelectedServicesId(serviceId);
+
+    const {
+      target: { value },
+    } = e;
+    setSelectedServicesId(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+
+    // console.log(selectedServicesId);
   }
 
   // Price logic
@@ -193,13 +167,13 @@ export default function Dashboard() {
     fetchStatus: priceFetchStatus,
   } = useGetServicesApi(selectedYearId);
 
-  useEffect(() => {
-    if (selectedServicesId) {
-      fetchPrice(selectedServicesId);
-    }
+  // useEffect(() => {
+  //   if (selectedServicesId) {
+  //     fetchPrice(selectedServicesId);
+  //   }
 
-    setPrice(priceData);
-  }, [selectedServicesId]);
+  //   setPrice(priceData);
+  // }, [selectedServicesId]);
 
   // Submit all Form
   const formRef = useRef();
@@ -264,12 +238,12 @@ export default function Dashboard() {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12}>
               <TextField
+                sx={{ backgroundColor: "#fff" }}
                 dir="rtl"
                 required
                 fullWidth
                 select
                 label="Country"
-                helperText="Please select the country"
                 value={selectedCountryId}
                 onChange={handleCountriesChange}
                 disabled={isGetCountriesPending}
@@ -303,12 +277,12 @@ export default function Dashboard() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12}>
                 <TextField
+                  sx={{ backgroundColor: "#fff" }}
                   dir="rtl"
                   required
                   fullWidth
                   select
                   label="Manufacturer"
-                  helperText="Please select the manufacturer"
                   value={selectedManufacturerId}
                   onChange={handleManufacturerChange}
                   disabled={isGetManufacturesPending}
@@ -347,12 +321,12 @@ export default function Dashboard() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12}>
                 <TextField
+                  sx={{ backgroundColor: "#fff" }}
                   dir="rtl"
                   required
                   fullWidth
                   select
                   label="Model"
-                  helperText="Please select the model"
                   value={selectedModelId}
                   onChange={handleModelChange}
                   disabled={isGetModelsPending}
@@ -387,12 +361,12 @@ export default function Dashboard() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12}>
                 <TextField
+                  sx={{ backgroundColor: "#fff" }}
                   dir="rtl"
                   required
                   fullWidth
                   select
                   label="Year"
-                  helperText="Please select the year"
                   value={selectedYearId}
                   onChange={handleYearChange}
                   disabled={isGetYearsPending}
@@ -424,68 +398,47 @@ export default function Dashboard() {
 
           {/* Start Services input */}
           {services && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12}>
-                <TextField
+            <div>
+              <FormControl
+                sx={{ m: 0, width: "100%", backgroundColor: "#fff" }}
+              >
+                <InputLabel id="demo-multiple-checkbox-label">
+                  Service
+                </InputLabel>
+                <Select
                   dir="rtl"
                   required
-                  fullWidth
-                  select
-                  label="Service"
-                  helperText="Please select the services"
+                  labelId="demo-multiple-checkbox-label"
+                  id="demo-multiple-checkbox"
+                  multiple
                   value={selectedServicesId}
                   onChange={handleServiceChange}
-                  disabled={isGetServicesPending}
+                  input={<OutlinedInput label="Service" />}
+                  renderValue={(selected) => {
+                    return selected
+                      .map(
+                        (id) =>
+                          services.find((service) => service.id === id)
+                            ?.service_name
+                      )
+                      .filter(Boolean)
+                      .join(", ");
+                  }}
+                  MenuProps={MenuProps}
                 >
-                  {services === undefined && (
-                    <MenuItem value="">
-                      <em>Loading...</em>
+                  {services?.map((service) => (
+                    <MenuItem key={service.id} value={service.id}>
+                      <Checkbox
+                        checked={selectedServicesId.indexOf(service.id) > -1}
+                      />
+                      <ListItemText primary={service.service_name} />
                     </MenuItem>
-                  )}
-
-                  {services?.length === 0 && (
-                    <MenuItem value="">
-                      <em>No services to show.</em>
-                    </MenuItem>
-                  )}
-
-                  {services !== undefined &&
-                    services?.length !== 0 &&
-                    services?.map((service) => (
-                      <MenuItem dir="rtl" key={service.id} value={service.id}>
-                        {service.service_name}
-                      </MenuItem>
-                    ))}
-                </TextField>
-              </Grid>
-            </Grid>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
           )}
           {/* End Services input */}
-
-          {/*  */}
-          <div>
-      <FormControl sx={{ m: 1, width: 300 }}>
-        <InputLabel id="demo-multiple-checkbox-label">Tag</InputLabel>
-        <Select
-          labelId="demo-multiple-checkbox-label"
-          id="demo-multiple-checkbox"
-          multiple
-          value={personName}
-          onChange={handleChange}
-          input={<OutlinedInput label="Tag" />}
-          renderValue={(selected) => selected.join(', ')}
-          MenuProps={MenuProps}
-        >
-          {names.map((name) => (
-            <MenuItem key={name} value={name}>
-              <Checkbox checked={personName.indexOf(name) > -1} />
-              <ListItemText primary={name} />
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </div>
-          {/*  */}
 
           {/* Start Price */}
 
