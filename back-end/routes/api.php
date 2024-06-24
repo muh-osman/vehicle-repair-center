@@ -52,6 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('services', ServiceController::class);
     // Prices Resource Routes
     Route::apiResource('prices', PriceController::class);
+    //  GetPrice method
+    Route::get('get-price', [PriceController::class, 'getPrice']);
 });
 
 

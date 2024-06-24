@@ -10,12 +10,17 @@ class PriceController extends Controller
 {
     public function index()
     {
-        $prices = Price::with(['carModel:id,model_name', 'yearOfManufacture:id,year', 'service:id,service_name'])
-            ->select('id', 'price', 'car_model_id', 'year_id', 'service_id')
+        $prices = Price::with(['carModel.manufacturer.country', 'yearOfManufacture', 'service'])
+            ->select('prices.id', 'price', 'car_model_id', 'year_id', 'service_id')
+            ->join('car_models', 'prices.car_model_id', '=', 'car_models.id')
+            ->join('manufacturers', 'car_models.manufacturer_id', '=', 'manufacturers.id')
+            ->orderBy('manufacturers.manufacture_name')
             ->get()
             ->map(function ($price) {
                 return [
                     'id' => $price->id,
+                    'country' => $price->carModel->manufacturer->country->country_name,
+                    'manufacturer' => $price->carModel->manufacturer->manufacture_name,
                     'model_name' => $price->carModel->model_name,
                     'year' => $price->yearOfManufacture->year,
                     'service_name' => $price->service->service_name,
@@ -28,7 +33,7 @@ class PriceController extends Controller
 
     public function show($id)
     {
-        $price = Price::with(['carModel', 'yearOfManufacture', 'service'])->find($id);
+        $price = Price::with(['carModel.manufacturer.country', 'yearOfManufacture', 'service'])->find($id);
 
         if (!$price) {
             return response()->json(['message' => 'Price not found'], 404);
@@ -36,6 +41,8 @@ class PriceController extends Controller
 
         $formattedPrice = [
             'id' => $price->id,
+            'country' => $price->carModel->manufacturer->country->country_name,
+            'manufacturer' => $price->carModel->manufacturer->manufacture_name,
             'model_name' => $price->carModel->model_name,
             'year' => $price->yearOfManufacture->year,
             'service_name' => $price->service->service_name,
@@ -103,35 +110,53 @@ class PriceController extends Controller
         return response()->json(['message' => 'Price deleted']);
     }
 
-    // public function getPrice(Request $request)
-    // {
-    //     // Retrieve the selected car details and service type from the request
-    //     $country = $request->input('country');
-    //     $manufacturer = $request->input('manufacturer');
-    //     $model = $request->input('model');
-    //     $year = $request->input('year');
-    //     $serviceType = $request->input('service_type');
+    public function getPrice(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country' => 'required',
+            'manufacturer' => 'required',
+            'model' => 'required',
+            'year' => 'required',
+            'service' => 'required',
+        ]);
 
-    //     // Query the database to fetch the price based on the selected criteria
-    //     $carYear = CarYear::where('year_of_manufacture', $year)
-    //         ->whereHas('model.manufacturer', function ($query) use ($manufacturer, $country) {
-    //             $query->where('manufacturer_name', $manufacturer)
-    //                 ->whereHas('country', function ($query) use ($country) {
-    //                     $query->where('country_name', $country);
-    //                 });
-    //         })->first();
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
 
-    //     if ($carYear) {
-    //         $service = Service::where('service_type', $serviceType)->first();
+        $price = Price::with(['carModel.manufacturer.country', 'yearOfManufacture', 'service'])
+            ->whereHas('carModel.manufacturer.country', function ($query) use ($request) {
+                $query->where('country_name', $request->country);
+            })
+            ->whereHas('carModel.manufacturer', function ($query) use ($request) {
+                $query->where('manufacture_name', $request->manufacturer);
+            })
+            ->whereHas('carModel', function ($query) use ($request) {
+                $query->where('model_name', $request->model);
+            })
+            ->whereHas('yearOfManufacture', function ($query) use ($request) {
+                $query->where('year', $request->year);
+            })
+            ->whereHas('service', function ($query) use ($request) {
+                $query->where('service_name', $request->service);
+            })
+            ->select('id', 'price', 'car_model_id', 'year_id', 'service_id')
+            ->first();
 
-    //         if ($service) {
-    //             // Calculate the price based on the selected car details and service type
-    //             $price = $service->price;
+        if (!$price) {
+            return response()->json(['message' => 'Price not found for the selected criteria'], 404);
+        }
 
-    //             return response()->json(['price' => $price]);
-    //         }
-    //     }
+        $formattedPrice = [
+            'id' => $price->id,
+            'model_name' => $price->carModel->model_name,
+            'manufacturer' => $price->carModel->manufacturer->manufacture_name,
+            'country' => $price->carModel->manufacturer->country->country_name,
+            'year' => $price->yearOfManufacture->year,
+            'service_name' => $price->service->service_name,
+            'price' => $price->price,
+        ];
 
-    //     return response()->json(['error' => 'Price not found'], 404);
-    // }
+        return response()->json($formattedPrice);
+    }
 }

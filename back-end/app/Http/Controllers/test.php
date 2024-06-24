@@ -1,4 +1,4 @@
-Lead this Laravel api project then edit index method in PriceController
+In this Laravel api project edit index method in PriceController to return the manufacturer and country associated with each vehicle
 
 // 2024_06_23_174146_create_countries_table
 public function up(): void
