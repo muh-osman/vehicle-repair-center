@@ -1,18 +1,17 @@
-// useGetManufacturesApi.js
+// useGetModelsApi.js
 import { useQuery } from "@tanstack/react-query";
 // API base
 import API from "./Api";
 // Toastify
 import { toast } from "react-toastify";
 
-export default function useGetManufacturesApi(selectedCountryId) {
-
-  const fetchManufactures = async () => {
+export default function useGetModelsApi(selectedManufacturerId) {
+  const fetchModel = async () => {
     try {
       const res = await API.get(
-        `api/manufacturers/by-country/${selectedCountryId}`
+        `api/car-models/by-manufacturer/${selectedManufacturerId}`
       );
-      return res.data.manufacturers;
+      return res.data.carModels;
     } catch (err) {
       console.error(err);
       const errorMessage =
@@ -24,7 +23,7 @@ export default function useGetManufacturesApi(selectedCountryId) {
 
   return useQuery({
     enabled: false, // Disable automatic fetching
-    queryKey: ["manufactures", selectedCountryId],
-    queryFn: fetchManufactures,
+    queryKey: ["models", selectedManufacturerId],
+    queryFn: fetchModel,
   });
 }

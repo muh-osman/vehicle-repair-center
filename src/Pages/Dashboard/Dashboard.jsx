@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 // API
 import useGetCountriesApi from "../../API/useGetCountriesApi";
 import useGetManufacturesApi from "../../API/useGetManufacturesApi";
+import useGetModelsApi from "../../API/useGetModelsApi";
 
 export default function Dashboard() {
   // Countries logic
@@ -24,16 +25,14 @@ export default function Dashboard() {
     isSuccess: isGetCountriesSuccess,
     isPending: isGetCountriesPending,
     fetchStatus: countriesFetchStatus,
-    isError: countriesIsError,
-    error: countriesError,
   } = useGetCountriesApi();
 
-  const formRef = useRef();
   const [selectedCountryId, setSelectedCountryId] = useState("");
 
   function handleCountriesChange(e) {
     const countryId = e.target.value;
     setSelectedCountryId(countryId);
+    setSelectedManufacturerId(""); // Reset selected manufacturer ID
   }
 
   // Manufactures logic
@@ -43,8 +42,6 @@ export default function Dashboard() {
     data: manufactures,
     isPending: isGetManufacturesPending,
     isSuccess: isGetManufacturesSuccess,
-    isError: manufacturesIsError,
-    error: manufacturesError,
     fetchStatus: manufacturesFetchStatus,
   } = useGetManufacturesApi(selectedCountryId);
 
@@ -57,16 +54,45 @@ export default function Dashboard() {
   function handleManufacturerChange(e) {
     const manufacturerId = e.target.value;
     setSelectedManufacturerId(manufacturerId);
-    // getModels(manufacturerId);
+    setSelectedModelId(""); // Reset selected manufacturer ID
   }
+
+  // useEffect(() => {
+  //   if (selectedManufacturerId) {
+  //     fetchModels(selectedManufacturerId);
+  //   }
+  // }, [selectedManufacturerId]);
+
+  // Models logic
+  const [selectedModelId, setSelectedModelId] = useState("");
+  const {
+    refetch: fetchModels,
+    data: models,
+    isPending: isGetModelsPending,
+    isSuccess: isGetModelsSuccess,
+    fetchStatus: modelsFetchStatus,
+  } = useGetModelsApi(selectedManufacturerId);
 
   useEffect(() => {
     if (selectedManufacturerId) {
-      // fetchModels(selectedManufacturerId);
+      fetchModels(selectedManufacturerId);
     }
   }, [selectedManufacturerId]);
 
+  function handleModelChange(e) {
+    const modelId = e.target.value;
+    setSelectedModelId(modelId);
+    // setSelectedYearId(""); // Reset selected manufacturer ID
+  }
+
+  // useEffect(() => {
+  //   if (selectedModelId) {
+  //     fetchYears(selectedModelId);
+  //   }
+  // }, [selectedModelId]);
+
   // Submit all Form
+  const formRef = useRef();
   const handleSubmit = (e) => {
     e.preventDefault();
     // required input
@@ -76,32 +102,11 @@ export default function Dashboard() {
     // mutate(selectedPostId);
   };
 
-  // Error handling
-  useEffect(() => {
-    // Countries
-    if (countriesIsError) {
-      console.error(countriesError);
-      const errorMessage =
-        countriesError?.response?.data?.message ||
-        countriesError?.message ||
-        "An error occurred";
-      toast.error(errorMessage);
-    }
-    // Manufactures
-    if (manufacturesIsError) {
-      console.error(manufacturesError);
-      const errorMessage =
-        manufacturesError?.response?.data?.message ||
-        manufacturesError?.message ||
-        "An error occurred";
-      toast.error(errorMessage);
-    }
-  }, [countriesError]);
-
   return (
     <div className={style.container}>
       {countriesFetchStatus === "fetching" ||
-        (manufacturesFetchStatus === "fetching" && (
+        manufacturesFetchStatus === "fetching" ||
+        (modelsFetchStatus === "fetching" && (
           <div className={style.progressContainer}>
             <LinearProgress />
           </div>
@@ -109,9 +114,8 @@ export default function Dashboard() {
 
       <h1>Dashboard</h1>
       {(isGetCountriesSuccess && countries?.length === 0) ||
-        (isGetManufacturesSuccess && manufactures?.length === 0 && (
-          <p>No data to show.</p>
-        ))}
+        (isGetManufacturesSuccess && manufactures?.length === 0) ||
+        (isGetModelsSuccess && models?.length === 0 && <p>No data to show.</p>)}
 
       {/* Start Form  */}
       <div className={style.container_box}>
@@ -143,7 +147,7 @@ export default function Dashboard() {
 
                 {countries?.length === 0 && (
                   <MenuItem value="">
-                    <em>No post to delete.</em>
+                    <em>No country to show.</em>
                   </MenuItem>
                 )}
 
@@ -181,7 +185,7 @@ export default function Dashboard() {
 
                   {manufactures?.length === 0 && (
                     <MenuItem value="">
-                      <em>No post to delete.</em>
+                      <em>No manufacturer to show.</em>
                     </MenuItem>
                   )}
 
@@ -197,6 +201,45 @@ export default function Dashboard() {
             </Grid>
           )}
           {/* End Manufacturers input */}
+
+          {/* Start Models input */}
+          {models && (
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  select
+                  label="Select"
+                  helperText="Please select the model"
+                  value={selectedModelId}
+                  onChange={handleModelChange}
+                  disabled={isGetModelsPending}
+                >
+                  {models === undefined && (
+                    <MenuItem value="">
+                      <em>Loading...</em>
+                    </MenuItem>
+                  )}
+
+                  {models?.length === 0 && (
+                    <MenuItem value="">
+                      <em>No model to show.</em>
+                    </MenuItem>
+                  )}
+
+                  {models !== undefined &&
+                    models?.length !== 0 &&
+                    models?.map((model) => (
+                      <MenuItem key={model.id} value={model.id}>
+                        {model.model_name}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          )}
+          {/* End Models input */}
 
           <LoadingButton
             type="submit"

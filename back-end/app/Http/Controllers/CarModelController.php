@@ -39,7 +39,7 @@ class CarModelController extends Controller
      */
     public function show(CarModel $carModel)
     {
-        return response()->json(['carModel' => $carModel], 200);
+        return response()->json(['carModel' => [$carModel]], 200);
     }
 
     /**
@@ -68,5 +68,19 @@ class CarModelController extends Controller
         $carModel->delete();
 
         return response()->json(['message' => 'Car model deleted successfully'], 200);
+    }
+
+    /**
+     * Get car models by manufacturer ID.
+     */
+    public function getModelsByManufacturerId($manufacturerId)
+    {
+        $carModels = CarModel::where('manufacturer_id', $manufacturerId)->get();
+
+        if ($carModels->isEmpty()) {
+            return response()->json(['message' => 'No car models found for the specified manufacturer ID'], 404);
+        }
+
+        return response()->json(['carModels' => $carModels], 200);
     }
 }
