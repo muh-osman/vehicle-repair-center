@@ -39,7 +39,7 @@ class ManufacturerController extends Controller
      */
     public function show(Manufacturer $manufacturer)
     {
-        return response()->json(['manufacturer' => $manufacturer], 200);
+        return response()->json(['manufacturers' => [$manufacturer]], 200);
     }
 
     /**
@@ -68,5 +68,19 @@ class ManufacturerController extends Controller
         $manufacturer->delete();
 
         return response()->json(['message' => 'Manufacturer deleted successfully'], 200);
+    }
+
+    /**
+     * Get manufacturers by country ID.
+     */
+    public function getManufacturersByCountry($countryId)
+    {
+        $manufacturers = Manufacturer::where('country_id', $countryId)->get();
+
+        if ($manufacturers->isEmpty()) {
+            return response()->json(['message' => 'No manufacturers found for the given country ID'], 404);
+        }
+
+        return response()->json(['manufacturers' => $manufacturers], 200);
     }
 }

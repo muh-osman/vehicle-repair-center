@@ -44,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('countries', CountryController::class);
     // Manufacturers Resource Routes
     Route::apiResource('manufacturers', ManufacturerController::class);
+    // Get Manufacturers By Country ID
+    Route::get('manufacturers/by-country/{countryId}', [ManufacturerController::class, 'getManufacturersByCountry']);
     // Car Models Resource Routes
     Route::apiResource('car-models', CarModelController::class);
     // Year of Manufacture Resource Routes

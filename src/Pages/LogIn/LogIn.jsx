@@ -115,7 +115,7 @@ export default function LogIn() {
               Log in
             </LoadingButton>
 
-            <Grid container>
+            {/* <Grid container>
               <Grid item xs>
                 <Link
                   component={RouterLink}
@@ -130,7 +130,7 @@ export default function LogIn() {
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
-            </Grid>
+            </Grid> */}
             <Copyright sx={{ mt: 5 }} />
           </Box>
         </Box>

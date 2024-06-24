@@ -41,6 +41,7 @@ export default function Delete() {
 
   return (
     <div className={style.container}>
+
       {fetchStatus === "fetching" && (
         <div className={style.progressContainer}>
           <LinearProgress />
@@ -100,6 +101,7 @@ export default function Delete() {
           Delete
         </LoadingButton>
       </Box>
+
     </div>
   );
 }
