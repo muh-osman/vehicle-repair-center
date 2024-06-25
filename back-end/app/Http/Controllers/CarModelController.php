@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CarModel;
 use Illuminate\Http\Request;
 
+use Illuminate\Validation\Rule;
+
 class CarModelController extends Controller
 {
     /**
@@ -22,7 +24,12 @@ class CarModelController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'model_name' => 'required|string|max:255',
+            'model_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('car_models', 'model_name')
+            ],
             'manufacturer_id' => 'required|exists:manufacturers,id'
         ]);
 
@@ -48,7 +55,12 @@ class CarModelController extends Controller
     public function update(Request $request, CarModel $carModel)
     {
         $request->validate([
-            'model_name' => 'required|string|max:255',
+            'model_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('car_models', 'model_name')->ignore($carModel->id)
+            ],
             'manufacturer_id' => 'required|exists:manufacturers,id'
         ]);
 

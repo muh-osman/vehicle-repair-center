@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Manufacturer;
 use Illuminate\Http\Request;
 
+use Illuminate\Validation\Rule;
+
 class ManufacturerController extends Controller
 {
     /**
@@ -22,7 +24,14 @@ class ManufacturerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'manufacture_name' => 'required|string|max:255',
+            'manufacture_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('manufacturers')->where(function ($query) use ($request) {
+                    return $query->where('manufacture_name', $request->manufacture_name);
+                })
+            ],
             'country_id' => 'required|exists:countries,id'
         ]);
 
@@ -48,7 +57,14 @@ class ManufacturerController extends Controller
     public function update(Request $request, Manufacturer $manufacturer)
     {
         $request->validate([
-            'manufacture_name' => 'required|string|max:255',
+            'manufacture_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('manufacturers')->ignore($manufacturer->id)->where(function ($query) use ($request) {
+                    return $query->where('manufacture_name', $request->manufacture_name);
+                })
+            ],
             'country_id' => 'required|exists:countries,id'
         ]);
 

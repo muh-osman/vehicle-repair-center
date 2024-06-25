@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Country;
 use Illuminate\Http\Request;
 
+use Illuminate\Validation\Rule;
+
 class CountryController extends Controller
 {
     /**
@@ -23,7 +25,12 @@ class CountryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'country_name' => 'required|string|max:255',
+            'country_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('countries', 'country_name'),
+            ],
         ]);
 
         $country = Country::create([
@@ -48,7 +55,12 @@ class CountryController extends Controller
     public function update(Request $request, Country $country)
     {
         $request->validate([
-            'country_name' => 'required|string|max:255',
+            'country_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('countries', 'country_name')->ignore($country->id),
+            ],
         ]);
 
         $country->update([

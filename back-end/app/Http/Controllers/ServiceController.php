@@ -24,12 +24,20 @@ class ServiceController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'service_name' => 'required|unique:services'
+        ]);
+
         $service = Service::create($request->all());
         return response()->json($service, 201);
     }
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'service_name' => 'required|unique:services,service_name,' . $id
+        ]);
+
         $service = Service::find($id);
         if (!$service) {
             return response()->json(['message' => 'Service not found'], 404);

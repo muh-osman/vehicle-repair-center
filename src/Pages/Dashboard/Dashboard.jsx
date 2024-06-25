@@ -213,21 +213,12 @@ export default function Dashboard() {
     <div className={style.container}>
       {progress()}
 
-      <div className={style.price_box}>
-        <h1>Dashboard</h1>
-
-        {/* Start Price */}
-        {priceData && (
-          <h1 dir="rtl" style={{ color: "#757575" }}>
-            {priceData} <span>ريال</span>
-          </h1>
-        )}
-        {/* End Price */}
-      </div>
+      <h1>Dashboard</h1>
 
       {/* Start Form  */}
       <div className={style.container_box}>
         <Box component="form" noValidate sx={{ mt: 3 }}>
+
           {/* Start Countries input */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12}>
@@ -433,6 +424,16 @@ export default function Dashboard() {
             </div>
           )}
           {/* End Services input */}
+
+          {/* Start Price */}
+          <div className={style.price_box}>
+            {priceData && (
+              <h1 dir="rtl" style={{ color: "#757575" }}>
+                {priceData} <span>ريال</span>
+              </h1>
+            )}
+          </div>
+          {/* End Price */}
         </Box>
       </div>
       {/* End Form  */}

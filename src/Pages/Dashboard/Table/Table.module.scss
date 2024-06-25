@@ -1,6 +1,10 @@
 .container {
   min-height: calc(100vh - 112px);
 
+  h1 {
+    margin-bottom: 16px;
+  }
+
   .posts_box {
     display: flex;
     flex-wrap: wrap;
@@ -32,13 +36,5 @@
 
   .progressContainer {
     top: 56px;
-  }
-}
-
-.price_box {
-  margin-top: 32px;
-
-  h1 {
-    text-align: center;
   }
 }

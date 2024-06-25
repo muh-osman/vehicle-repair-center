@@ -19,6 +19,7 @@ import Auth from "./Utils/Auth";
 import NotAuth from "./Utils/NotAuth";
 import DashboardLayout from "./Layout/DashboardLayout";
 import Dashboard from "./Pages/Dashboard/Dashboard";
+import Table from "./Pages/Dashboard/Table/Table";
 import Post from "./Pages/Dashboard/Post/Post";
 import Add from "./Pages/Dashboard/Add/Add";
 import Edit from "./Pages/Dashboard/Edit/Edit";
@@ -50,6 +51,7 @@ export default function App() {
         {/* Start protected route */}
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="table" element={<Table />} />
             <Route path="post/:id" element={<Post />} />
             <Route path="add" element={<Add />} />
             <Route path="edit" element={<Edit />} />

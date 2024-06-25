@@ -12,3 +12,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+th {
+  font-weight: 600 !important;
+}
