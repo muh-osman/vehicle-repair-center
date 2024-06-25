@@ -1,7 +1,7 @@
 // Dashboard.jsx
 import style from "./Dashboard.module.scss";
 // React
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 // MUI
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -20,6 +20,7 @@ import useGetManufacturesApi from "../../API/useGetManufacturesApi";
 import useGetModelsApi from "../../API/useGetModelsApi";
 import useGetYearsApi from "../../API/useGetYearsApi";
 import useGetServicesApi from "../../API/useGetServicesApi";
+import useGetPriceApi from "../../API/useGetPriceApi";
 
 const ITEM_HEIGHT = 68;
 const ITEM_PADDING_TOP = 8;
@@ -155,6 +156,7 @@ export default function Dashboard() {
     );
 
     // console.log(selectedServicesId);
+    // setPrice(""); // Reset the price
   }
 
   // Price logic
@@ -165,26 +167,29 @@ export default function Dashboard() {
     isPending: isGetPricePending,
     isSuccess: isGetPriceSuccess,
     fetchStatus: priceFetchStatus,
-  } = useGetServicesApi(selectedYearId);
+  } = useGetPriceApi(selectedModelId, selectedYearId, selectedServicesId);
 
   // useEffect(() => {
-  //   if (selectedServicesId) {
-  //     fetchPrice(selectedServicesId);
+  //   if (selectedServicesId.length > 0) {
+  //     // Check if selectedServicesId has changed
+  //     fetchPrice(selectedModelId, selectedYearId, selectedServicesId);
   //   }
-
   //   setPrice(priceData);
   // }, [selectedServicesId]);
 
-  // Submit all Form
-  const formRef = useRef();
-  const handleSubmit = (e) => {
-    // required input
-    const countriesFormValidate = formRef.current.reportValidity();
-    if (!countriesFormValidate) return;
-    // Submit data
-    // mutate(selectedPostId);
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedServicesId.length > 0) {
+        // Check if selectedServicesId has changed
+        await fetchPrice(selectedModelId, selectedYearId, selectedServicesId);
+        setPrice(priceData);
+      }
+    };
 
+    fetchData();
+  }, [selectedServicesId]);
+
+  // Progress
   const progress = () => {
     if (
       countriesFetchStatus === "fetching" ||
@@ -204,36 +209,25 @@ export default function Dashboard() {
     }
   };
 
-  // const warning = () => {
-  //   if (
-  //     (isGetCountriesSuccess && countries?.length === 0) ||
-  //     (isGetManufacturesSuccess && manufactures?.length === 0) ||
-  //     (isGetModelsSuccess && models?.length === 0) ||
-  //     (isGetYearsSuccess && years?.length === 0) ||
-  //     (isGetServicesSuccess && services?.length === 0)
-  //     (isGetPriceSuccess && priceData?.length === 0)
-  //   ) {
-  //     return <p>No data to show.</p>;
-  //   } else {
-  //     return null;
-  //   }
-  // };
-
   return (
     <div className={style.container}>
       {progress()}
 
-      <h1>Dashboard</h1>
+      <div className={style.price_box}>
+        <h1>Dashboard</h1>
+
+        {/* Start Price */}
+        {priceData && (
+          <h1 dir="rtl" style={{ color: "#757575" }}>
+            {priceData} <span>ريال</span>
+          </h1>
+        )}
+        {/* End Price */}
+      </div>
 
       {/* Start Form  */}
       <div className={style.container_box}>
-        <Box
-          ref={formRef}
-          component="form"
-          noValidate
-          onSubmit={handleSubmit}
-          sx={{ mt: 3 }}
-        >
+        <Box component="form" noValidate sx={{ mt: 3 }}>
           {/* Start Countries input */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12}>
@@ -439,20 +433,6 @@ export default function Dashboard() {
             </div>
           )}
           {/* End Services input */}
-
-          {/* Start Price */}
-
-          {price && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12}>
-                <h1>
-                  {price} <span>ريال</span>
-                </h1>
-              </Grid>
-            </Grid>
-          )}
-
-          {/* End Price */}
         </Box>
       </div>
       {/* End Form  */}

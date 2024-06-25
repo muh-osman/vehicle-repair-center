@@ -112,51 +112,24 @@ class PriceController extends Controller
 
     public function getPrice(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'country' => 'required',
-            'manufacturer' => 'required',
-            'model' => 'required',
-            'year' => 'required',
-            'service' => 'required',
-        ]);
+        try {
+            $carModelId = $request->input('model');
+            $yearId = $request->input('year');
+            $serviceIds = explode(',', $request->input('service'));
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            $prices = Price::where('car_model_id', $carModelId)
+                ->where('year_id', $yearId)
+                ->whereIn('service_id', $serviceIds)
+                ->get();
+
+            if ($prices->isNotEmpty()) {
+                $totalPrice = $prices->sum('price');
+                return $totalPrice;
+            }
+
+            return response()->json(['error' => 'Price not found for the specified car model, year, and service.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
         }
-
-        $price = Price::with(['carModel.manufacturer.country', 'yearOfManufacture', 'service'])
-            ->whereHas('carModel.manufacturer.country', function ($query) use ($request) {
-                $query->where('country_name', $request->country);
-            })
-            ->whereHas('carModel.manufacturer', function ($query) use ($request) {
-                $query->where('manufacture_name', $request->manufacturer);
-            })
-            ->whereHas('carModel', function ($query) use ($request) {
-                $query->where('model_name', $request->model);
-            })
-            ->whereHas('yearOfManufacture', function ($query) use ($request) {
-                $query->where('year', $request->year);
-            })
-            ->whereHas('service', function ($query) use ($request) {
-                $query->where('service_name', $request->service);
-            })
-            ->select('id', 'price', 'car_model_id', 'year_id', 'service_id')
-            ->first();
-
-        if (!$price) {
-            return response()->json(['message' => 'Price not found for the selected criteria'], 404);
-        }
-
-        $formattedPrice = [
-            'id' => $price->id,
-            'model_name' => $price->carModel->model_name,
-            'manufacturer' => $price->carModel->manufacturer->manufacture_name,
-            'country' => $price->carModel->manufacturer->country->country_name,
-            'year' => $price->yearOfManufacture->year,
-            'service_name' => $price->service->service_name,
-            'price' => $price->price,
-        ];
-
-        return response()->json($formattedPrice);
     }
 }

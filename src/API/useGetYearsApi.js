@@ -8,8 +8,8 @@ import { toast } from "react-toastify";
 export default function useGetYearsApi(selectedModelId) {
   const fetchYears = async () => {
     try {
-      const res = await API.get(`api/year-of-manufacture/${selectedModelId}`);
-      return res.data.year;
+      const res = await API.get(`api/year-of-manufacture`);
+      return res.data.years;
     } catch (err) {
       console.error(err);
       const errorMessage =
