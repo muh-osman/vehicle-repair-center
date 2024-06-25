@@ -22,6 +22,7 @@ import Dashboard from "./Pages/Dashboard/Dashboard";
 import Table from "./Pages/Dashboard/Table/Table";
 import Post from "./Pages/Dashboard/Post/Post";
 import Add from "./Pages/Dashboard/Add/Add";
+import Prices from "./Pages/Dashboard/Prices/Prices";
 import Edit from "./Pages/Dashboard/Edit/Edit";
 import Delete from "./Pages/Dashboard/Delete/Delete";
 import NotFound from "./Pages/NotFound/NotFound";
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="table" element={<Table />} />
             <Route path="post/:id" element={<Post />} />
             <Route path="add" element={<Add />} />
+            <Route path="prices" element={<Prices />} />
             <Route path="edit" element={<Edit />} />
             <Route path="delete" element={<Delete />} />
           </Route>

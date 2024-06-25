@@ -1,5 +1,5 @@
 import style from "./Add.module.scss";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
 import Grid from "@mui/material/Grid";
@@ -16,6 +16,9 @@ import LoadingButton from "@mui/lab/LoadingButton";
 // API
 import useGetCountriesApi from "../../../API/useGetCountriesApi";
 import useGetManufacturesApi from "../../../API/useGetManufacturesApi";
+import { useAddModelApi } from "../../../API/useAddModelApi";
+// Toastify
+import { toast } from "react-toastify";
 
 export default function Add() {
   // Countries logic
@@ -55,16 +58,30 @@ export default function Add() {
     setSelectedManufacturerId(manufacturerId);
   }
 
+  // Model input logic
+  const [carModel, setCarModel] = useState("");
 
-  // Logic submit form one
+  //  Submit form
+  const modelFormRef = useRef();
+  const { mutate, isPending: isAddModelPending } = useAddModelApi();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // required input
+    const validate = modelFormRef.current.reportValidity();
+    if (!validate) return;
 
+    // Submit data
+    if (selectedCountryId && selectedManufacturerId && carModel) {
+      const data = {
+        model_name: carModel,
+        manufacturer_id: selectedManufacturerId,
+      };
 
-
-
-
-
-
-
+      mutate(data);
+    } else {
+      toast.warn("Enter all required data.");
+    }
+  };
 
   // Progress
   const progress = () => {
@@ -90,7 +107,13 @@ export default function Add() {
 
       {/* Start Form one */}
 
-      <Box component="form" noValidate sx={{ mt: 3 }}>
+      <Box
+        onSubmit={handleSubmit}
+        ref={modelFormRef}
+        component="form"
+        noValidate
+        sx={{ mt: 3 }}
+      >
         {/* Start Countries input */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12}>
@@ -103,7 +126,7 @@ export default function Add() {
               label="Country"
               value={selectedCountryId}
               onChange={handleCountriesChange}
-              disabled={isGetCountriesPending}
+              disabled={isGetCountriesPending || isAddModelPending}
             >
               {countries === undefined && (
                 <MenuItem value="">
@@ -142,7 +165,7 @@ export default function Add() {
                 label="Manufacturer"
                 value={selectedManufacturerId}
                 onChange={handleManufacturerChange}
-                disabled={isGetManufacturesPending}
+                disabled={isGetManufacturesPending || isAddModelPending}
               >
                 {manufactures === undefined && (
                   <MenuItem value="">
@@ -185,7 +208,9 @@ export default function Add() {
               type="text"
               name="model_name"
               required
-              disabled={false}
+              disabled={isAddModelPending || isAddModelPending}
+              value={carModel}
+              onChange={(e) => setCarModel(e.target.value)}
             />
           </Grid>
         </Grid>
@@ -197,7 +222,7 @@ export default function Add() {
           fullWidth
           variant="contained"
           disableRipple
-          loading={true}
+          loading={isAddModelPending}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
           Add

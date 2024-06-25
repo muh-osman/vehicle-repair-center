@@ -25,6 +25,7 @@ import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TocIcon from "@mui/icons-material/Toc";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 // React router
 import { Link, useLocation, Outlet } from "react-router-dom";
 // Cookies
@@ -48,28 +49,32 @@ function ResponsiveDrawer(props) {
       path: "/dashboard",
       icon: <DashboardIcon sx={{ color: "#757575" }} />,
     },
-
     {
       id: 2,
       title: "Table",
       path: "/dashboard/table",
       icon: <TocIcon sx={{ color: "#757575" }} />,
     },
-
     {
       id: 3,
-      title: "Add new model",
+      title: "Add model",
       path: "/dashboard/add",
       icon: <AddBoxIcon sx={{ color: "#757575" }} />,
     },
     {
       id: 4,
+      title: "Add Prices",
+      path: "/dashboard/prices",
+      icon: <AttachMoneyIcon sx={{ color: "#757575" }} />,
+    },
+    {
+      id: 5,
       title: "Edit",
       path: "/dashboard/edit",
       icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
     },
     // {
-    //   id: 5,
+    //   id: 6,
     //   title: "Delete",
     //   path: "/dashboard/delete",
     //   icon: <DeleteIcon sx={{ color: "#757575" }} />,
