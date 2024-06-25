@@ -34,3 +34,18 @@
     top: 56px;
   }
 }
+
+.RL_boxs_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.left_box {
+  width: 50%;
+}
+
+.right_box {
+  width: 50%;
+}

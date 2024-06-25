@@ -178,24 +178,65 @@ class Price extends Model
 }
 
 
-// api.php
-    // Countries Resource Routes
-    Route::apiResource('countries', CountryController::class);
-    // Manufacturers Resource Routes
-    Route::apiResource('manufacturers', ManufacturerController::class);
-    // Get Manufacturers By Country ID
-    Route::get('manufacturers/by-country/{countryId}', [ManufacturerController::class, 'getManufacturersByCountry']);
-    // Car Models Resource Routes
-    Route::apiResource('car-models', CarModelController::class);
-    // Get car models by manufacturer ID
-    Route::get('car-models/by-manufacturer/{manufacturerId}', [CarModelController::class, 'getModelsByManufacturerId']);
-    // Year of Manufacture Resource Routes
-    Route::apiResource('year-of-manufacture', YearOfManufactureController::class);
-    // Get Years by car model ID
-    Route::get('years/by-model/{carModelId}', [YearOfManufactureController::class, 'getYearsByCarModel']);
-    // Services Resource Routes
-    Route::apiResource('services', ServiceController::class);
-    // Prices Resource Routes
-    Route::apiResource('prices', PriceController::class);
-    //  GetPrice method
-    Route::get('get-price', [PriceController::class, 'getPrice']);
+
+
+
+
+{
+    "car_model_id": "1",
+    "years": [
+        {
+            "year_id": "1",
+            "services": [
+                {
+                    "service_id": "1",
+                    "price": "25"
+                },
+                {
+                    "service_id": "2",
+                    "price": "34"
+                },
+                {
+                    "service_id": "3",
+                    "price": "76"
+                },
+                {
+                    "service_id": "4",
+                    "price": "64"
+                },
+                {
+                    "service_id": "5",
+                    "price": "12"
+                }
+            ]
+        },
+        {
+            "year_id": "2",
+            "services": [
+                {
+                    "service_id": "1",
+                    "price": "76"
+                },
+                {
+                    "service_id": "2",
+                    "price": "87"
+                },
+                {
+                    "service_id": "3",
+                    "price": "34"
+                },
+                {
+                    "service_id": "4",
+                    "price": "66"
+                },
+                {
+                    "service_id": "5",
+                    "price": "34"
+                }
+            ]
+        }
+    ]
+}
+
+
+
