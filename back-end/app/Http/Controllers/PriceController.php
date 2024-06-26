@@ -54,30 +54,6 @@ class PriceController extends Controller
 
     public function store(Request $request)
     {
-        // $validator = Validator::make($request->all(), [
-        //     'car_model_id' => 'required|exists:car_models,id',
-        //     'year_id' => 'required|exists:year_of_manufactures,id',
-        //     'service_id' => 'required|exists:services,id',
-        //     'price' => 'required|numeric',
-        // ]);
-
-        // if ($validator->fails()) {
-        //     return response()->json(['errors' => $validator->errors()], 400);
-        // }
-
-        // $existingPrice = Price::where('car_model_id', $request->car_model_id)
-        //     ->where('year_id', $request->year_id)
-        //     ->where('service_id', $request->service_id)
-        //     ->first();
-
-        // if ($existingPrice) {
-        //     return response()->json(['message' => 'Price for this combination already exists'], 400);
-        // }
-
-        // $price = Price::create($request->all());
-        // return response()->json($price, 201);
-
-
         $validator = Validator::make($request->all(), [
             'car_model_id' => 'required|exists:car_models,id',
             'years' => 'required|array',
@@ -122,9 +98,11 @@ class PriceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'car_model_id' => 'exists:car_models,id',
-            'year_id' => 'exists:year_of_manufactures,id',
-            'service_id' => 'exists:services,id',
-            'price' => 'numeric',
+            'years' => 'required|array',
+            'years.*.year_id' => 'required|exists:year_of_manufactures,id',
+            'years.*.services' => 'required|array',
+            'years.*.services.*.service_id' => 'required|exists:services,id',
+            'years.*.services.*.price' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -136,7 +114,29 @@ class PriceController extends Controller
             return response()->json(['message' => 'Price not found'], 404);
         }
 
-        $price->update($request->all());
+        foreach ($request->years as $year) {
+            foreach ($year['services'] as $service) {
+                $existingPrice = Price::where('car_model_id', $request->car_model_id)
+                    ->where('year_id', $year['year_id'])
+                    ->where('service_id', $service['service_id'])
+                    ->where('id', '!=', $id) // Exclude the current price being updated
+                    ->first();
+
+                if ($existingPrice) {
+                    // Update the existing price entry instead of creating a new one
+                    $existingPrice->price = $service['price'];
+                    $existingPrice->save();
+                } else {
+                    // If no existing entry found, update the current price entry
+                    $price->car_model_id = $request->car_model_id;
+                    $price->year_id = $year['year_id'];
+                    $price->service_id = $service['service_id'];
+                    $price->price = $service['price'];
+                    $price->save();
+                }
+            }
+        }
+
         return response()->json($price);
     }
 

@@ -1,7 +1,19 @@
 .container {
   min-height: calc(100vh - 112px);
-}
 
+  .posts_box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    a {
+      border: 1px solid #000;
+      padding: 8px;
+      text-decoration: none;
+      color: #000;
+    }
+  }
+}
 .progressContainer {
   position: absolute;
   top: 64px;
@@ -21,4 +33,19 @@
   .progressContainer {
     top: 56px;
   }
+}
+
+.RL_boxs_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.left_box {
+  width: 50%;
+}
+
+.right_box {
+  width: 50%;
 }
