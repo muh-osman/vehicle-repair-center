@@ -101,7 +101,7 @@ class PriceController extends Controller
                     ->first();
 
                 if ($existingPrice) {
-                    return response()->json(['message' => 'Price for this combination already exists'], 400);
+                    return response()->json(['message' => 'Prices for this model already exist'], 400);
                 }
 
                 $price = new Price();

@@ -202,7 +202,7 @@ export default function Add() {
               type="text"
               name="model_name"
               required
-              disabled={isAddModelPending || isAddModelPending}
+              disabled={isAddModelPending}
               value={carModel}
               onChange={(e) => setCarModel(e.target.value)}
             />
@@ -219,7 +219,7 @@ export default function Add() {
           loading={isAddModelPending}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
-          Add
+          Add model
         </LoadingButton>
         {/* End loading button for form 1 */}
       </Box>
