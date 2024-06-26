@@ -23,7 +23,7 @@ export const useAddModelApi = () => {
     onSuccess: (responseData) => {
       setCookie("newModelId", responseData);
       toast.success("Car model Added, please enter the prices.");
-      navigate("/dashboard/prices");
+      navigate("/dashboard/add/prices");
     },
 
     onError: (err) => {

@@ -14,6 +14,9 @@ import FormControl from "@mui/material/FormControl";
 import ListItemText from "@mui/material/ListItemText";
 import Select from "@mui/material/Select";
 import Checkbox from "@mui/material/Checkbox";
+
+import IconButton from "@mui/material/IconButton";
+import LoyaltyIcon from "@mui/icons-material/Loyalty";
 // API
 import useGetCountriesApi from "../../API/useGetCountriesApi";
 import useGetManufacturesApi from "../../API/useGetManufacturesApi";
@@ -189,6 +192,10 @@ export default function Dashboard() {
     fetchData();
   }, [selectedServicesId]);
 
+  // Sale
+  const [isSaleClicked, setIsSaleClicked] = useState(false);
+  const discountedPrice = priceData * 0.9; // 10% discount
+
   // Progress
   const progress = () => {
     if (
@@ -217,8 +224,16 @@ export default function Dashboard() {
 
       {/* Start Form  */}
       <div className={style.container_box}>
-        <Box component="form" noValidate sx={{ mt: 3 }}>
-
+        <Box
+          component="form"
+          noValidate
+          sx={{
+            mt: 3,
+            maxWidth: "400px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
           {/* Start Countries input */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12}>
@@ -428,11 +443,37 @@ export default function Dashboard() {
           {/* Start Price */}
           <div className={style.price_box}>
             {priceData && (
-              <h1 dir="rtl" style={{ color: "#757575" }}>
+              <h1
+                dir="rtl"
+                style={{ color: "#757575" }}
+                className={isSaleClicked ? "originalPrice" : ""}
+              >
                 {priceData} <span>ريال</span>
               </h1>
             )}
           </div>
+
+          {/* Price after sale */}
+          {isSaleClicked && (
+            <div className={style.price_box}>
+              <h1 dir="rtl" style={{ color: "#757575" }}>
+                {discountedPrice} <span>ريال</span>
+              </h1>
+            </div>
+          )}
+
+          {/* Sale btn */}
+          {priceData && (
+            <div className={style.saleBtn}>
+              <IconButton
+                color="primary"
+                onClick={() => setIsSaleClicked(true)}
+              >
+                <LoyaltyIcon />
+              </IconButton>
+            </div>
+          )}
+
           {/* End Price */}
         </Box>
       </div>

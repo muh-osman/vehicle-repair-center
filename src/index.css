@@ -16,3 +16,7 @@ body {
 th {
   font-weight: 600 !important;
 }
+
+.originalPrice {
+  text-decoration: line-through;
+}

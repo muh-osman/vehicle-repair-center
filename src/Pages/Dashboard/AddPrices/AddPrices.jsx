@@ -1,4 +1,4 @@
-import style from "./Prices.module.scss";
+import style from "./AddPrices.module.scss";
 import { useState, useEffect, useRef } from "react";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
@@ -13,7 +13,7 @@ import { useCookies } from "react-cookie";
 import useGetAllModelsInDatabaseApi from "../../../API/useGetAllModelsInDatabaseApi";
 import { useAddPricesApi } from "../../../API/useAddPricesApi";
 
-export default function Prices() {
+export default function AddPrices() {
   // Models logic
   const [cookies, setCookie] = useCookies(["newModelId"]);
 
@@ -154,7 +154,7 @@ export default function Prices() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Add Prices of the model</h1>
+      <h1>Add Prices of the model.</h1>
 
       {/* Start Form  */}
       <Box

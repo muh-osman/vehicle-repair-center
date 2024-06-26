@@ -26,8 +26,9 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TocIcon from "@mui/icons-material/Toc";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import PriceChangeIcon from "@mui/icons-material/PriceChange";
 // React router
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
 import { useCookies } from "react-cookie";
 // API
@@ -55,26 +56,23 @@ function ResponsiveDrawer(props) {
       path: "/dashboard/table",
       icon: <TocIcon sx={{ color: "#757575" }} />,
     },
+
     {
       id: 3,
-      title: "Add model",
+      title: "Add",
       path: "/dashboard/add",
       icon: <AddBoxIcon sx={{ color: "#757575" }} />,
     },
+
     {
       id: 4,
-      title: "Add Prices",
-      path: "/dashboard/prices",
-      icon: <AttachMoneyIcon sx={{ color: "#757575" }} />,
-    },
-    {
-      id: 5,
       title: "Edit",
       path: "/dashboard/edit",
       icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
     },
+
     // {
-    //   id: 6,
+    //   id: 8,
     //   title: "Delete",
     //   path: "/dashboard/delete",
     //   icon: <DeleteIcon sx={{ color: "#757575" }} />,
@@ -120,7 +118,12 @@ function ResponsiveDrawer(props) {
               button
               component={Link}
               to={item.path}
-              selected={item.path === pathname}
+              // selected={item.path === pathname}
+              selected={
+                item.path !== "/dashboard"
+                  ? pathname.includes(item.path)
+                  : pathname === item.path
+              }
             >
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
