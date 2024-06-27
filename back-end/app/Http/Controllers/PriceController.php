@@ -111,8 +111,17 @@ class PriceController extends Controller
 
         $price = Price::find($id);
         if (!$price) {
-            return response()->json(['message' => 'Price not found'], 404);
+            return response()->json(['message' => 'Price not found to edit, add price first.'], 404);
         }
+
+
+        // Check if the car_model_id exists in the prices table
+        $existingPrice = Price::where('car_model_id', $request->car_model_id)->first();
+        if (!$existingPrice) {
+            return response()->json(['message' => 'Can not edit prices of this model before add the prices, add the prices first.'], 400);
+        }
+
+
 
         foreach ($request->years as $year) {
             foreach ($year['services'] as $service) {

@@ -56,6 +56,7 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
+    setIsSaleClicked(false); //Reset sale show
   }
 
   // Manufactures logic
@@ -81,6 +82,7 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
+    setIsSaleClicked(false); //Reset sale show
   }
 
   // Models logic
@@ -105,6 +107,7 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
+    setIsSaleClicked(false); //Reset sale show
   }
 
   // Years logic
@@ -128,6 +131,7 @@ export default function Dashboard() {
     setSelectedYearId(yearId);
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
+    setIsSaleClicked(false); //Reset sale show
   }
 
   // Services logic
@@ -454,7 +458,7 @@ export default function Dashboard() {
           </div>
 
           {/* Price after sale */}
-          {isSaleClicked && (
+          {isSaleClicked && priceData && (
             <div className={style.price_box}>
               <h1 dir="rtl" style={{ color: "#757575" }}>
                 {discountedPrice} <span>ريال</span>
