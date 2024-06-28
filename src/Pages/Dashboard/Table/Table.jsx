@@ -47,6 +47,10 @@ export default function TablePage() {
     modelsData = Object.values(groupByModel);
   }
 
+  const getRowColorClass = (index) => {
+    return index % 4 < 2 ? style.redRow : style.blueRow;
+  };
+
   return (
     <div className={style.container}>
       {fetchStatus === "fetching" && (
@@ -76,7 +80,7 @@ export default function TablePage() {
                 { model_name, manufacturer, country, year, services },
                 index
               ) => (
-                <TableRow key={index}>
+                <TableRow key={index} className={`${style.row} ${getRowColorClass(index)}`}>
                   <TableCell align="center">
                     {services["كمبيوتر"] || "-"}
                   </TableCell>

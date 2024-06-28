@@ -1,5 +1,6 @@
 import style from "./AddModel.module.scss";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
 import Grid from "@mui/material/Grid";
@@ -121,7 +122,7 @@ export default function AddModel() {
               required
               fullWidth
               select
-              label="Country"
+              label="الدولة"
               value={selectedCountryId}
               onChange={handleCountriesChange}
               disabled={isGetCountriesPending || isAddModelPending}
@@ -150,6 +151,26 @@ export default function AddModel() {
         </Grid>
         {/* End Countries input */}
 
+        {/* Start new model input */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12}>
+            <TextField
+              sx={{ backgroundColor: "#fff" }}
+              dir="rtl"
+              fullWidth
+              id="الموديل"
+              label="الموديل"
+              type="text"
+              name="model_name"
+              required
+              disabled={isAddModelPending}
+              value={carModel}
+              onChange={(e) => setCarModel(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+        {/* End new model input */}
+
         {/* Start Manufacturers input */}
         {manufactures && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -160,7 +181,7 @@ export default function AddModel() {
                 required
                 fullWidth
                 select
-                label="Manufacturer"
+                label="الشركة المصنعة"
                 value={selectedManufacturerId}
                 onChange={handleManufacturerChange}
                 disabled={isGetManufacturesPending || isAddModelPending}
@@ -188,31 +209,17 @@ export default function AddModel() {
                       {manufacturer.manufacture_name}
                     </MenuItem>
                   ))}
+
+                <MenuItem dir="rlt" className={style.addManufacturer} defaultValue="">
+                  <Link dir="rlt" to="/dashboard/add/manufacturer">
+                    اضافة شركة غير موجودة
+                  </Link>
+                </MenuItem>
               </TextField>
             </Grid>
           </Grid>
         )}
         {/* End Manufacturers input */}
-
-        {/* Start new model input */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <TextField
-              sx={{ backgroundColor: "#fff" }}
-              dir="rtl"
-              fullWidth
-              id="Model"
-              label="Model"
-              type="text"
-              name="model_name"
-              required
-              disabled={isAddModelPending}
-              value={carModel}
-              onChange={(e) => setCarModel(e.target.value)}
-            />
-          </Grid>
-        </Grid>
-        {/* End new model input */}
 
         {/* Start loading button for form 1 */}
         <LoadingButton
@@ -223,7 +230,7 @@ export default function AddModel() {
           loading={isAddModelPending}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
-          Add model
+          اضافة موديل
         </LoadingButton>
         {/* End loading button for form 1 */}
       </Box>

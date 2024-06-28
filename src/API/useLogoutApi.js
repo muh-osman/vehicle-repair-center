@@ -6,7 +6,11 @@ import { useCookies } from "react-cookie";
 
 export const useLogoutApi = () => {
   // Cookies
-  const [cookies, setCookie, removeCookie] = useCookies(["token", "verified"]);
+  const [cookies, setCookie, removeCookie] = useCookies([
+    "token",
+    "verified",
+    "role",
+  ]);
 
   return useMutation({
     mutationFn: async () => {
@@ -16,12 +20,14 @@ export const useLogoutApi = () => {
 
     onSuccess: () => {
       removeCookie("verified");
+      removeCookie("role");
       removeCookie("token");
     },
 
     onError: (err) => {
       console.error(err);
       removeCookie("verified");
+      removeCookie("role");
       removeCookie("token");
     },
   });

@@ -174,7 +174,7 @@ export default function AddPrices() {
                 required
                 fullWidth
                 select
-                label="Model"
+                label="الموديل"
                 value={selectedModelId}
                 onChange={handleModelChange}
                 disabled={isGetModelsPending || isAddPricesPending}
@@ -214,7 +214,7 @@ export default function AddPrices() {
                   dir="rtl"
                   fullWidth
                   type="text"
-                  label="Year"
+                  label="سنة الصنع"
                   value="سنة 2015 أو أعلى"
                   disabled={true}
                 ></TextField>
@@ -362,7 +362,7 @@ export default function AddPrices() {
                   dir="rtl"
                   fullWidth
                   type="text"
-                  label="Year"
+                  label="سنة الصنع"
                   value="سنة 2014 أو أدنى"
                   disabled={true}
                 ></TextField>
@@ -511,7 +511,7 @@ export default function AddPrices() {
           loading={isAddPricesPending}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
-          Add prices
+          اضافة الأسعار
         </LoadingButton>
         {/* End loading button for form 1 */}
       </Box>

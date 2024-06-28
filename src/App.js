@@ -16,6 +16,7 @@ import VerifyEmail from "./Pages/VerifyEmail/VerifyEmail";
 import ForgotPassword from "./Pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword/ResetPassword";
 import Auth from "./Utils/Auth";
+import SuperAuth from "./Utils/SuperAuth";
 import NotAuth from "./Utils/NotAuth";
 import DashboardLayout from "./Layout/DashboardLayout";
 import Dashboard from "./Pages/Dashboard/Dashboard";
@@ -26,6 +27,7 @@ import Add from "./Pages/Dashboard/Add/Add";
 import AddIndex from "./Pages/Dashboard/AddIndex/AddIndex";
 import AddModel from "./Pages/Dashboard/AddModel/AddModel";
 import AddPrices from "./Pages/Dashboard/AddPrices/AddPrices";
+import AddManufacturer from "./Pages/Dashboard/AddManufacturer/AddManufacturer";
 
 import Edit from "./Pages/Dashboard/Edit/Edit";
 import EditIndex from "./Pages/Dashboard/EditIndex/EditIndex";
@@ -48,7 +50,7 @@ export default function App() {
         <Route element={<NotAuth />}>
           {/* Start Check if login */}
           <Route path="login" element={<LogIn />} />
-          <Route path="signup" element={<SignUp />} />
+          {/* <Route path="signup" element={<SignUp />} /> */}
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           {/* End Check if login */}
@@ -61,17 +63,22 @@ export default function App() {
             <Route path="table" element={<Table />} />
             <Route path="post/:id" element={<Post />} />
 
-            <Route path="add" element={<Add />}>
-              <Route index element={<AddIndex />} />
-              <Route path="model" element={<AddModel />} />
-              <Route path="prices" element={<AddPrices />} />
-            </Route>
+            {/* Super Admin only */}
+            <Route element={<SuperAuth />}>
+              <Route path="add" element={<Add />}>
+                <Route index element={<AddIndex />} />
+                <Route path="model" element={<AddModel />} />
+                <Route path="prices" element={<AddPrices />} />
+                <Route path="manufacturer" element={<AddManufacturer />} />
+              </Route>
 
-            <Route path="edit" element={<Edit />}>
-              <Route index element={<EditIndex />} />
-              <Route path="model" element={<EditModel />} />
-              <Route path="prices" element={<EditPrices />} />
+              <Route path="edit" element={<Edit />}>
+                <Route index element={<EditIndex />} />
+                <Route path="model" element={<EditModel />} />
+                <Route path="prices" element={<EditPrices />} />
+              </Route>
             </Route>
+            {/* Super Admin only */}
 
             <Route path="delete" element={<Delete />} />
           </Route>

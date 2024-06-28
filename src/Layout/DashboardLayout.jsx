@@ -41,7 +41,7 @@ const drawerWidth = 240;
 
 function ResponsiveDrawer(props) {
   // Cookie
-  const [cookies, setCookie] = useCookies(["token", "verified"]);
+  const [cookies, setCookie] = useCookies(["token", "verified", "role"]);
 
   const pages = [
     {
@@ -56,28 +56,32 @@ function ResponsiveDrawer(props) {
       path: "/dashboard/table",
       icon: <TocIcon sx={{ color: "#757575" }} />,
     },
-
-    {
-      id: 3,
-      title: "Add",
-      path: "/dashboard/add",
-      icon: <AddBoxIcon sx={{ color: "#757575" }} />,
-    },
-
-    {
-      id: 4,
-      title: "Edit",
-      path: "/dashboard/edit",
-      icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
-    },
-
-    // {
-    //   id: 8,
-    //   title: "Delete",
-    //   path: "/dashboard/delete",
-    //   icon: <DeleteIcon sx={{ color: "#757575" }} />,
-    // },
   ];
+
+  // Super Admin page
+  if (cookies.role === 255) {
+    pages.push(
+      {
+        id: 3,
+        title: "Add",
+        path: "/dashboard/add",
+        icon: <AddBoxIcon sx={{ color: "#757575" }} />,
+      },
+      {
+        id: 4,
+        title: "Edit",
+        path: "/dashboard/edit",
+        icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
+      }
+
+      // {
+      //   id: 8,
+      //   title: "Delete",
+      //   path: "/dashboard/delete",
+      //   icon: <DeleteIcon sx={{ color: "#757575" }} />,
+      // },
+    );
+  }
 
   const { pathname } = useLocation();
 

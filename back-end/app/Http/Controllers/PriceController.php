@@ -10,11 +10,16 @@ class PriceController extends Controller
 {
     public function index()
     {
+
         $prices = Price::with(['carModel.manufacturer.country', 'yearOfManufacture', 'service'])
             ->select('prices.id', 'price', 'car_model_id', 'year_id', 'service_id')
             ->join('car_models', 'prices.car_model_id', '=', 'car_models.id')
             ->join('manufacturers', 'car_models.manufacturer_id', '=', 'manufacturers.id')
+            ->join('countries', 'manufacturers.country_id', '=', 'countries.id') // Join the countries table
+            ->orderBy('countries.country_name')
             ->orderBy('manufacturers.manufacture_name')
+            ->orderBy('car_models.model_name')
+            ->orderByDesc('prices.year_id')
             ->get()
             ->map(function ($price) {
                 return [
@@ -109,6 +114,7 @@ class PriceController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+
         $price = Price::find($id);
         if (!$price) {
             return response()->json(['message' => 'Price not found to edit, add price first.'], 404);
@@ -118,7 +124,7 @@ class PriceController extends Controller
         // Check if the car_model_id exists in the prices table
         $existingPrice = Price::where('car_model_id', $request->car_model_id)->first();
         if (!$existingPrice) {
-            return response()->json(['message' => 'Can not edit prices of this model before add the prices, add the prices first.'], 400);
+            return response()->json(['message' => 'Can not edit prices of this model before add it, add the prices first.'], 400);
         }
 
 

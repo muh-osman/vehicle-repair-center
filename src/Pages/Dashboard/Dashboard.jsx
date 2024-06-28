@@ -247,7 +247,7 @@ export default function Dashboard() {
                 required
                 fullWidth
                 select
-                label="Country"
+                label="الدولة"
                 value={selectedCountryId}
                 onChange={handleCountriesChange}
                 disabled={isGetCountriesPending}
@@ -286,7 +286,7 @@ export default function Dashboard() {
                   required
                   fullWidth
                   select
-                  label="Manufacturer"
+                  label="الشركة المصنعة"
                   value={selectedManufacturerId}
                   onChange={handleManufacturerChange}
                   disabled={isGetManufacturesPending}
@@ -330,7 +330,7 @@ export default function Dashboard() {
                   required
                   fullWidth
                   select
-                  label="Model"
+                  label="الموديل"
                   value={selectedModelId}
                   onChange={handleModelChange}
                   disabled={isGetModelsPending}
@@ -370,7 +370,7 @@ export default function Dashboard() {
                   required
                   fullWidth
                   select
-                  label="Year"
+                  label="سنة الصنع"
                   value={selectedYearId}
                   onChange={handleYearChange}
                   disabled={isGetYearsPending}
@@ -407,7 +407,7 @@ export default function Dashboard() {
                 sx={{ m: 0, width: "100%", backgroundColor: "#fff" }}
               >
                 <InputLabel id="demo-multiple-checkbox-label">
-                  Service
+                  الخدمات
                 </InputLabel>
                 <Select
                   dir="rtl"
@@ -417,7 +417,7 @@ export default function Dashboard() {
                   multiple
                   value={selectedServicesId}
                   onChange={handleServiceChange}
-                  input={<OutlinedInput label="Service" />}
+                  input={<OutlinedInput label="الخدمات" />}
                   renderValue={(selected) => {
                     return selected
                       .map(

@@ -12,17 +12,19 @@ export const useLoginApi = () => {
   //
   const navigate = useNavigate();
   // Cookies
-  const [cookies, setCookie] = useCookies(["token", "verified"]);
+  const [cookies, setCookie] = useCookies(["token", "verified", "role"]);
 
   return useMutation({
     mutationFn: async (data) => {
       const res = await API.post("api/login", data);
       return res.data;
+
     },
 
     onSuccess: (responseData) => {
       setCookie("verified", responseData.user.email_verified_at);
       setCookie("token", responseData.token);
+      setCookie("role", responseData.user.role);
       navigate("/dashboard", { replace: true });
     },
 

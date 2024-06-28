@@ -8,23 +8,21 @@ import { useCookies } from "react-cookie";
 // Toastify
 import { toast } from "react-toastify";
 
-export const useSignUpApi = () => {
+export const useAddManufacturerApi = () => {
   //
   const navigate = useNavigate();
   // Cookies
-  const [cookies, setCookie] = useCookies(["token", "verified"]);
+  //   const [cookies, setCookie] = useCookies(["newModelId"]);
 
   return useMutation({
     mutationFn: async (data) => {
-      const res = await API.post("api/register", data);
+      const res = await API.post("api/manufacturers", data);
       return res.data;
     },
 
     onSuccess: (responseData) => {
-      setCookie("verified", responseData.user.email_verified_at);
-      setCookie("role", responseData.user.role);
-      setCookie("token", responseData.token);
-      navigate("/dashboard", { replace: true });
+      toast.success("Car Manufacturer Added.");
+    //   navigate("/dashboard/add/model");
     },
 
     onError: (err) => {
