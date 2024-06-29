@@ -98,7 +98,7 @@ export default function AddModel() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Add a new model.</h1>
+      <h1 dir="rtl">إضافة موديل جديد.</h1>
 
       {/* Start Form */}
       <Box
@@ -210,7 +210,11 @@ export default function AddModel() {
                     </MenuItem>
                   ))}
 
-                <MenuItem dir="rlt" className={style.addManufacturer} defaultValue="">
+                <MenuItem
+                  dir="rlt"
+                  className={style.addManufacturer}
+                  defaultValue=""
+                >
                   <Link dir="rlt" to="/dashboard/add/manufacturer">
                     اضافة شركة غير موجودة
                   </Link>

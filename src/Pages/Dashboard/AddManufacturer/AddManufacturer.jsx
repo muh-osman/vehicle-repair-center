@@ -76,7 +76,7 @@ export default function AddManufacturer() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Add a new manufacturer.</h1>
+      <h1 dir="rtl">إضافة شركة مصنعة جديدة.</h1>
 
       {/* Start Form */}
       <Box

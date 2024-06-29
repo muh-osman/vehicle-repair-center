@@ -154,7 +154,7 @@ export default function EditPrices() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Edit Prices of the model.</h1>
+      <h1 dir="rtl">تحرير أسعار الموديل.</h1>
 
       {/* Start Form  */}
       <Box

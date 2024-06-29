@@ -95,7 +95,7 @@ export default function EditManufacturer() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Select the Manufacturer to edit.</h1>
+      <h1 dir="rtl">حدد الشركة المصنعة لتحريرها.</h1>
 
       {/* Start Form */}
       <Box

@@ -14,7 +14,7 @@ export default function EditIndex() {
 
   return (
     <div className={style.container}>
-      <h1>Edit the manufacturers, models or the prices.</h1>
+      <h1 dir="rtl">تحرير البيانات.</h1>
 
       <Stack
         sx={{ mt: 6 }}

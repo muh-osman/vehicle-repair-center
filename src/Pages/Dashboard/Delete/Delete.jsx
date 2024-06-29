@@ -44,10 +44,9 @@ export default function Delete() {
     mutate(selectedModelId);
   };
 
-
   useEffect(() => {
     if (isDeleteModelSuccess) {
-      setSelectedModelId("")
+      setSelectedModelId("");
     }
   }, [isDeleteModelSuccess]);
 
@@ -68,7 +67,7 @@ export default function Delete() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Select the model to delete.</h1>
+      <h1 dir="rtl">حدد الموديل المراد حذفه.</h1>
 
       {/* Start Form */}
       <Box

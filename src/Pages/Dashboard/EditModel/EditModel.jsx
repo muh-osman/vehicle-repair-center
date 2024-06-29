@@ -96,7 +96,7 @@ export default function EditModel() {
     <div className={style.container}>
       {progress()}
 
-      <h1>Select the model to edit.</h1>
+      <h1 dir="rtl">حدد الموديل لتحريره.</h1>
 
       {/* Start Form */}
       <Box

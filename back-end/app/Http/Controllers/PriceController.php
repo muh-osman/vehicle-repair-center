@@ -101,6 +101,60 @@ class PriceController extends Controller
 
     public function update(Request $request, $id)
     {
+        // $validator = Validator::make($request->all(), [
+        //     'car_model_id' => 'exists:car_models,id',
+        //     'years' => 'required|array',
+        //     'years.*.year_id' => 'required|exists:year_of_manufactures,id',
+        //     'years.*.services' => 'required|array',
+        //     'years.*.services.*.service_id' => 'required|exists:services,id',
+        //     'years.*.services.*.price' => 'required|numeric',
+        // ]);
+
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors()], 400);
+        // }
+
+
+        // $price = Price::find($id);
+        // if (!$price) {
+        //     return response()->json(['message' => 'Price not found to edit, add price first.'], 404);
+        // }
+
+
+        // // Check if the car_model_id exists in the prices table
+        // $existingPrice = Price::where('car_model_id', $request->car_model_id)->first();
+        // if (!$existingPrice) {
+        //     return response()->json(['message' => 'Can not edit prices of this model before add it, add the prices first.'], 400);
+        // }
+
+
+
+        // foreach ($request->years as $year) {
+        //     foreach ($year['services'] as $service) {
+        //         $existingPrice = Price::where('car_model_id', $request->car_model_id)
+        //             ->where('year_id', $year['year_id'])
+        //             ->where('service_id', $service['service_id'])
+        //             ->where('id', '!=', $id) // Exclude the current price being updated
+        //             ->first();
+
+        //         if ($existingPrice) {
+        //             // Update the existing price entry instead of creating a new one
+        //             $existingPrice->price = $service['price'];
+        //             $existingPrice->save();
+        //         } else {
+        //             // If no existing entry found, update the current price entry
+        //             $price->car_model_id = $request->car_model_id;
+        //             $price->year_id = $year['year_id'];
+        //             $price->service_id = $service['service_id'];
+        //             $price->price = $service['price'];
+        //             $price->save();
+        //         }
+        //     }
+        // }
+
+        // return response()->json($price);
+
+
         $validator = Validator::make($request->all(), [
             'car_model_id' => 'exists:car_models,id',
             'years' => 'required|array',
@@ -114,21 +168,26 @@ class PriceController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
-
-        $price = Price::find($id);
-        if (!$price) {
-            return response()->json(['message' => 'Price not found to edit, add price first.'], 404);
-        }
-
-
         // Check if the car_model_id exists in the prices table
         $existingPrice = Price::where('car_model_id', $request->car_model_id)->first();
+
         if (!$existingPrice) {
-            return response()->json(['message' => 'Can not edit prices of this model before add it, add the prices first.'], 400);
+            // If the car_model_id does not exist, add prices to the database
+            foreach ($request->years as $year) {
+                foreach ($year['services'] as $service) {
+                    $price = new Price();
+                    $price->car_model_id = $request->car_model_id;
+                    $price->year_id = $year['year_id'];
+                    $price->service_id = $service['service_id'];
+                    $price->price = $service['price'];
+                    $price->save();
+                }
+            }
+
+            return response()->json(['message' => 'Prices added successfully'], 201);
         }
 
-
-
+        // Update prices if the car_model_id already exists in the prices table
         foreach ($request->years as $year) {
             foreach ($year['services'] as $service) {
                 $existingPrice = Price::where('car_model_id', $request->car_model_id)
@@ -142,7 +201,8 @@ class PriceController extends Controller
                     $existingPrice->price = $service['price'];
                     $existingPrice->save();
                 } else {
-                    // If no existing entry found, update the current price entry
+                    // If no existing entry found, create a new price entry
+                    $price = new Price();
                     $price->car_model_id = $request->car_model_id;
                     $price->year_id = $year['year_id'];
                     $price->service_id = $service['service_id'];
@@ -152,7 +212,7 @@ class PriceController extends Controller
             }
         }
 
-        return response()->json($price);
+        return response()->json(['message' => 'Prices updated successfully']);
     }
 
     public function destroy($id)
