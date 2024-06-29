@@ -50,7 +50,7 @@ export default function App() {
         <Route element={<NotAuth />}>
           {/* Start Check if login */}
           <Route path="login" element={<LogIn />} />
-          {/* <Route path="signup" element={<SignUp />} /> */}
+          <Route path="signup" element={<SignUp />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           {/* End Check if login */}

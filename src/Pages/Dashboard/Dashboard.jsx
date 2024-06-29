@@ -471,7 +471,7 @@ export default function Dashboard() {
             <div className={style.saleBtn}>
               <IconButton
                 color="primary"
-                onClick={() => setIsSaleClicked(true)}
+                onClick={() => setIsSaleClicked((prevState) => !prevState)}
               >
                 <LoyaltyIcon />
               </IconButton>

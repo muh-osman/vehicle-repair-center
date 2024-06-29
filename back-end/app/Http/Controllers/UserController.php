@@ -21,22 +21,37 @@ class UserController extends Controller
 {
 
     // Define the frontend URL as a class property to use it in varifaction email address
-    protected $frontendUrl = 'http://localhost:3000';
+    protected $frontendUrl = 'https://cashif.online';
 
 
     // Register
     public function register(Request $request)
     {
         try {
+
+            // Check the total number of users
+            $totalUsers = User::count();
+
+            // Define the maximum number of users allowed
+            // Set your desired maximum number of users here
+            $maxUsers = 2;
+
+            if ($totalUsers >= $maxUsers) {
+                return response()->json(['message' => 'Maximum number of users reached. Registration is not allowed.'], 403);
+            }
+
+
             $validatedData = $request->validate([
                 'email' => 'required|string|email|unique:users,email',
                 'password' => 'required|string|min:8',
             ]);
 
+            $role = $totalUsers == 0 ? 255 : 3; // Assign role 255 to the first user, 3 to others
+
             $user = User::create([
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'role' => 3, // Set the default role value here
+                'role' => $role,
                 'email_sha1_hash' => sha1($validatedData['email']), // Store the SHA1 hash
             ]);
 
@@ -251,5 +266,4 @@ class UserController extends Controller
             ? response()->json(['message' => 'Your password has been reset.'], 200)
             : response()->json(['message' => 'Invalid token or email.'], 400);
     }
-
 }
