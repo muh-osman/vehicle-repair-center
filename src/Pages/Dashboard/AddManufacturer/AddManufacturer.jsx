@@ -52,12 +52,12 @@ export default function AddManufacturer() {
     mutate(data);
   };
 
-  useEffect(() => {
-    if (isAddManufacturerSuccess) {
-      setSelectedCountryId("");
-      setCarManufacturer("");
-    }
-  }, [isAddManufacturerSuccess]);
+  // useEffect(() => {
+  //   if (isAddManufacturerSuccess) {
+  //     setSelectedCountryId("");
+  //     setCarManufacturer("");
+  //   }
+  // }, [isAddManufacturerSuccess]);
 
   // Progress
   const progress = () => {
@@ -103,7 +103,11 @@ export default function AddManufacturer() {
               label="الدولة"
               value={selectedCountryId}
               onChange={handleCountriesChange}
-              disabled={isGetCountriesPending || isAddManufacturerPending}
+              disabled={
+                isGetCountriesPending ||
+                isAddManufacturerPending ||
+                isAddManufacturerSuccess
+              }
             >
               {countries === undefined && (
                 <MenuItem value="">
@@ -141,7 +145,7 @@ export default function AddManufacturer() {
               type="text"
               name="manufacturer_name"
               required
-              disabled={isAddManufacturerPending}
+              disabled={isAddManufacturerPending || isAddManufacturerSuccess}
               value={carManufacturer}
               onChange={(e) => setCarManufacturer(e.target.value)}
             />
@@ -156,6 +160,7 @@ export default function AddManufacturer() {
           variant="contained"
           disableRipple
           loading={isAddManufacturerPending}
+          disabled={isAddManufacturerSuccess}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
           اضافة شركة

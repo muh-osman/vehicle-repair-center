@@ -12,8 +12,6 @@ import useGetAllModelsInDatabaseApi from "../../../API/useGetAllModelsInDatabase
 import useGetAllmanufacturesInDatabaseApi from "../../../API/useGetAllmanufacturesInDatabaseApi";
 import { useEditModelApi } from "../../../API/useEditModelApi";
 
-// import { useAddModelApi } from "../../../API/useAddModelApi";
-
 export default function EditModel() {
   // Selec Model to edit logic
   const [selectedModelId, setSelectedModelId] = useState("");
@@ -122,7 +120,7 @@ export default function EditModel() {
               required
               fullWidth
               select
-              label="Model"
+              label="الموديل"
               value={selectedModelId}
               onChange={handleModelChange}
               disabled={isGetModelsPending || isEditModelPending}
@@ -159,10 +157,8 @@ export default function EditModel() {
                 sx={{ backgroundColor: "#fff" }}
                 dir="rtl"
                 fullWidth
-                id="Model"
-                label="Edit model name"
+                label="الاسم الجديد"
                 type="text"
-                name="model_name"
                 required
                 disabled={isEditModelPending}
                 value={carModel}
@@ -183,7 +179,7 @@ export default function EditModel() {
                 required
                 fullWidth
                 select
-                label="Edit Manufacturer"
+                label="المصنع الجديد"
                 value={selectedManufacturerId}
                 onChange={handleManufacturerChange}
                 disabled={isGetManufacturesPending || isEditModelPending}
@@ -226,7 +222,7 @@ export default function EditModel() {
           loading={isEditModelPending}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
-          Edit model
+          تعديل الموديل
         </LoadingButton>
         {/* End loading button for form 1 */}
       </Box>

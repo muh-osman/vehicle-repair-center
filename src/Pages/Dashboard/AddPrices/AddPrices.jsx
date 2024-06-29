@@ -119,24 +119,24 @@ export default function AddPrices() {
     mutate(data);
   };
 
-  useEffect(() => {
-    // Reset the form
-    if (isAddPricesSuccess) {
-      setSelectedModelId("");
+  // useEffect(() => {
+  //   // Reset the form
+  //   if (isAddPricesSuccess) {
+  //     setSelectedModelId("");
 
-      setRservice1("");
-      setRservice2("");
-      setRservice3("");
-      setRservice4("");
-      setRservice5("");
+  //     setRservice1("");
+  //     setRservice2("");
+  //     setRservice3("");
+  //     setRservice4("");
+  //     setRservice5("");
 
-      setLservice1("");
-      setLservice2("");
-      setLservice3("");
-      setLservice4("");
-      setLservice5("");
-    }
-  }, [isAddPricesSuccess]);
+  //     setLservice1("");
+  //     setLservice2("");
+  //     setLservice3("");
+  //     setLservice4("");
+  //     setLservice5("");
+  //   }
+  // }, [isAddPricesSuccess]);
 
   // Progress
   const progress = () => {
@@ -177,7 +177,9 @@ export default function AddPrices() {
                 label="الموديل"
                 value={selectedModelId}
                 onChange={handleModelChange}
-                disabled={isGetModelsPending || isAddPricesPending}
+                disabled={
+                  isGetModelsPending || isAddPricesPending || isAddPricesSuccess
+                }
               >
                 {models === undefined && (
                   <MenuItem value="">
@@ -240,7 +242,7 @@ export default function AddPrices() {
                   label="شامل"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Lservice1}
                   onChange={(e) => setLservice1(e.target.value)}
                 />
@@ -266,7 +268,7 @@ export default function AddPrices() {
                   label="أساسي"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Lservice2}
                   onChange={(e) => setLservice2(e.target.value)}
                 />
@@ -292,7 +294,7 @@ export default function AddPrices() {
                   label="محركات"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Lservice3}
                   onChange={(e) => setLservice3(e.target.value)}
                 />
@@ -318,7 +320,7 @@ export default function AddPrices() {
                   label="هيكل خارجي"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Lservice4}
                   onChange={(e) => setLservice4(e.target.value)}
                 />
@@ -344,7 +346,7 @@ export default function AddPrices() {
                   label="كمبيوتر"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Lservice5}
                   onChange={(e) => setLservice5(e.target.value)}
                 />
@@ -388,7 +390,7 @@ export default function AddPrices() {
                   label="شامل"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Rservice1}
                   onChange={(e) => setRservice1(e.target.value)}
                 />
@@ -414,7 +416,7 @@ export default function AddPrices() {
                   label="أساسي"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Rservice2}
                   onChange={(e) => setRservice2(e.target.value)}
                 />
@@ -440,7 +442,7 @@ export default function AddPrices() {
                   label="محركات"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Rservice3}
                   onChange={(e) => setRservice3(e.target.value)}
                 />
@@ -466,7 +468,7 @@ export default function AddPrices() {
                   label="هيكل خارجي"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Rservice4}
                   onChange={(e) => setRservice4(e.target.value)}
                 />
@@ -492,7 +494,7 @@ export default function AddPrices() {
                   label="كمبيوتر"
                   type="number"
                   required
-                  disabled={isAddPricesPending}
+                  disabled={isAddPricesPending || isAddPricesSuccess}
                   value={Rservice5}
                   onChange={(e) => setRservice5(e.target.value)}
                 />
@@ -509,6 +511,7 @@ export default function AddPrices() {
           variant="contained"
           disableRipple
           loading={isAddPricesPending}
+          disabled={isAddPricesSuccess}
           sx={{ mt: 3, mb: 2, transition: "0.1s" }}
         >
           اضافة الأسعار

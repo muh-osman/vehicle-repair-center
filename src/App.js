@@ -31,6 +31,7 @@ import AddManufacturer from "./Pages/Dashboard/AddManufacturer/AddManufacturer";
 
 import Edit from "./Pages/Dashboard/Edit/Edit";
 import EditIndex from "./Pages/Dashboard/EditIndex/EditIndex";
+import EditManufacturer from "./Pages/Dashboard/EditManufacturer/EditManufacturer";
 import EditModel from "./Pages/Dashboard/EditModel/EditModel";
 import EditPrices from "./Pages/Dashboard/EditPrices/EditPrices";
 
@@ -74,6 +75,7 @@ export default function App() {
 
               <Route path="edit" element={<Edit />}>
                 <Route index element={<EditIndex />} />
+                <Route path="manufacturer" element={<EditManufacturer />} />
                 <Route path="model" element={<EditModel />} />
                 <Route path="prices" element={<EditPrices />} />
               </Route>
