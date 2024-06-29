@@ -72,14 +72,13 @@ function ResponsiveDrawer(props) {
         title: "Edit",
         path: "/dashboard/edit",
         icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
+      },
+      {
+        id: 5,
+        title: "Delete",
+        path: "/dashboard/delete",
+        icon: <DeleteIcon sx={{ color: "#757575" }} />,
       }
-
-      // {
-      //   id: 8,
-      //   title: "Delete",
-      //   path: "/dashboard/delete",
-      //   icon: <DeleteIcon sx={{ color: "#757575" }} />,
-      // },
     );
   }
 

@@ -79,10 +79,9 @@ export default function App() {
                 <Route path="model" element={<EditModel />} />
                 <Route path="prices" element={<EditPrices />} />
               </Route>
+              <Route path="delete" element={<Delete />} />
             </Route>
             {/* Super Admin only */}
-
-            <Route path="delete" element={<Delete />} />
           </Route>
           {/* End protected route */}
         </Route>
