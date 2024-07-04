@@ -95,4 +95,21 @@ class CarModelController extends Controller
 
         return response()->json(['carModels' => $carModels], 200);
     }
+
+
+    /**
+     * Search for car models based on the search input.
+     */
+    public function searchModels(Request $request)
+    {
+        $searchInput = $request->input('search');
+
+        $carModels = CarModel::where('model_name', 'like', '%' . $searchInput . '%')->get();
+
+        // if ($carModels->isEmpty()) {
+        //     return response()->json(['carModels' => 'No car models found for the specified search input'], 404);
+        // }
+
+        return response()->json(['carModels' => $carModels], 200);
+    }
 }

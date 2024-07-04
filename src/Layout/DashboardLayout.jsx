@@ -25,6 +25,7 @@ import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TocIcon from "@mui/icons-material/Toc";
+import SearchIcon from "@mui/icons-material/Search";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import PriceChangeIcon from "@mui/icons-material/PriceChange";
 // React router
@@ -52,6 +53,12 @@ function ResponsiveDrawer(props) {
     },
     {
       id: 2,
+      title: "Search",
+      path: "/dashboard/search",
+      icon: <SearchIcon sx={{ color: "#757575" }} />,
+    },
+    {
+      id: 3,
       title: "Table",
       path: "/dashboard/table",
       icon: <TocIcon sx={{ color: "#757575" }} />,
@@ -62,19 +69,19 @@ function ResponsiveDrawer(props) {
   if (cookies.role === 255) {
     pages.push(
       {
-        id: 3,
+        id: 4,
         title: "Add",
         path: "/dashboard/add",
         icon: <AddBoxIcon sx={{ color: "#757575" }} />,
       },
       {
-        id: 4,
+        id: 5,
         title: "Edit",
         path: "/dashboard/edit",
         icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
       },
       {
-        id: 5,
+        id: 6,
         title: "Delete",
         path: "/dashboard/delete",
         icon: <DeleteIcon sx={{ color: "#757575" }} />,

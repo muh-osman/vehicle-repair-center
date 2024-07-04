@@ -20,6 +20,8 @@ import SuperAuth from "./Utils/SuperAuth";
 import NotAuth from "./Utils/NotAuth";
 import DashboardLayout from "./Layout/DashboardLayout";
 import Dashboard from "./Pages/Dashboard/Dashboard";
+import Search from "./Pages/Dashboard/Search/Search";
+import Car from "./Pages/Dashboard/Car/Car";
 import Table from "./Pages/Dashboard/Table/Table";
 import Post from "./Pages/Dashboard/Post/Post";
 
@@ -61,6 +63,8 @@ export default function App() {
           {/* Start protected route */}
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="search" element={<Search />} />
+            <Route path="car/:id" element={<Car />} />
             <Route path="table" element={<Table />} />
             <Route path="post/:id" element={<Post />} />
 

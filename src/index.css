@@ -22,4 +22,5 @@ th {
 
 .originalPrice {
   text-decoration: line-through;
+  color: #757575;
 }
