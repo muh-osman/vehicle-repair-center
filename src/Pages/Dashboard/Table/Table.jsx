@@ -1,6 +1,6 @@
 // Table.js
 import style from "./Table.module.scss";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
 import useFetchAllTableDataApi from "../../../API/useFetchAllTableDataApi";
 import { toast } from "react-toastify";
@@ -12,8 +12,16 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+// Excel
+import { DownloadTableExcel } from "react-export-table-to-excel";
+// Cookies
+import { useCookies } from "react-cookie";
 
 export default function TablePage() {
+  const tableRef = useRef(null);
+  const [cookies, setCookie] = useCookies(["role"]);
+
   const { data, isLoading, isError, error, fetchStatus, isSuccess } =
     useFetchAllTableDataApi();
 
@@ -59,8 +67,20 @@ export default function TablePage() {
         </div>
       )}
 
+      <DownloadTableExcel
+        filename="cashif table"
+        sheet="cashif"
+        currentTableRef={tableRef.current}
+      >
+        {cookies.role === 255 && (
+          <Button sx={{ marginBottom: "16px" }} variant="outlined">
+            Export excel
+          </Button>
+        )}
+      </DownloadTableExcel>
+
       <TableContainer component={Paper}>
-        <Table aria-label="simple table">
+        <Table aria-label="simple table" ref={tableRef}>
           <TableHead>
             <TableRow>
               <TableCell align="center">كمبيوتر</TableCell>
@@ -80,7 +100,10 @@ export default function TablePage() {
                 { model_name, manufacturer, country, year, services },
                 index
               ) => (
-                <TableRow key={index} className={`${style.row} ${getRowColorClass(index)}`}>
+                <TableRow
+                  key={index}
+                  className={`${style.row} ${getRowColorClass(index)}`}
+                >
                   <TableCell align="center">
                     {services["كمبيوتر"] || "-"}
                   </TableCell>
