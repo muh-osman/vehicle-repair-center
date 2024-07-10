@@ -49,7 +49,7 @@ export default function Search() {
             onInput={handleInputChange}
             type="text"
             variant="outlined"
-            placeholder="ادخل موديل السيارة"
+            placeholder="أدخل موديل السيارة"
             autoFocus
             InputProps={{
               autoComplete: "off",

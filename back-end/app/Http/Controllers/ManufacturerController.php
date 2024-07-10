@@ -14,7 +14,10 @@ class ManufacturerController extends Controller
      */
     public function index()
     {
-        $manufacturers = Manufacturer::all();
+        // $manufacturers = Manufacturer::all();
+        // return response()->json(['manufacturers' => $manufacturers], 200);
+
+        $manufacturers = Manufacturer::orderBy('manufacture_name')->get();
         return response()->json(['manufacturers' => $manufacturers], 200);
     }
 
@@ -91,7 +94,10 @@ class ManufacturerController extends Controller
      */
     public function getManufacturersByCountry($countryId)
     {
-        $manufacturers = Manufacturer::where('country_id', $countryId)->get();
+
+        $manufacturers = Manufacturer::where('country_id', $countryId)
+            ->orderBy('manufacture_name')
+            ->get();
 
         if ($manufacturers->isEmpty()) {
             return response()->json(['message' => 'No manufacturers found for the given country ID'], 404);

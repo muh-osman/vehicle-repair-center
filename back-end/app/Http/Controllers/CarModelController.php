@@ -14,7 +14,7 @@ class CarModelController extends Controller
      */
     public function index()
     {
-        $carModels = CarModel::all();
+        $carModels = CarModel::orderBy('model_name')->get();
         return response()->json(['carModels' => $carModels], 200);
     }
 
@@ -87,7 +87,9 @@ class CarModelController extends Controller
      */
     public function getModelsByManufacturerId($manufacturerId)
     {
-        $carModels = CarModel::where('manufacturer_id', $manufacturerId)->get();
+        $carModels = CarModel::where('manufacturer_id', $manufacturerId)
+            ->orderBy('model_name')
+            ->get();
 
         if ($carModels->isEmpty()) {
             return response()->json(['message' => 'No car models found for the specified manufacturer ID'], 404);
@@ -104,7 +106,10 @@ class CarModelController extends Controller
     {
         $searchInput = $request->input('search');
 
-        $carModels = CarModel::where('model_name', 'like', '%' . $searchInput . '%')->get();
+        $carModels = CarModel::where('model_name', 'like', $searchInput . '%')
+            ->orderBy('model_name')
+            ->get();
+
 
         // if ($carModels->isEmpty()) {
         //     return response()->json(['carModels' => 'No car models found for the specified search input'], 404);

@@ -9,7 +9,7 @@ export default function useGetCarPricesByIdAndYearApi(data) {
   const fetchPrice = async () => {
     try {
       const res = await API.get(
-        `http://localhost:8000/api/get-prices-by-model-and-year?car_model_id=${data.modelId}&year_id=${data.yearId}`
+        `api/get-prices-by-model-and-year?car_model_id=${data.modelId}&year_id=${data.yearId}`
       );
       return res.data;
     } catch (err) {
@@ -23,7 +23,7 @@ export default function useGetCarPricesByIdAndYearApi(data) {
   };
 
   return useQuery({
-    // enabled: false, // Disable automatic fetching
+    enabled: false, // Disable automatic fetching
     queryKey: ["priceBymodelAndYear", data.modelId, data.yearId],
     queryFn: fetchPrice,
   });
