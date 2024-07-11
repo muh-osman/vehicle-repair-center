@@ -50,8 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('car-models', CarModelController::class);
     // Get car models by manufacturer ID
     Route::get('car-models/by-manufacturer/{manufacturerId}', [CarModelController::class, 'getModelsByManufacturerId']);
-    // Search car models
-    Route::post('car-models/search', [CarModelController::class, 'searchModels']);
     // Year of Manufacture Resource Routes
     Route::apiResource('year-of-manufacture', YearOfManufactureController::class);
     // Get Years by car model ID
@@ -62,8 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('prices', PriceController::class);
     //  GetPrice method
     Route::get('get-price', [PriceController::class, 'getPrice']);
-    // Getting prices by car model ID and year ID
-    Route::get('get-prices-by-model-and-year', [PriceController::class, 'getPricesByModelAndYear']);
 });
 
 
@@ -83,4 +79,10 @@ Route::middleware('guest')->group(function () {
 
     // API route for resetting the password (http://localhost:8000/api/reset-password)
     Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.reset');
+
+    // Search car models
+    Route::post('car-models/search', [CarModelController::class, 'searchModels']);
+
+    // Getting prices by car model ID and year ID
+    Route::get('get-prices-by-model-and-year', [PriceController::class, 'getPricesByModelAndYear']);
 });
