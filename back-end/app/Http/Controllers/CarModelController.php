@@ -117,4 +117,19 @@ class CarModelController extends Controller
 
         return response()->json(['carModels' => $carModels], 200);
     }
+
+    /**
+     * Search for car models based on the search input and return only 10 results.
+     */
+    public function searchModelsLimited(Request $request)
+    {
+        $searchInput = $request->input('search');
+
+        $carModels = CarModel::where('model_name', 'like', '%' . $searchInput . '%')
+            ->orderBy('model_name')
+            ->take(10) // Limit the results to 10
+            ->get();
+
+        return response()->json(['carModels' => $carModels], 200);
+    }
 }
