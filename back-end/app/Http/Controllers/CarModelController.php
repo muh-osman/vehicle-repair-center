@@ -100,6 +100,7 @@ class CarModelController extends Controller
 
 
     /**
+     * For Dashboard website
      * Search for car models based on the search input.
      */
     public function searchModels(Request $request)
@@ -119,13 +120,77 @@ class CarModelController extends Controller
     }
 
     /**
+     * For WordPress website
      * Search for car models based on the search input and return only 10 results.
      */
     public function searchModelsLimited(Request $request)
     {
+        // $searchInput = $request->input('search');
+
+        // $carModels = CarModel::where('model_name', 'like', '%' . $searchInput . '%')
+        //     ->orderBy('model_name')
+        //     ->take(10) // Limit the results to 10
+        //     ->get();
+
+        // return response()->json(['carModels' => $carModels], 200);
+
+
+
         $searchInput = $request->input('search');
 
-        $carModels = CarModel::where('model_name', 'like', '%' . $searchInput . '%')
+        // Normalize the search input for better matching
+        $normalizedInput = preg_replace('/\s+/', '', mb_strtolower($searchInput));
+
+        // Transliteration mapping (you can expand this as needed)
+        $transliterationMap = [
+            'مارس' => 'mercedes',
+            'مارسي' => 'mercedes',
+            'مارسيد' => 'mercedes',
+            'مارسيدس' => 'mercedes',
+
+            'مير' => 'mercedes',
+            'ميرس' => 'mercedes',
+            'ميرسي' => 'mercedes',
+            'ميرسيد' => 'mercedes',
+            'ميرسيدي' => 'mercedes',
+            'ميرسيديس' => 'mercedes',
+
+            'مرس' => 'mercedes',
+            'مرسي' => 'mercedes',
+            'مرسيد' => 'mercedes',
+            'مرسيدس' => 'mercedes',
+
+            'دي' => 'D Max',
+            'ديما' => 'D Max',
+            'ديماك' => 'D Max',
+            'ديماكس' => 'D Max',
+
+            'دو' => 'Charger',
+            'دوج' => 'Charger',
+            'دوج ت' => 'Charger',
+            'دوج تش' => 'Charger',
+            'دوج تشا' => 'Charger',
+            'دوج تشار' => 'Charger',
+            'دوج تشارج' => 'Charger',
+            'دوج تشارجر' => 'Charger',
+
+            'الان' => 'Elantra',
+            'الانت' => 'Elantra',
+            'الانتر' => 'Elantra',
+            'الانترا' => 'Elantra',
+
+            // Add more mappings as needed
+        ];
+
+        // Transliterate the search input
+        $transliteratedInput = $transliterationMap[$searchInput] ?? $searchInput;
+
+        $carModels = CarModel::where(function ($query) use ($searchInput, $normalizedInput, $transliteratedInput) {
+            // Search for Arabic and English variations
+            $query->where('model_name', 'like', '%' . $searchInput . '%')
+                ->orWhere('model_name', 'like', '%' . $normalizedInput . '%')
+                ->orWhere('model_name', 'like', '%' . $transliteratedInput . '%');
+        })
             ->orderBy('model_name')
             ->take(10) // Limit the results to 10
             ->get();
