@@ -14,6 +14,7 @@ import FormControl from "@mui/material/FormControl";
 import ListItemText from "@mui/material/ListItemText";
 import Select from "@mui/material/Select";
 import Checkbox from "@mui/material/Checkbox";
+import Tooltip from "@mui/material/Tooltip";
 
 import IconButton from "@mui/material/IconButton";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
@@ -56,7 +57,8 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale show
+    setIsSaleClicked(false); // Reset sale 10% show
+    setIsSale20Clicked(false); // Reset sale 20% show
   }
 
   // Manufactures logic
@@ -82,7 +84,8 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale show
+    setIsSaleClicked(false); //Reset 10% sale show
+    setIsSale20Clicked(false); // Reset sale 20% show
   }
 
   // Models logic
@@ -107,7 +110,8 @@ export default function Dashboard() {
     setSelectedYearId(""); // Reset selected year ID
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale show
+    setIsSaleClicked(false); //Reset sale 10% show
+    setIsSale20Clicked(false); // Reset sale 20% show
   }
 
   // Years logic
@@ -131,7 +135,8 @@ export default function Dashboard() {
     setSelectedYearId(yearId);
     setSelectedServicesId([]); // Reset selected service ID
     setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale show
+    setIsSaleClicked(false); //Reset sale 10% show
+    setIsSale20Clicked(false); // Reset sale 20% show
   }
 
   // Services logic
@@ -220,11 +225,24 @@ export default function Dashboard() {
     }
   };
 
+  const [isSale20Clicked, setIsSale20Clicked] = useState(false);
+  const discounted20Price = priceData * 0.8; // 20% discount
+
+  const sale10 = () => {
+    setIsSale20Clicked(false); // turn off 20% discount
+    setIsSaleClicked((prevState) => !prevState); // turn on 10% discount
+  };
+
+  const sale20 = () => {
+    setIsSaleClicked(false); // turn off 10% discount
+    setIsSale20Clicked((prevState) => !prevState); // turn on 20% discount
+  };
+
   return (
     <div className={style.container}>
       {progress()}
 
-      <h1>Dashboard</h1>
+      {/* <h1>Dashboard</h1> */}
 
       {/* Start Form  */}
       <div className={style.container_box}>
@@ -450,31 +468,52 @@ export default function Dashboard() {
               <h1
                 dir="rtl"
                 style={{ color: "#757575" }}
-                className={isSaleClicked ? "originalPrice" : ""}
+                className={
+                  isSaleClicked || isSale20Clicked ? "originalPrice" : ""
+                }
               >
                 {priceData} <span>ريال</span>
               </h1>
             )}
           </div>
 
-          {/* Price after sale */}
+          {/* Price after sale 10% */}
           {isSaleClicked && priceData && (
             <div className={style.price_box}>
-              <h1 dir="rtl" style={{ color: "#757575" }}>
+              <h1 dir="rtl" style={{ color: "#7431fa" }}>
                 {discountedPrice} <span>ريال</span>
               </h1>
             </div>
           )}
 
-          {/* Sale btn */}
+          {/* Price after sale 20% */}
+          {isSale20Clicked && priceData && selectedServicesId.includes(1) && (
+            <div className={style.price_box}>
+              <h1 dir="rtl" style={{ color: "#d32f2f" }}>
+                {discounted20Price} <span>ريال</span>
+              </h1>
+            </div>
+          )}
+
+          {/* Sale btn 10% */}
           {priceData && (
             <div className={style.saleBtn}>
-              <IconButton
-                color="primary"
-                onClick={() => setIsSaleClicked((prevState) => !prevState)}
-              >
-                <LoyaltyIcon />
-              </IconButton>
+              <Tooltip title="10%" arrow>
+                <IconButton color="primary" onClick={sale10}>
+                  <LoyaltyIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+          )}
+
+          {/* Sale btn 20% */}
+          {priceData && selectedServicesId.includes(1) && (
+            <div className={style.saleBtn_20}>
+              <Tooltip title="20%" arrow>
+                <IconButton color="error" onClick={sale20}>
+                  <LoyaltyIcon />
+                </IconButton>
+              </Tooltip>
             </div>
           )}
 

@@ -19,16 +19,16 @@ export const useLogoutApi = () => {
     },
 
     onSuccess: () => {
-      removeCookie("verified");
-      removeCookie("role");
-      removeCookie("token");
+      removeCookie("verified", { path: "/" });
+      removeCookie("role", { path: "/" });
+      removeCookie("token", { path: "/" });
     },
 
     onError: (err) => {
       console.error(err);
-      removeCookie("verified");
-      removeCookie("role");
-      removeCookie("token");
+      removeCookie("verified", { path: "/" });
+      removeCookie("role", { path: "/" });
+      removeCookie("token", { path: "/" });
     },
   });
 };
