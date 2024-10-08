@@ -26,8 +26,9 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TocIcon from "@mui/icons-material/Toc";
 import SearchIcon from "@mui/icons-material/Search";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import PriceChangeIcon from "@mui/icons-material/PriceChange";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+// import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+// import PriceChangeIcon from "@mui/icons-material/PriceChange";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -154,7 +155,32 @@ function ResponsiveDrawer(props) {
           );
         })}
 
-        {/* <Divider /> */}
+        <Divider />
+        <ListItem
+          dir="ltr"
+          key={9999999}
+          disablePadding
+          button
+          component={NavLink}
+          to="/dashboard/scan"
+          selected={pathname === "/dashboard/scan"}
+        >
+          <ListItemButton sx={{ color: "#757575" }}>
+            <ListItemIcon>
+              <Avatar
+                alt="icon"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <QrCodeScannerIcon sx={{ color: "#757575" }} />
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText primary="Scan QR" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </div>
   );

@@ -39,6 +39,9 @@ import EditPrices from "./Pages/Dashboard/EditPrices/EditPrices";
 
 import Delete from "./Pages/Dashboard/Delete/Delete";
 import NotFound from "./Pages/NotFound/NotFound";
+import Scan from "./Pages/Dashboard/Scan/Scan";
+import PaidClient from "./Pages/Dashboard/PaidClient/PaidClient";
+import UnpaidClient from "./Pages/Dashboard/UnpaidClient/UnpaidClient";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -66,6 +69,9 @@ export default function App() {
             <Route path="search" element={<Search />} />
             <Route path="car/:id" element={<Car />} />
             <Route path="table" element={<Table />} />
+            <Route path="scan" element={<Scan />} />
+            <Route path="paid-client/:id" element={<PaidClient />} />
+            <Route path="unpaid-client/:id" element={<UnpaidClient />} />
             <Route path="post/:id" element={<Post />} />
 
             {/* Super Admin only */}
