@@ -9,7 +9,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 // MUI
 import CircularProgress from "@mui/material/CircularProgress";
-
+// Api
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
 export default function PaidClient() {

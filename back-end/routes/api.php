@@ -87,4 +87,8 @@ Route::middleware('guest')->group(function () {
 
     // Getting prices by car model ID and year ID
     Route::get('get-prices-by-model-and-year', [PriceController::class, 'getPricesByModelAndYear']);
+
+    // Getting discounted prices by car model ID and year ID
+    Route::get('get-discounted-prices-by-model-and-year', [PriceController::class, 'getDiscountedPricesByModelAndYear']);
+
 });

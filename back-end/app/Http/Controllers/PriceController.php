@@ -286,4 +286,46 @@ class PriceController extends Controller
 
         return response()->json($prices->values());
     }
+
+    public function getDiscountedPricesByModelAndYear(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $carModelId = $request->query('car_model_id');
+        $yearId = $request->query('year_id');
+
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $carModelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                return [
+                    'model_name' => $carModel->model_name,
+                    'manufacturer_name' => $manufacturer->manufacture_name,
+                    'prices' => $groupedPrices->map(function ($price) {
+                        $discountedPrice = $price->service->service_name === "شامل"
+                            ? $price->price * 0.8 // Apply 20% discount
+                            : $price->price;
+
+                        return [
+                            'service_name' => $price->service->service_name,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // No thousands separator
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($prices->values());
+    }
 }
