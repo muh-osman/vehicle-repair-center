@@ -1,14 +1,14 @@
 import style from "./PaidClient.module.scss";
 //
 import { useEffect, useState } from "react";
-// Cookies
-import { useCookies } from "react-cookie";
 // Axios
 import axios from "axios";
 //
 import { useParams } from "react-router-dom";
 // MUI
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 // Api
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
@@ -70,6 +70,18 @@ export default function PaidClient() {
         </div>
       ) : null}
 
+      {data?.date_of_visited && (
+        <Stack
+          sx={{ width: "100%", direction: "rtl", textAlign: "right" }}
+          spacing={2}
+          dir="rtl"
+        >
+          <Alert severity="warning">
+            تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}
+          </Alert>
+        </Stack>
+      )}
+
       {data && (
         <div className={style.table_container} dir="rtl">
           <table>
@@ -114,24 +126,28 @@ export default function PaidClient() {
                 </td>
               </tr>
 
-              {data?.metadata?.service && (
-                <tr>
-                  <td>الخدمة:</td>
-                  <td>{data?.metadata?.service}</td>
-                </tr>
-              )}
+              <tr>
+                <td>الخدمة:</td>
+                <td>
+                  {data?.metadata?.service
+                    ? data?.metadata?.service
+                    : "العادية"}
+                </td>
+              </tr>
 
               <tr>
-                <td>فحص:</td>
+                <td>الباقة:</td>
                 <td>{data?.metadata?.plan}</td>
               </tr>
 
-              {data?.metadata?.additionalServices && (
-                <tr>
-                  <td>الخدمات الاضافية:</td>
-                  <td>{data?.metadata?.additionalServices}</td>
-                </tr>
-              )}
+              <tr>
+                <td>الخدمات الاضافية:</td>
+                <td>
+                  {data?.metadata?.additionalServices
+                    ? data?.metadata?.additionalServices
+                    : "لا يوجد"}
+                </td>
+              </tr>
 
               <tr>
                 <td>موديل:</td>

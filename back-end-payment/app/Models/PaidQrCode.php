@@ -20,5 +20,6 @@ class PaidQrCode extends Model
         'year',
         'additionalServices',
         'service',
+        'date_of_visited',
     ];
 }

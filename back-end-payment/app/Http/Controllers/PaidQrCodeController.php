@@ -66,6 +66,7 @@ class PaidQrCodeController extends Controller
                     'year' => $metadata['year'] ?? null,
                     'additionalServices' => $metadata['additionalServices'] ?? null,
                     'service' => $metadata['service'] ?? null,
+                    'date_of_visited' => null, // Set date_of_visited to null
                 ]);
 
                 // Send notification to multiple recipients
@@ -103,10 +104,10 @@ class PaidQrCodeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($id) // $id is: رقم الفاتورة
     {
         // Validate the ID
-        if (empty($id) || !is_string($id)) { // $id هو الرقم المرجع للدفعة التي تم إرسالها من البوابة الخاصة بنا
+        if (empty($id) || !is_string($id)) {
             return response()->json(['error' => 'Invalid ID provided'], 400);
         }
 
@@ -119,7 +120,22 @@ class PaidQrCodeController extends Controller
 
             if ($response->successful()) {
                 $responseData = $response->json();
-                return response()->json($responseData);
+
+                // Find the corresponding PaidQrCode entry
+                $qrCode = PaidQrCode::where('paid_qr_code', $id)->first();
+
+                // Append date_of_visited to the response data before updating
+                if ($qrCode) {
+                    $responseData['date_of_visited'] = $qrCode->date_of_visited; // Add current date_of_visited to response
+                }
+
+                // Update the date_of_visited only if it is null
+                if ($qrCode && is_null($qrCode->date_of_visited)) {
+                    $qrCode->date_of_visited = now(); // Set to current date and time
+                    $qrCode->save(); // Save the updated record
+                }
+
+                return response()->json($responseData); // Return the modified response
             } elseif ($response->status() == 404) {
                 return response()->json(['error' => 'Payment not found'], 404);
             } else {

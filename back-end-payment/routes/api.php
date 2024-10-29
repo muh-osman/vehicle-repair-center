@@ -57,4 +57,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/get-unpaid-payment/{id}', [UnPaidQrCodeController::class, 'show']);
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
+
+    Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 });

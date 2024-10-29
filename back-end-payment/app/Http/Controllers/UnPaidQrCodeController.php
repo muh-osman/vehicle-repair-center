@@ -35,8 +35,10 @@ class UnPaidQrCodeController extends Controller
             'service' => 'nullable|string|max:255',
         ]);
 
-        // Create a new UnPaidQrCode entry
-        $unPaidQrCode = UnPaidQrCode::create($validatedData);
+        // Create a new UnPaidQrCode entry with date_of_visited as null
+        $unPaidQrCode = UnPaidQrCode::create(array_merge($validatedData, [
+            'date_of_visited' => null, // Set date_of_visited to null
+        ]));
 
         // Return a response (could be a redirect or a JSON response)
         return response()->json([
@@ -49,7 +51,7 @@ class UnPaidQrCodeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id) //  $id هو الرقم العشوائي الذي تم توليده وتخزرينه في العمود: "un_paid_qr_code"
+    public function show($id) // $id هو الرقم العشوائي الذي تم توليده وتخزرينه في العمود: "un_paid_qr_code"
     {
         // Find the UnPaidQrCode by the un_paid_qr_code value
         $unPaidQrCode = UnPaidQrCode::where('un_paid_qr_code', $id)->first();
@@ -61,11 +63,22 @@ class UnPaidQrCodeController extends Controller
             ], 404);
         }
 
+        // Store the current value of date_of_visited before updating
+        $currentDateOfVisited = $unPaidQrCode->date_of_visited;
 
-        // Return the found record
+        // Update the date_of_visited to the current date and time only if it is null
+        if (is_null($unPaidQrCode->date_of_visited)) {
+            $unPaidQrCode->date_of_visited = now(); // Set to current date and time
+            $unPaidQrCode->save(); // Save the updated record
+        }
+
+        // Return the found record, including the original date_of_visited
         return response()->json([
             'message' => 'UnPaid QR Code retrieved successfully',
-            'data' => $unPaidQrCode,
+            'data' => [
+                'un_paid_qr_code' => $unPaidQrCode,
+                'date_of_visited' => $currentDateOfVisited, // Return the original value
+            ],
         ], 200);
     }
 
@@ -102,5 +115,22 @@ class UnPaidQrCodeController extends Controller
 
         // Return the sorted data as a JSON response
         return response()->json($sortedQrCodes->values()->all(), 200);
+    }
+
+
+    /**
+     * Get all phone numbers from both paid and unpaid QR code tables with their corresponding QR codes.
+     */
+    public function getAllPhonesWithQrCodes()
+    {
+        // Retrieve all records from both tables
+        $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get();
+        $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code')->get();
+
+        // Combine the results into a single collection
+        $allPhones = $paidQrCodes->concat($unPaidQrCodes);
+
+        // Return the combined data as a JSON response
+        return response()->json($allPhones, 200);
     }
 }

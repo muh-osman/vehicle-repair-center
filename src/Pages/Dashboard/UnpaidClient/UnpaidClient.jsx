@@ -7,6 +7,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 // MUI
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
@@ -68,28 +70,52 @@ export default function UnpaidClient() {
         </div>
       ) : null}
 
+      {data?.date_of_visited && (
+        <Stack
+          sx={{ width: "100%", direction: "rtl", textAlign: "right" }}
+          spacing={2}
+          dir="rtl"
+        >
+          <Alert severity="warning" dir="rtl">
+            تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}
+          </Alert>
+        </Stack>
+      )}
+
       {data && (
         <div className={style.table_container} dir="rtl">
           <table>
             <tbody>
               <tr>
                 <td>اسم العميل:</td>
-                <td>{data?.full_name ? data?.full_name : "غير متوفر"}</td>
+                <td>
+                  {data?.un_paid_qr_code?.full_name
+                    ? data?.un_paid_qr_code?.full_name
+                    : "غير متوفر"}
+                </td>
               </tr>
 
               <tr>
                 <td>رقم الهاتف:</td>
-                <td>{data?.phone ? data?.phone : "غير متوفر"}</td>
+                <td>
+                  {data?.un_paid_qr_code?.phone
+                    ? data?.un_paid_qr_code?.phone
+                    : "غير متوفر"}
+                </td>
               </tr>
 
               <tr>
                 <td>الفرع:</td>
-                <td>{data?.branch ? data?.branch : "غير متوفر"}</td>
+                <td>
+                  {data?.un_paid_qr_code?.branch
+                    ? data?.un_paid_qr_code?.branch
+                    : "غير متوفر"}
+                </td>
               </tr>
 
               <tr>
                 <td>المبلغ:</td>
-                <td>SAR {data?.price}</td>
+                <td>SAR {data?.un_paid_qr_code?.price}</td>
               </tr>
 
               <tr>
@@ -104,45 +130,55 @@ export default function UnpaidClient() {
                 </td>
               </tr>
 
-              {data?.service && (
-                <tr>
-                  <td>الخدمة:</td>
-                  <td>{data?.service}</td>
-                </tr>
-              )}
-
               <tr>
-                <td>فحص:</td>
-                <td>{data?.plan}</td>
+                <td>الخدمة:</td>
+                <td>
+                  {data?.un_paid_qr_code?.service
+                    ? data?.un_paid_qr_code?.service
+                    : "العادية"}
+                </td>
               </tr>
 
-              {data?.additionalServices && (
-                <tr>
-                  <td>الخدمات الاضافية:</td>
-                  <td>{data?.additionalServices}</td>
-                </tr>
-              )}
+              <tr>
+                <td>الباقة:</td>
+                <td>{data?.un_paid_qr_code?.plan}</td>
+              </tr>
+
+              <tr>
+                <td>الخدمات الاضافية:</td>
+                <td>
+                  {data?.un_paid_qr_code?.additionalServices
+                    ? data?.un_paid_qr_code?.additionalServices
+                    : "لا يوجد"}
+                </td>
+              </tr>
 
               <tr>
                 <td>موديل:</td>
-                <td>{data?.model}</td>
+                <td>{data?.un_paid_qr_code?.model}</td>
               </tr>
 
               <tr>
                 <td>تاريخ الصنع:</td>
-                <td>{data?.year === "2" ? "2015 أو اعلى" : "2014 أو ادنى"}</td>
+                <td>
+                  {data?.un_paid_qr_code?.year === "2"
+                    ? "2015 أو اعلى"
+                    : "2014 أو ادنى"}
+                </td>
               </tr>
 
               <tr>
                 <td>تاريخ:</td>
                 <td dir="ltr">
-                  {data?.created_at ? formatDate(data.created_at) : "غير متوفر"}
+                  {data?.un_paid_qr_code?.created_at
+                    ? formatDate(data.un_paid_qr_code.created_at)
+                    : "غير متوفر"}
                 </td>
               </tr>
 
               <tr>
                 <td>ID:</td>
-                <td>{data?.un_paid_qr_code}</td>
+                <td>{data?.un_paid_qr_code?.un_paid_qr_code}</td>
               </tr>
             </tbody>
           </table>

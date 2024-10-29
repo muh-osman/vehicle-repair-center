@@ -5,6 +5,13 @@ import { QrReader } from "react-qr-reader";
 import { useEffect, useState } from "react";
 //
 import { useNavigate } from "react-router-dom";
+// MUI
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+// Axios
+import axios from "axios";
+// Api
+const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
 export default function Scan() {
   // qr Scan Sound Effect
@@ -14,7 +21,6 @@ export default function Scan() {
 
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState(null);
-
   const navigate = useNavigate();
 
   const scanUserId = async () => {
@@ -39,9 +45,41 @@ export default function Scan() {
     }
   }, [scanResult]);
 
+  // Fetch phone numbers from API
+
+  const [phoneNumbersData, setPhoneNumbersData] = useState([]);
+  const [loadding, setLoadding] = useState(false);
+
+  const fetchPhoneNumbers = async () => {
+    try {
+      setLoadding(true);
+
+      const response = await axios.get(
+        `${apiUrl}api/get-all-phones-with-their-qr-codes`
+      );
+      // console.log(response.data);
+      setPhoneNumbersData(response.data);
+
+      setLoadding(false);
+    } catch (err) {
+      console.log(err);
+      setLoadding(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPhoneNumbers();
+  }, []);
+
+  const handleSelecteChange = (event, value) => {
+    if (value) {
+      setScanResult(value.qr_code);
+    }
+  };
+
   return (
     <div className={style.container}>
-      <h1>Scan</h1>
+      {/* <h1>Scan</h1> */}
 
       <div className={style.qr_box}>
         <QrReader
@@ -61,8 +99,37 @@ export default function Scan() {
 
         {/* <pre>{scanResult && scanResult}</pre> */}
 
+        <Autocomplete
+          disablePortal
+          options={phoneNumbersData.map((item) => ({
+            phone: item.phone,
+            qr_code: item.qr_code,
+          }))}
+          getOptionLabel={(option) => option.phone}
+          onChange={handleSelecteChange}
+          loading={loadding}
+          sx={{ width: "101%", marginTop: "32px", backgroundColor: "white" }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Phone Number"
+              sx={{ marginLeft: "-2px" }}
+            />
+          )}
+          renderOption={(props, option) => (
+            <li {...props} key={option.qr_code}>
+              {option.phone}
+            </li>
+          )}
+          isOptionEqualToValue={(option, value) =>
+            option.qr_code === value.qr_code
+          } // Custom equality check
+        />
+
         {/* Fetch error */}
-        {error && <pre>{error}</pre>}
+        {error && (
+          <pre style={{ color: "red", overflow: "hidden" }}>{error}</pre>
+        )}
       </div>
     </div>
   );

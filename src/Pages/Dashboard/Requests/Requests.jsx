@@ -195,10 +195,11 @@ export default function Requests() {
         service: client.service,
         created_at: client.created_at,
         status: client.un_paid_qr_code ? "Unpaid" : "Paid", // Optional: Add a status based on QR code
+        visited: client.date_of_visited
       }));
       // console.log(response.data);
       setData(transformedData);
-      console.log(transformedData);
+      // console.log(transformedData);
 
       setLoadding(false);
     } catch (err) {
@@ -239,6 +240,7 @@ export default function Requests() {
       service: client.service,
       additionalServices: client.additionalServices,
       created_at: client.created_at,
+      visited: client.visited
     })) || [];
 
   // Responsive table
@@ -289,8 +291,8 @@ export default function Requests() {
               paginationModel: { page: 0, pageSize: 100 },
             },
           }}
+          checkboxSelection={false} // Disable checkbox selection
           pageSizeOptions={[10, 25, 50, 100]}
-          checkboxSelection
           disableMultipleRowSelection
           // disableColumnFilter // Disable filtering
           disableColumnSort // Disable sorting
@@ -299,6 +301,9 @@ export default function Requests() {
           style={{ width: "100%", height: "100%", overflowX: "auto" }}
           filterModel={filterModel} // Set the filter model
           onFilterModelChange={(model) => setFilterModel(model)} // Update filter model on change
+          getRowClassName={(params) => {
+            return params.row.visited ? "visited" : "notVisited";
+          }}
         />
       </div>
     </div>

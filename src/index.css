@@ -24,3 +24,13 @@ th {
   text-decoration: line-through;
   color: #757575;
 }
+
+/*  */
+.visited {
+  background-color: #299bd8;
+  color: #fff;
+}
+
+.visited:hover {
+  color: #299bd8;
+}
