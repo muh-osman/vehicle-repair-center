@@ -1,5 +1,5 @@
 .container {
-  min-height: calc(100vh - 112px);
+  min-height: calc(100vh - 178px);
 
   & * {
     font-family: "Cairo", sans-serif !important;
@@ -19,7 +19,7 @@
 
 @media (max-width: 600px) {
   .container {
-    min-height: calc(100vh - 104px);
+    min-height: calc(100vh - 345px);
   }
 
   .progressContainer {
@@ -29,9 +29,9 @@
 
 // Responsive table
 .datagrid_container {
-  height: calc(100vh - 112px);
+  height: calc(100vh - 178px);
 
   @media (max-width: 600px) {
-    height: calc(100vh - 104px);
+    height: calc(100vh - 345px);
   }
 }

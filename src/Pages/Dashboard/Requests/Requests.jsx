@@ -1,6 +1,8 @@
 import style from "./Requests.module.scss";
 import { useState, useEffect } from "react";
 // MUI
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
 // Axios
@@ -169,9 +171,7 @@ export default function Requests() {
 
   const [loadding, setLoadding] = useState(false);
   const [data, setData] = useState([]);
-  const [filterModel, setFilterModel] = useState({
-    items: [],
-  });
+  const [activeButton, setActiveButton] = useState("all");
 
   const scanUserPayment = async () => {
     try {
@@ -195,7 +195,7 @@ export default function Requests() {
         service: client.service,
         created_at: client.created_at,
         status: client.un_paid_qr_code ? "Unpaid" : "Paid", // Optional: Add a status based on QR code
-        visited: client.date_of_visited
+        visited: client.date_of_visited,
       }));
       // console.log(response.data);
       setData(transformedData);
@@ -225,11 +225,11 @@ export default function Requests() {
     return date.toLocaleString("en-GB", options).replace(",", " at");
   };
 
-  const rows =
-    data?.map((client, index) => ({
+  const rows = data
+    .map((client) => ({
       id: client.qr_code,
-      barCode: client.qr_code, // Use the unified qr_code
-      status: client.status, // Optional: Use the status if you added it
+      barCode: client.qr_code,
+      status: client.status,
       name: client.full_name,
       phone: client.phone,
       branch: client.branch,
@@ -240,8 +240,15 @@ export default function Requests() {
       service: client.service,
       additionalServices: client.additionalServices,
       created_at: client.created_at,
-      visited: client.visited
-    })) || [];
+      visited: client.visited,
+    }))
+    .filter((client) => {
+      if (activeButton === "all") return true;
+      if (activeButton === "paid") return client.status === "Paid";
+      if (activeButton === "unpaid") return client.status === "Unpaid";
+      if (activeButton === "visited") return client.visited; // Assuming visited is truthy if visited
+      return true; // Fallback
+    });
 
   // Responsive table
   const [containerWidth, setContainerWidth] = useState(
@@ -269,6 +276,11 @@ export default function Requests() {
     };
   }, []);
 
+  // Filtter Button
+  const handleButtonClick = (buttonType) => {
+    setActiveButton(buttonType);
+  };
+
   return (
     <div className={style.container}>
       {loadding && (
@@ -276,6 +288,66 @@ export default function Requests() {
           <LinearProgress />
         </div>
       )}
+
+      <Stack
+        sx={{ pb: 3, maxWidth: "617px", margin: "auto" }}
+        spacing={2}
+        justifyContent="center"
+        direction={{ xs: "column", sm: "row" }}
+        alignItems="stretch"
+      >
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="primary"
+          size="large"
+          variant={activeButton === "all" ? "contained" : "outlined"}
+          onClick={() => handleButtonClick("all")}
+        >
+          All
+        </Button>
+
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="success"
+          size="large"
+          variant={activeButton === "paid" ? "contained" : "outlined"}
+          onClick={() => handleButtonClick("paid")}
+        >
+          Paid
+        </Button>
+
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="error"
+          size="large"
+          variant={activeButton === "unpaid" ? "contained" : "outlined"}
+          onClick={() => handleButtonClick("unpaid")}
+        >
+          Unpaid
+        </Button>
+
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="info"
+          size="large"
+          variant={activeButton === "visited" ? "contained" : "outlined"}
+          onClick={() => handleButtonClick("visited")}
+        >
+          Visited
+        </Button>
+      </Stack>
 
       <div
         className={style.datagrid_container}
@@ -299,8 +371,6 @@ export default function Requests() {
           disableMultipleColumnSorting // Disable multiple column sorting
           // disableColumnMenu // Hide column menu
           style={{ width: "100%", height: "100%", overflowX: "auto" }}
-          filterModel={filterModel} // Set the filter model
-          onFilterModelChange={(model) => setFilterModel(model)} // Update filter model on change
           getRowClassName={(params) => {
             return params.row.visited ? "visited" : "notVisited";
           }}
