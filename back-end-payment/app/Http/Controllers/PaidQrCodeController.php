@@ -41,7 +41,7 @@ class PaidQrCodeController extends Controller
         ]);
 
         // Secret Key
-        $apiKey = '';
+        $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY');
 
         $response = Http::withBasicAuth($apiKey, '')
             ->get("https://api.moyasar.com/v1/payments/{$validatedData['paid_qr_code']}");
@@ -112,7 +112,7 @@ class PaidQrCodeController extends Controller
         }
 
         // Secret Key
-        $apiKey = '';
+        $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY');
 
         try {
             $response = Http::withBasicAuth($apiKey, '')
