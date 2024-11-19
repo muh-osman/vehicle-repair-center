@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaidQrCodeController;
 use App\Http\Controllers\UnPaidQrCodeController;
+use App\Http\Controllers\TamaraPaidClientController;
 
 
 
@@ -52,9 +53,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/save-unpaid-qr-code', [UnPaidQrCodeController::class, 'store']);
 
+    Route::post('/pay-with-tamara', [TamaraPaidClientController::class, 'processPayment']); // checkout
+    Route::post('/save-tamara-paid-client', [TamaraPaidClientController::class, 'store']); // authorize then capture then get order status then save and send notification
 
-    Route::get('/get-paid-payment/{id}', [PaidQrCodeController::class, 'show']);
+
+
+
+    Route::get('/get-paid-payment/{id}', [PaidQrCodeController::class, 'show']); // Moyasar
     Route::get('/get-unpaid-payment/{id}', [UnPaidQrCodeController::class, 'show']);
+    Route::get('/get-tamara-paid-client/{id}', [TamaraPaidClientController::class, 'show']); // Tamara
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
 

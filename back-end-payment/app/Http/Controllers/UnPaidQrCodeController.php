@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\PaidQrCode;
 use App\Models\UnPaidQrCode;
+use App\Models\TamaraPaidClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class UnPaidQrCodeController extends Controller
 {
@@ -106,9 +109,10 @@ class UnPaidQrCodeController extends Controller
         // Retrieve all records from both tables
         $paidQrCodes = PaidQrCode::all();
         $unPaidQrCodes = UnPaidQrCode::all();
+        $tamaraPaidClients = TamaraPaidClient::all();
 
         // Combine the results into a single collection
-        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes);
+        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)->concat($tamaraPaidClients);
 
         // Sort the combined collection by created_at date
         $sortedQrCodes = $allQrCodes->sortBy('created_at');
@@ -125,10 +129,14 @@ class UnPaidQrCodeController extends Controller
     {
         // Retrieve all records from both tables
         $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get();
+
+        // Retrieve all records from the tamara_paid_clients table and add "tamara" prefix to paid_qr_code
+        $tamaraPaidClients = TamaraPaidClient::select('phone', \DB::raw("CONCAT('tamara', paid_qr_code) as qr_code"))->get();
+
         $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code')->get();
 
         // Combine the results into a single collection
-        $allPhones = $paidQrCodes->concat($unPaidQrCodes);
+        $allPhones = $paidQrCodes->concat($unPaidQrCodes)->concat($tamaraPaidClients);
 
         // Return the combined data as a JSON response
         return response()->json($allPhones, 200);

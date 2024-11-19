@@ -13,13 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class PaidQrCodeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -146,20 +139,4 @@ class PaidQrCodeController extends Controller
         }
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, PaidQrCode $paidQrCode)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(PaidQrCode $paidQrCode)
-    {
-        //
-    }
 }

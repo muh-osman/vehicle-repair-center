@@ -29,8 +29,12 @@ export default function Scan() {
       if (scanResult.length === 14) {
         // UnPaid user
         navigate(`/dashboard/unpaid-client/${scanResult}`);
+      } else if (scanResult.startsWith("tamara")) {
+        // Tamara payment
+        const trimmedScanResult = scanResult.replace(/^tamara/, ""); // Remove "tamara" from the beginning of scanResult
+        navigate(`/dashboard/tamara-client/${trimmedScanResult}`);
       } else {
-        // Paid user
+        // Moyasar payment
         navigate(`/dashboard/paid-client/${scanResult}`);
       }
     } catch (err) {
@@ -46,7 +50,6 @@ export default function Scan() {
   }, [scanResult]);
 
   // Fetch phone numbers from API
-
   const [phoneNumbersData, setPhoneNumbersData] = useState([]);
   const [loadding, setLoadding] = useState(false);
 
@@ -57,6 +60,7 @@ export default function Scan() {
       const response = await axios.get(
         `${apiUrl}api/get-all-phones-with-their-qr-codes`
       );
+
       // console.log(response.data);
       setPhoneNumbersData(response.data);
 

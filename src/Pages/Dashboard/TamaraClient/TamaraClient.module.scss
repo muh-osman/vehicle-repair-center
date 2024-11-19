@@ -1,0 +1,80 @@
+.container {
+  min-height: calc(100vh - 112px);
+
+  & * {
+    font-family: "Cairo", sans-serif !important;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .start_contract_box {
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-left: 12px;
+
+    @media (max-width: 600px) {
+      padding-right: 0 !important;
+      padding-top: 0 !important;
+      padding-left: 0px;
+    }
+  }
+
+  .end_contract_box {
+    padding-top: 0 !important;
+    padding-right: 12px;
+
+    @media (max-width: 600px) {
+      padding-right: 0 !important;
+      padding-top: 24px !important;
+    }
+  }
+}
+
+.progressContainer {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+
+  span {
+    height: 2px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    min-height: calc(100vh - 104px);
+  }
+
+  .progressContainer {
+    top: 56px;
+  }
+}
+
+.table_container {
+  table {
+    // font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td {
+    border: 1px solid #dddddd;
+    text-align: center;
+    padding: 8px;
+    width: 50%;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+}
+
+.warn {
+  color: red;
+  margin-top: 16px;
+}

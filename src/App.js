@@ -41,6 +41,7 @@ import Delete from "./Pages/Dashboard/Delete/Delete";
 import NotFound from "./Pages/NotFound/NotFound";
 import Scan from "./Pages/Dashboard/Scan/Scan";
 import PaidClient from "./Pages/Dashboard/PaidClient/PaidClient";
+import TamaraClient from "./Pages/Dashboard/TamaraClient/TamaraClient";
 import UnpaidClient from "./Pages/Dashboard/UnpaidClient/UnpaidClient";
 import Requests from "./Pages/Dashboard/Requests/Requests";
 
@@ -72,7 +73,9 @@ export default function App() {
             <Route path="table" element={<Table />} />
             <Route path="scan" element={<Scan />} />
             <Route path="paid-client/:id" element={<PaidClient />} />
+            <Route path="tamara-client/:id" element={<TamaraClient />} />
             <Route path="unpaid-client/:id" element={<UnpaidClient />} />
+
             <Route path="requests" element={<Requests />} />
             <Route path="post/:id" element={<Post />} />
 
