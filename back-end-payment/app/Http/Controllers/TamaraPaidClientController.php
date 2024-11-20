@@ -40,11 +40,10 @@ class TamaraPaidClientController extends Controller
 
 
     /**
-     * Store a newly created resource in storage.
+     * This method will take "paid_qr_code(orderId of Tamara)" then "Authorise the Order" of Tamara payment then "Capture" the payment then "Get the order status" then "Save" the data in the database
      */
     public function store(Request $request)
     {
-        // Validate the incoming request data
         try {
             $validatedData = $request->validate([
                 'paid_qr_code' => 'required|string|unique:tamara_paid_clients,paid_qr_code',
@@ -70,7 +69,7 @@ class TamaraPaidClientController extends Controller
         $orderId = $validatedData['paid_qr_code'];
 
         try {
-            // Authorize order
+            // Authorize the order usig tamara api
             $authorizeResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
                 'Content-Type' => 'application/json',
@@ -82,7 +81,7 @@ class TamaraPaidClientController extends Controller
 
             $authoriseOrder = $authorizeResponse->json();
 
-            // Capture payment
+            // Capture the payment using tamara api
             $captureResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
                 'Content-Type' => 'application/json',
@@ -104,7 +103,7 @@ class TamaraPaidClientController extends Controller
 
             $capturePayment = $captureResponse->json();
 
-            // Get order status
+            // Get order status using tamara api
             $statusResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
                 'Content-Type' => 'application/json',
