@@ -13,14 +13,25 @@ const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 export default function Requests() {
   const columns = [
     {
-      field: "barCode",
-      headerName: "Reference Number",
+      field: "index",
+      headerName: "No.",
+      width: 70,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "created_at",
+      headerName: "Date",
       flex: 1,
-      minWidth: 150,
+      minWidth: 200,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
+      renderCell: (params) => {
+        return formatDate(params.value); // Use the formatDate function to format the date
+      },
     },
     {
       field: "status",
@@ -155,17 +166,14 @@ export default function Requests() {
       },
     },
     {
-      field: "created_at",
-      headerName: "Date",
+      field: "barCode",
+      headerName: "Reference Number",
       flex: 1,
-      minWidth: 200,
+      minWidth: 150,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
-      renderCell: (params) => {
-        return formatDate(params.value); // Use the formatDate function to format the date
-      },
     },
   ];
 
@@ -226,9 +234,9 @@ export default function Requests() {
   };
 
   const rows = data
-    .map((client) => ({
-      id: client.qr_code,
-      barCode: client.qr_code,
+    .map((client, index) => ({
+      index: index + 1,
+      created_at: client.created_at,
       status: client.status,
       name: client.full_name,
       phone: client.phone,
@@ -239,8 +247,9 @@ export default function Requests() {
       year: client.year,
       service: client.service,
       additionalServices: client.additionalServices,
-      created_at: client.created_at,
       visited: client.visited,
+      id: client.qr_code,
+      barCode: client.qr_code,
     }))
     .filter((client) => {
       if (activeButton === "all") return true;

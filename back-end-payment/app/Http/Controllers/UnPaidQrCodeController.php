@@ -111,8 +111,13 @@ class UnPaidQrCodeController extends Controller
         $unPaidQrCodes = UnPaidQrCode::all();
         $tamaraPaidClients = TamaraPaidClient::all();
 
+        // Filter out records in $tamaraPaidClients where full_name, phone, and plan are null
+        $filteredTamaraPaidClients = $tamaraPaidClients->filter(function ($client) {
+            return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+        });
+
         // Combine the results into a single collection
-        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)->concat($tamaraPaidClients);
+        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)->concat($filteredTamaraPaidClients);
 
         // Sort the combined collection by created_at date
         $sortedQrCodes = $allQrCodes->sortBy('created_at');
@@ -120,6 +125,7 @@ class UnPaidQrCodeController extends Controller
         // Return the sorted data as a JSON response
         return response()->json($sortedQrCodes->values()->all(), 200);
     }
+
 
 
     /**

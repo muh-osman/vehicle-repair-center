@@ -53,14 +53,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/save-unpaid-qr-code', [UnPaidQrCodeController::class, 'store']);
 
-    Route::post('/pay-with-tamara', [TamaraPaidClientController::class, 'processPayment']); // checkout
-    Route::post('/save-tamara-paid-client', [TamaraPaidClientController::class, 'store']); // authorize then capture then get order status then save and send notification
+    Route::post('/pay-with-tamara', [TamaraPaidClientController::class, 'processPayment']); // cerate checkout url using Tamara api
+    Route::post('/tamara-authorize-webhook', [TamaraPaidClientController::class, 'authorizeWebhook']); // convert Tamara order from "approved" to "authorized"
+    Route::post('/tamara-capture-webhook', [TamaraPaidClientController::class, 'captureWebhook']); // convert Tamara order from "authorized" to "captured"
+    Route::post('/tamara-store-webhook', [TamaraPaidClientController::class, 'storeInDb']); // Store captured order in database
 
 
-
-
+    // Dashboard api (cashif.online)
     Route::get('/get-paid-payment/{id}', [PaidQrCodeController::class, 'show']); // Moyasar
-    Route::get('/get-unpaid-payment/{id}', [UnPaidQrCodeController::class, 'show']);
+    Route::get('/get-unpaid-payment/{id}', [UnPaidQrCodeController::class, 'show']); // Unpaid
     Route::get('/get-tamara-paid-client/{id}', [TamaraPaidClientController::class, 'show']); // Tamara
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);

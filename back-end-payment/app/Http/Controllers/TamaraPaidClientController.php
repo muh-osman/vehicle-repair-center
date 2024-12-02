@@ -14,7 +14,7 @@ class TamaraPaidClientController extends Controller
 {
 
 
-    // checkout function to process the payment and redirect to tamara che
+    // checkout function (this method will call the tamara api to create a checkout session and redirect the user to tamara checkout page)
     public function processPayment(Request $request)
     {
         // Get the order data directly from the request
@@ -40,155 +40,381 @@ class TamaraPaidClientController extends Controller
 
 
     /**
-     * This method will take "paid_qr_code(orderId of Tamara)" then "Authorise the Order" of Tamara payment then "Capture" the payment then "Get the order status" then "Save" the data in the database
+     * This method will take "paid_qr_code(orderId of Tamara) from Tamara webhook " then "Authorise the Order" of Tamara payment then "Capture" the payment then "Get the order status" then "Save" the data in the database
      */
-    public function store(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'paid_qr_code' => 'required|string|unique:tamara_paid_clients,paid_qr_code',
-                'full_name' => 'nullable|string|max:255',
-                'phone' => 'nullable|string|max:20',
-                'branch' => 'nullable|string|max:255',
-                'plan' => 'nullable|string|max:255',
-                'price' => 'nullable|numeric|min:0',
-                'model' => 'nullable|string|max:255',
-                'year' => 'nullable|string|max:255',
-                'additionalServices' => 'nullable|string|max:255',
-                'service' => 'nullable|string|max:255',
-            ]);
-        } catch (ValidationException $e) {
-            Log::error("Validation failed: " . $e->getMessage(), ['errors' => $e->errors()]);
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422); // 422 Unprocessable Entity
-        }
+    // public function authorizeWebhook(Request $request)
+    // {
+    //     try {
+    //         \Log::info('Webhook received:', $request->all());
 
-        // Extract the orderId from the validated data
-        $orderId = $validatedData['paid_qr_code'];
+    //         // Assign order_id to paid_qr_code for validation
+    //         $request->merge(['paid_qr_code' => $request->input('order_id')]);
 
-        try {
-            // Authorize the order usig tamara api
-            $authorizeResponse = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
-                'Content-Type' => 'application/json',
-            ])->post(env('TAMARA_API_URL') . "/orders/{$orderId}/authorise");
+    //         $validatedData = $request->validate([
+    //             'paid_qr_code' => 'required|string|unique:tamara_paid_clients,paid_qr_code',
+    //             'full_name' => 'nullable|string|max:255',
+    //             'phone' => 'nullable|string|max:20',
+    //             'branch' => 'nullable|string|max:255',
+    //             'plan' => 'nullable|string|max:255',
+    //             'price' => 'nullable|numeric|min:0',
+    //             'model' => 'nullable|string|max:255',
+    //             'year' => 'nullable|string|max:255',
+    //             'additionalServices' => 'nullable|string|max:255',
+    //             'service' => 'nullable|string|max:255',
+    //         ]);
+    //     } catch (ValidationException $e) {
+    //         Log::error("Validation failed: " . $e->getMessage(), ['errors' => $e->errors()]);
+    //         return response()->json([
+    //             'message' => 'Validation failed',
+    //             'errors' => $e->errors()
+    //         ], 422); // 422 Unprocessable Entity
+    //     }
 
-            if ($authorizeResponse->failed()) {
-                throw new \Exception("Authorization failed! Status: " . $authorizeResponse->status(), $authorizeResponse->status());
-            }
+    //     // Extract the orderId from the validated data
+    //     $orderId = $validatedData['paid_qr_code'];
 
-            $authoriseOrder = $authorizeResponse->json();
+    //     try {
+    //         // Authorize the order usig tamara api
+    //         $authorizeResponse = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+    //             'Content-Type' => 'application/json',
+    //         ])->post(env('TAMARA_API_URL') . "/orders/{$orderId}/authorise");
 
-            // Capture the payment using tamara api
-            $captureResponse = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
-                'Content-Type' => 'application/json',
-            ])->post(env('TAMARA_API_URL') . "/payments/capture", [
-                'order_id' => $authoriseOrder['order_id'],
-                'total_amount' => [
-                    'amount' => $authoriseOrder['authorized_amount']['amount'],
-                    'currency' => 'SAR',
-                ],
-                'shipping_info' => [
-                    'shipped_at' => '2024-03-31T19:19:52.677Z',
-                    'shipping_company' => 'Cashif',
-                ],
-            ]);
+    //         if ($authorizeResponse->failed()) {
+    //             throw new \Exception("Authorization failed! Status: " . $authorizeResponse->status(), $authorizeResponse->status());
+    //         }
 
-            if ($captureResponse->failed()) {
-                throw new \Exception("Capture failed! Status: " . $captureResponse->status(), $captureResponse->status());
-            }
+    //         $authoriseOrder = $authorizeResponse->json();
 
-            $capturePayment = $captureResponse->json();
+    //         // Capture the payment using tamara api
+    //         $captureResponse = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+    //             'Content-Type' => 'application/json',
+    //         ])->post(env('TAMARA_API_URL') . "/payments/capture", [
+    //             'order_id' => $authoriseOrder['order_id'],
+    //             'total_amount' => [
+    //                 'amount' => $authoriseOrder['authorized_amount']['amount'],
+    //                 'currency' => 'SAR',
+    //             ],
+    //             'shipping_info' => [
+    //                 'shipped_at' => '2024-03-31T19:19:52.677Z',
+    //                 'shipping_company' => 'Cashif',
+    //             ],
+    //         ]);
 
-            // Get order status using tamara api
-            $statusResponse = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
-                'Content-Type' => 'application/json',
-            ])->get(env('TAMARA_API_URL') . "/orders/{$orderId}");
+    //         if ($captureResponse->failed()) {
+    //             throw new \Exception("Capture failed! Status: " . $captureResponse->status(), $captureResponse->status());
+    //         }
 
-            if ($statusResponse->failed()) {
-                throw new \Exception("Failed to get order status! Status: " . $statusResponse->status(), $statusResponse->status());
-            }
+    //         $capturePayment = $captureResponse->json();
 
-            $orderStatus = $statusResponse->json();
+    //         // Get order status using tamara api
+    //         $statusResponse = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+    //             'Content-Type' => 'application/json',
+    //         ])->get(env('TAMARA_API_URL') . "/orders/{$orderId}");
 
-            // Extract description and convert to variables
-            $description = $orderStatus['description'];
-            parse_str($description, $data); // Parse the query string into an array
+    //         if ($statusResponse->failed()) {
+    //             throw new \Exception("Failed to get order status! Status: " . $statusResponse->status(), $statusResponse->status());
+    //         }
 
-            // Assign variables
-            $fullname = $data['fullname'] ?? null;
-            $phone = $data['phone'] ?? null;
-            $branch = $data['branch'] ?? null;
-            $plan = $data['plan'] ?? null;
-            $price = $data['price'] ?? 0;
-            $model = $data['model'] ?? null;
-            $yearId = $data['yearId'] ?? null;
-            $additionalServices = $data['additionalServices'] ?? null;
-            $service = $data['service'] ?? null;
+    //         $orderStatus = $statusResponse->json();
 
-            // Check if the QR code already exists
-            $qrCode = TamaraPaidClient::where('paid_qr_code', $validatedData['paid_qr_code'])->first();
+    //         // Extract description and convert to variables
+    //         $description = $orderStatus['description'];
+    //         parse_str($description, $data); // Parse the query string into an array
 
-            if (!$qrCode) {
-                // Create a new TamaraPaidClient entry
-                $qrCode = TamaraPaidClient::create([
-                    'paid_qr_code' => $validatedData['paid_qr_code'],
-                    'full_name' => $fullname ?? null,
-                    'phone' => $phone ?? null,
-                    'branch' => $branch ?? null,
-                    'plan' => $plan ?? null,
-                    'price' => $price ?? 0,
-                    'model' => $model ?? null,
-                    'year' => $yearId ?? null,
-                    'additionalServices' => $additionalServices ?? null,
-                    'service' => $service ?? null,
-                    'date_of_visited' => null,
-                ]);
+    //         // Assign variables
+    //         $fullname = $data['fullname'] ?? null;
+    //         $phone = $data['phone'] ?? null;
+    //         $branch = $data['branch'] ?? null;
+    //         $plan = $data['plan'] ?? null;
+    //         $price = $data['price'] ?? 0;
+    //         $model = $data['model'] ?? null;
+    //         $yearId = $data['yearId'] ?? null;
+    //         $additionalServices = $data['additionalServices'] ?? null;
+    //         $service = $data['service'] ?? null;
 
-                // Send notification to recipients
-                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
+    //         // Check if the QR code already exists
+    //         $qrCode = TamaraPaidClient::where('paid_qr_code', $validatedData['paid_qr_code'])->first();
 
-                try {
-                    Notification::route('mail', $recipients)
-                        ->notify(new QrCodeStored($qrCode->toArray()));
-                } catch (\Exception $e) {
-                    Log::error('Email notification failed: ' . $e->getMessage());
-                }
+    //         if (!$qrCode) {
+    //             // Create a new TamaraPaidClient entry
+    //             $qrCode = TamaraPaidClient::create([
+    //                 'paid_qr_code' => $validatedData['paid_qr_code'],
+    //                 'full_name' => $fullname ?? null,
+    //                 'phone' => $phone ?? null,
+    //                 'branch' => $branch ?? null,
+    //                 'plan' => $plan ?? null,
+    //                 'price' => $price ?? 0,
+    //                 'model' => $model ?? null,
+    //                 'year' => $yearId ?? null,
+    //                 'additionalServices' => $additionalServices ?? null,
+    //                 'service' => $service ?? null,
+    //                 'date_of_visited' => null,
+    //             ]);
 
-                return response()->json([
-                    'message' => 'QR code stored successfully',
-                    'exists' => false,
-                    'data' => $qrCode
-                ], 201); // 201 Created
-            } else {
-                // If it exists, return a message indicating so along with the created_at date
-                return response()->json([
-                    'message' => 'QR code already exists',
-                    'exists' => true,
-                    'created_at' => $qrCode->created_at,
-                    'data' => $qrCode
-                ]);
-            }
-        } catch (\Exception $error) {
-            // Log the exception with additional context (e.g., orderId and request data)
-            Log::error('Error in TamaraPaidClientController@store', [
-                'message' => $error->getMessage(),
-                'order_id' => $orderId,
-                'stack' => $error->getTraceAsString(),
-            ]);
+    //             // Send notification to recipients
+    //             $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
 
-            return response()->json([
-                'message' => 'Internal Server Error',
-                'error' => $error->getMessage()
-            ], 500); // 500 Internal Server Error
-        }
-    }
+    //             try {
+    //                 Notification::route('mail', $recipients)
+    //                     ->notify(new QrCodeStored($qrCode->toArray()));
+    //             } catch (\Exception $e) {
+    //                 Log::error('Email notification failed: ' . $e->getMessage());
+    //             }
+
+    //             return response()->json([
+    //                 'message' => 'QR code stored successfully',
+    //                 'exists' => false,
+    //                 'data' => $qrCode
+    //             ], 201); // 201 Created
+    //         } else {
+    //             // If it exists, return a message indicating so along with the created_at date
+    //             return response()->json([
+    //                 'message' => 'QR code already exists',
+    //                 'exists' => true,
+    //                 'created_at' => $qrCode->created_at,
+    //                 'data' => $qrCode
+    //             ]);
+    //         }
+    //     } catch (\Exception $error) {
+    //         // Log the exception with additional context (e.g., orderId and request data)
+    //         Log::error('Error in TamaraPaidClientController@store', [
+    //             'message' => $error->getMessage(),
+    //             'order_id' => $orderId,
+    //             'stack' => $error->getTraceAsString(),
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Internal Server Error',
+    //             'error' => $error->getMessage()
+    //         ], 500); // 500 Internal Server Error
+    //     }
+    // }
 
     /**
+     * This method will take (orderId) from Tamara webhook " then "Authorise" it using Tamara API.
+     */
+    public function authorizeWebhook(Request $request)
+    {
+        \Log::info('Tamara authorization Webhook received:', $request->all());
+
+        $orderId = $request->input('order_id');
+        $eventType = $request->input('event_type');
+
+        if ($eventType == 'order_approved') {
+            try {
+                // Authorize the order using Tamara API
+                $authorizeResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+                    'Content-Type' => 'application/json',
+                ])->post(env('TAMARA_API_URL') . "/orders/{$orderId}/authorise");
+
+                if ($authorizeResponse->failed()) {
+                    // Log the detailed error response
+                    \Log::error('Tamara Authorization Failed', [
+                        'order_id' => $orderId,
+                        'status' => $authorizeResponse->status(),
+                        'response' => $authorizeResponse->body()
+                    ]);
+
+                    throw new \Exception("Authorization failed! Status: " . $authorizeResponse->status(), $authorizeResponse->status());
+                }
+
+                // If authorization is successful
+                \Log::info('Tamara Order Authorized Successfully', [
+                    'order_id' => $orderId,
+                    'response' => $authorizeResponse->body()
+                ]);
+
+                return response()->json(['status' => 'success'], 200);
+            } catch (\Exception $e) {
+                // Log the full exception details
+                \Log::error('Tamara Webhook Authorization Error', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'order_id' => $orderId
+                ]);
+
+                // Return an error response
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to authorize order: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
+        // If event type is not order_approved
+        \Log::info('Received non-approved event', [
+            'event_type' => $eventType
+        ]);
+
+        return response()->json(['status' => 'ignored'], 200);
+    }
+
+    // this method will take (orderId) from Tamara webhook then use "Get the order status api" to take the "amount" then "Capture" the payment then "Save" the data in the database
+    public function captureWebhook(Request $request)
+    {
+        \Log::info('Tamara capture Webhook received:', $request->all());
+
+        $orderId = $request->input('order_id');
+        $eventType = $request->input('event_type');
+
+        if ($eventType == 'order_authorised') {
+            try {
+                // Get order status using Tamara API to get the "amount"
+                $statusResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+                    'Content-Type' => 'application/json',
+                ])->get(env('TAMARA_API_URL') . "/orders/{$orderId}");
+
+                if ($statusResponse->failed()) {
+                    throw new \Exception("Failed to get order status! Status: " . $statusResponse->status(), $statusResponse->status());
+                }
+
+                $orderStatus = $statusResponse->json();
+                $amount = $orderStatus['total_amount']['amount'];
+
+                // Capture the payment using Tamara API
+                $captureResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+                    'Content-Type' => 'application/json',
+                ])->post(env('TAMARA_API_URL') . "/payments/capture", [
+                    'order_id' => $orderId,
+                    'total_amount' => [
+                        'amount' => $amount,
+                        'currency' => 'SAR',
+                    ],
+                    'shipping_info' => [
+                        'shipped_at' => now()->toIso8601String(),
+                        'shipping_company' => 'Cashif',
+                    ],
+                ]);
+
+                if ($captureResponse->failed()) {
+                    throw new \Exception("Capture failed! Status: " . $captureResponse->status(), $captureResponse->status());
+                }
+
+                // Log successful capture
+                \Log::info("Tamara payment capture successful for order: {$orderId}");
+
+
+                return response()->json(['status' => 'success'], 200);
+            } catch (\Exception $e) {
+                // Log the error
+                \Log::error("Tamara Webhook Capture Error: " . $e->getMessage());
+
+                // Return error response
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+        }
+
+        // If event type is not 'order_authorised'
+        return response()->json(['status' => 'ignored'], 200);
+    }
+
+    // this method will take (oderId) from Tamara webhook then use "Get the order status api" to take the "description" then "Save" the data in the database
+    public function storeInDb(Request $request)
+    {
+        \Log::info('Tamara store Webhook received:', $request->all());
+
+        $orderId = $request->input('order_id');
+        $eventType = $request->input('event_type');
+
+        if ($eventType == 'order_captured') {
+            try {
+                // Get order status using Tamara API to get the "description"
+                $statusResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
+                    'Content-Type' => 'application/json',
+                ])->get(env('TAMARA_API_URL') . "/orders/{$orderId}");
+
+                if ($statusResponse->failed()) {
+                    throw new \Exception("Failed to get order status! Status: " . $statusResponse->status(), $statusResponse->status());
+                }
+
+                $orderStatus = $statusResponse->json();
+                $description = $orderStatus['description'];
+                parse_str($description, $data); // Parse the query string into an array
+
+                // Assign variables
+                $fullname = $data['fullname'] ?? null;
+                $phone = $data['phone'] ?? null;
+                $branch = $data['branch'] ?? null;
+                $plan = $data['plan'] ?? null;
+                $price = $data['price'] ?? 0;
+                $model = $data['model'] ?? null;
+                $yearId = $data['yearId'] ?? null;
+                $additionalServices = $data['additionalServices'] ?? null;
+                $service = $data['service'] ?? null;
+
+                // Check if the QR code already exists
+                $qrCode = TamaraPaidClient::where('paid_qr_code', $orderId)->first();
+
+                if (!$qrCode) {
+                    // Create a new TamaraPaidClient entry
+                    $qrCode = TamaraPaidClient::create([
+                        'paid_qr_code' => $orderId,
+                        'full_name' => $fullname ?? null,
+                        'phone' => $phone ?? null,
+                        'branch' => $branch ?? null,
+                        'plan' => $plan ?? null,
+                        'price' => $price ?? 0,
+                        'model' => $model ?? null,
+                        'year' => $yearId ?? null,
+                        'additionalServices' => $additionalServices ?? null,
+                        'service' => $service ?? null,
+                        'date_of_visited' => null,
+                    ]);
+
+                    // Send notification to recipients
+                    $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
+
+                    try {
+                        Notification::route('mail', $recipients)
+                            ->notify(new QrCodeStored($qrCode->toArray()));
+                    } catch (\Exception $e) {
+                        Log::error('Email notification failed: ' . $e->getMessage());
+                    }
+
+                    // Log successful store
+                    \Log::info("Tamara payment store successful for order: {$orderId}");
+
+                    return response()->json(['status' => 'success'], 201); // 201 Created
+                } else {
+                    // If it exists, return a message indicating so along with the created_at date
+                    \Log::info("Tamara payment already exists for order: {$orderId}");
+
+                    return response()->json([
+                        'status' => 'exists',
+                        'created_at' => $qrCode->created_at,
+                        'data' => $qrCode
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Log the error
+                \Log::error("Tamara Webhook Store Error: " . $e->getMessage());
+
+                // Return error response
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+        }
+
+        // If event type is not 'order_captured'
+        return response()->json(['status' => 'ignored'], 200);
+    }
+
+
+
+    /**
+     * this method for (cashif.online) dashboard
      * Display the specified resource.
      */
     public function show($id) // id is "orderId"
