@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaidQrCodeController;
 use App\Http\Controllers\UnPaidQrCodeController;
+use App\Http\Controllers\TabbyPaidClientController;
 use App\Http\Controllers\TamaraPaidClientController;
 
 
@@ -53,16 +54,25 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/save-unpaid-qr-code', [UnPaidQrCodeController::class, 'store']);
 
+    // Tamara Payment Route
     Route::post('/pay-with-tamara', [TamaraPaidClientController::class, 'processPayment']); // cerate checkout url using Tamara api
     Route::post('/tamara-authorize-webhook', [TamaraPaidClientController::class, 'authorizeWebhook']); // convert Tamara order from "approved" to "authorized"
     Route::post('/tamara-capture-webhook', [TamaraPaidClientController::class, 'captureWebhook']); // convert Tamara order from "authorized" to "captured"
     Route::post('/tamara-store-webhook', [TamaraPaidClientController::class, 'storeInDb']); // Store captured order in database
 
 
+    // Tabby Payment Route
+    Route::post('/pay-with-tabby', [TabbyPaidClientController::class, 'processPayment']); // cerate checkout url using Tabby api
+    Route::post('/tabby-webhooks', [TabbyPaidClientController::class, 'tabbyWebhook']); // Tabby webhook
+
+
+
     // Dashboard api (cashif.online)
     Route::get('/get-paid-payment/{id}', [PaidQrCodeController::class, 'show']); // Moyasar
     Route::get('/get-unpaid-payment/{id}', [UnPaidQrCodeController::class, 'show']); // Unpaid
     Route::get('/get-tamara-paid-client/{id}', [TamaraPaidClientController::class, 'show']); // Tamara
+    Route::get('/get-tabby-paid-client/{id}', [TabbyPaidClientController::class, 'show']); // Tabby
+
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
 

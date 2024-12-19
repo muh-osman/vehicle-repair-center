@@ -235,7 +235,7 @@ export default function Requests() {
 
   const rows = data
     .map((client, index) => ({
-      index: index + 1,
+      index: data.length - index,
       created_at: client.created_at,
       status: client.status,
       name: client.full_name,

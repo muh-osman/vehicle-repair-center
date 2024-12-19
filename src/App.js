@@ -42,8 +42,10 @@ import NotFound from "./Pages/NotFound/NotFound";
 import Scan from "./Pages/Dashboard/Scan/Scan";
 import PaidClient from "./Pages/Dashboard/PaidClient/PaidClient";
 import TamaraClient from "./Pages/Dashboard/TamaraClient/TamaraClient";
+import TabbyClient from "./Pages/Dashboard/TabbyClient/TabbyClient";
 import UnpaidClient from "./Pages/Dashboard/UnpaidClient/UnpaidClient";
 import Requests from "./Pages/Dashboard/Requests/Requests";
+
 
 export default function App() {
   const router = createBrowserRouter(
@@ -74,6 +76,7 @@ export default function App() {
             <Route path="scan" element={<Scan />} />
             <Route path="paid-client/:id" element={<PaidClient />} />
             <Route path="tamara-client/:id" element={<TamaraClient />} />
+            <Route path="tabby-client/:id" element={<TabbyClient />} />
             <Route path="unpaid-client/:id" element={<UnpaidClient />} />
 
             <Route path="requests" element={<Requests />} />

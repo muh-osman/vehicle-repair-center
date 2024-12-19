@@ -23,7 +23,6 @@ export default function Scan() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-
   const scanUserId = async () => {
     qrScanSoundEffect.play(); // Sound
     try {
@@ -34,6 +33,10 @@ export default function Scan() {
         // Tamara payment
         const trimmedScanResult = scanResult.replace(/^tamara/, ""); // Remove "tamara" from the beginning of scanResult
         navigate(`/dashboard/tamara-client/${trimmedScanResult}`);
+      } else if (scanResult.startsWith("tabby")) {
+        // Tabby payment
+        const trimmedTabbyScanResult = scanResult.replace(/^tabby/, ""); // Remove "tabby" from the beginning of scanResult
+        navigate(`/dashboard/tabby-client/${trimmedTabbyScanResult}`);
       } else {
         // Moyasar payment
         navigate(`/dashboard/paid-client/${scanResult}`);
@@ -82,10 +85,8 @@ export default function Scan() {
     }
   };
 
-
   return (
     <div className={style.container}>
-
       <div className={style.qr_box}>
         <QrReader
           onResult={(result, error) => {

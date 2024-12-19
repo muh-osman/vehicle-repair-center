@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PaidQrCode;
 use App\Models\UnPaidQrCode;
 use App\Models\TamaraPaidClient;
+use App\Models\TabbyPaidClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -86,22 +87,6 @@ class UnPaidQrCodeController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, UnPaidQrCode $unPaidQrCode)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UnPaidQrCode $unPaidQrCode)
-    {
-        //
-    }
-
-    /**
      * Get all QR codes from both paid and unpaid tables, ordered by created_at.
      */
     public function getAllQrCodes()
@@ -110,22 +95,29 @@ class UnPaidQrCodeController extends Controller
         $paidQrCodes = PaidQrCode::all();
         $unPaidQrCodes = UnPaidQrCode::all();
         $tamaraPaidClients = TamaraPaidClient::all();
+        $tabbyPaidClients = TabbyPaidClient::all(); // Retrieve records from tabby_paid_clients
 
         // Filter out records in $tamaraPaidClients where full_name, phone, and plan are null
         $filteredTamaraPaidClients = $tamaraPaidClients->filter(function ($client) {
             return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
         });
 
+        // Filter out records in $tabbyPaidClients where full_name, phone, and plan are null
+        $filteredTabbyPaidClients = $tabbyPaidClients->filter(function ($client) {
+            return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+        });
+
         // Combine the results into a single collection
-        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)->concat($filteredTamaraPaidClients);
+        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)
+            ->concat($filteredTamaraPaidClients)
+            ->concat($filteredTabbyPaidClients);
 
         // Sort the combined collection by created_at date
-        $sortedQrCodes = $allQrCodes->sortBy('created_at');
+        $sortedQrCodes = $allQrCodes->sortByDesc('created_at');
 
         // Return the sorted data as a JSON response
         return response()->json($sortedQrCodes->values()->all(), 200);
     }
-
 
 
     /**
@@ -133,16 +125,30 @@ class UnPaidQrCodeController extends Controller
      */
     public function getAllPhonesWithQrCodes()
     {
-        // Retrieve all records from both tables
-        $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get();
+        // Retrieve all records from the paid QR codes table
+        $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get()->filter(function ($item) {
+            return !is_null($item->phone);
+        });
 
         // Retrieve all records from the tamara_paid_clients table and add "tamara" prefix to paid_qr_code
-        $tamaraPaidClients = TamaraPaidClient::select('phone', \DB::raw("CONCAT('tamara', paid_qr_code) as qr_code"))->get();
+        $tamaraPaidClients = TamaraPaidClient::select('phone', \DB::raw("CONCAT('tamara', paid_qr_code) as qr_code"))->get()->filter(function ($item) {
+            return !is_null($item->phone);
+        });
 
-        $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code')->get();
+        // Retrieve all records from the unpaid QR codes table
+        $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code')->get()->filter(function ($item) {
+            return !is_null($item->phone);
+        });
+
+        // Retrieve all records from the tabby_paid_clients table and add "tabby" prefix to paid_qr_code
+        $tabbyPaidClients = TabbyPaidClient::select('phone', \DB::raw("CONCAT('tabby', paid_qr_code) as qr_code"))->get()->filter(function ($item) {
+            return !is_null($item->phone);
+        });
 
         // Combine the results into a single collection
-        $allPhones = $paidQrCodes->concat($unPaidQrCodes)->concat($tamaraPaidClients);
+        $allPhones = $paidQrCodes->concat($unPaidQrCodes)
+            ->concat($tamaraPaidClients)
+            ->concat($tabbyPaidClients); // Include tabby paid clients
 
         // Return the combined data as a JSON response
         return response()->json($allPhones, 200);
