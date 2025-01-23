@@ -197,4 +197,20 @@ class CarModelController extends Controller
 
         return response()->json(['carModels' => $carModels], 200);
     }
+
+    // Mshrai App
+    // All Models By Manufacture Id
+    public function allModelsByManufactureId($manufactureId)
+    {
+        $carModels = CarModel::where('manufacturer_id', $manufactureId)
+            ->orderBy('model_name')
+            ->select('id', 'model_name') // Select only the id and model_name
+            ->get();
+
+        if ($carModels->isEmpty()) {
+            return response()->json(['message' => 'No car models found for the specified manufacturer ID'], 404);
+        }
+
+        return response()->json(['carModels' => $carModels], 200);
+    }
 }

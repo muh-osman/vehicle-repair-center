@@ -328,4 +328,64 @@ class PriceController extends Controller
 
         return response()->json($prices->values());
     }
+
+    // Mshrai App
+    // All plans prices by model id and year id
+    public function forMshraiAppGetDiscountedPricesByModelAndYear(Request $request, $modelId, $yearId)
+    {
+        // Validate the route parameters
+        $validator = Validator::make(['car_model_id' => $modelId, 'year_id' => $yearId], [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        // Fetch prices with related models
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $modelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) use ($yearId, $modelId) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                // Filter and map prices
+                $filteredPrices = $groupedPrices->filter(function ($price) {
+                    // Exclude prices for "هيكل خارجي" and "كمبيوتر"
+                    return !in_array($price->service->service_name, ["هيكل خارجي", "كمبيوتر"]);
+                })->map(function ($price) {
+                    // Apply discount if applicable
+                    $discountedPrice = $price->service->service_name === "شامل"
+                        ? $price->price * 0.8 // Apply 20% discount
+                        : $price->price;
+
+                    // Assign IDs based on service_name
+                    $serviceId = match ($price->service->service_name) {
+                        "أساسي" => 1,
+                        "محركات" => 2,
+                        default => 0, // Default value
+                    };
+
+                    return [
+                        'price_id' => $serviceId, // Set the service ID based on service_name
+                        'plan' => $price->service->service_name,
+                        'price' => number_format($discountedPrice, 2, '.', ''), // No thousands separator
+                    ];
+                });
+
+                return [
+                    'manufacturer' => $manufacturer->manufacture_name,
+                    'model' => $carModel->model_name,
+                    'car_model_id' => $modelId,
+                    'year_id' => $yearId,
+                    'prices' => $filteredPrices,
+                ];
+            });
+
+        return response()->json($prices->values());
+    }
 }

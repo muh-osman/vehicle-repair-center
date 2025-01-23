@@ -105,4 +105,21 @@ class ManufacturerController extends Controller
 
         return response()->json(['manufacturers' => $manufacturers], 200);
     }
+
+    // Mshrai App
+    // All Manufacturers
+    public function allManufacturers()
+    {
+        $manufacturers = Manufacturer::orderBy('manufacture_name')->get();
+
+        // Transform the collection to only include id and manufacture_name
+        $manufacturers = $manufacturers->map(function ($manufacturer) {
+            return [
+                'id' => $manufacturer->id,
+                'manufacture_name' => $manufacturer->manufacture_name,
+            ];
+        });
+
+        return response()->json(['manufacturers' => $manufacturers], 200);
+    }
 }
