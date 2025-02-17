@@ -5,12 +5,56 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 // Axios
 import axios from "axios";
+// Cookies
+import { useCookies } from "react-cookie";
 // API
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
+
 export default function Requests() {
+  // Cookie
+  const [cookies, setCookie] = useCookies(["role"]);
+
+  const [open, setOpen] = useState(false);
+  const [itemIdToDelete, setItemIdToDelete] = useState(null);
+
+  const handleDelete = (id) => {
+    setItemIdToDelete(id);
+    setOpen(true);
+  };
+
+  const cancelDelete = () => {
+    setOpen(false);
+    console.log("Item not deleted.");
+  };
+
+  const deleteAction = async (id) => {
+    try {
+      console.log(id);
+      // Send delete request to the backend
+      await axios.delete(`${apiUrl}api/delete-client/${id}`);
+      // Update the state to remove the deleted item
+      setData((prevData) => prevData.filter((client) => client.qr_code !== id));
+    } catch (error) {
+      console.error("Error deleting client:", error);
+    }
+  };
+
+  const confirmDelete = async () => {
+    // console.log(itemIdToDelete);
+    await deleteAction(itemIdToDelete);
+    // Add your delete logic here
+    setOpen(false);
+  };
+
   const columns = [
     {
       field: "index",
@@ -175,6 +219,46 @@ export default function Requests() {
       align: "center",
       filterable: true,
     },
+    {
+      field: "affiliate",
+      headerName: "Affiliate",
+      flex: 1,
+      minWidth: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? (
+          params.value
+        ) : (
+          <div style={{ color: "#757575" }}>N/A</div>
+        );
+      },
+    },
+
+    // Conditionally add the Delete column based on the user's role
+    ...(cookies.role === 255
+      ? [
+          {
+            field: "delete",
+            headerName: "Delete",
+            width: 150,
+            sortable: false,
+            headerAlign: "center",
+            align: "center",
+            renderCell: (params) => (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => handleDelete(params.row.id)}
+              >
+                Delete
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const [loadding, setLoadding] = useState(false);
@@ -201,6 +285,7 @@ export default function Requests() {
         year: client.year,
         additionalServices: client.additionalServices,
         service: client.service,
+        affiliate: client.affiliate,
         created_at: client.created_at,
         status: client.un_paid_qr_code ? "Unpaid" : "Paid", // Optional: Add a status based on QR code
         visited: client.date_of_visited,
@@ -250,6 +335,7 @@ export default function Requests() {
       visited: client.visited,
       id: client.qr_code,
       barCode: client.qr_code,
+      affiliate: client.affiliate,
     }))
     .filter((client) => {
       if (activeButton === "all") return true;
@@ -297,6 +383,21 @@ export default function Requests() {
           <LinearProgress />
         </div>
       )}
+
+      <Dialog open={open} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this item?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} color="primary">
+            No
+          </Button>
+          <Button onClick={confirmDelete} color="error">
+            Yes, Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Stack
         sx={{ pb: 3, maxWidth: "617px", margin: "auto" }}

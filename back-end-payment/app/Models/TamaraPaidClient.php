@@ -21,5 +21,6 @@ class TamaraPaidClient extends Model
         'additionalServices',
         'service',
         'date_of_visited',
+        'affiliate',
     ];
 }

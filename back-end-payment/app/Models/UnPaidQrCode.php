@@ -21,5 +21,6 @@ class UnPaidQrCode extends Model
         'additionalServices',
         'service',
         'date_of_visited',
+        'affiliate',
     ];
 }

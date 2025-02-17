@@ -77,15 +77,16 @@ class TabbyPaidClientController extends Controller
             $yearId = $parsedData['yearId'] ?? null;
             $additionalServices = $parsedData['additionalServices'] ?? null;
             $service = $parsedData['service'] ?? null;
+            $affiliate = $parsedData['affiliate'] ?? null;
 
             // Store the data in the database
-            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service);
+            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate);
         }
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
     }
 
-    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service)
+    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate)
     {
         // Check if the order already exists
         $existingOrder = TabbyPaidClient::where('paid_qr_code', $orderId)->first();
@@ -103,6 +104,7 @@ class TabbyPaidClientController extends Controller
                 'year' => $yearId,
                 'additionalServices' => $additionalServices,
                 'service' => $service ?? null,
+                'affiliate' => $affiliate ?? null,
                 'date_of_visited' => null,
             ]);
 
@@ -162,6 +164,12 @@ class TabbyPaidClientController extends Controller
             return response()->json(['error' => 'Invalid ID provided'], 400);
         }
 
+        $qrCodeExist = TabbyPaidClient::where('paid_qr_code', $id)->first();
+
+        if (!$qrCodeExist) {
+            return response()->json(['error' => 'QR code not found in the database'], 404);
+        }
+
         try {
             // Get the Tabby Secret Key from the .env file
             $tabbySecretKey = env('TABBY_SECRET_KEY');
@@ -194,6 +202,7 @@ class TabbyPaidClientController extends Controller
                 $yearId = $data['yearId'] ?? null;
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
+                $affiliate = $data['affiliate'] ?? null;
 
 
                 // Find the corresponding PaidQrCode entry
@@ -222,6 +231,7 @@ class TabbyPaidClientController extends Controller
                         'year' => $yearId,
                         'additionalServices' => $additionalServices,
                         'service' => $service,
+                        'affiliate' => $affiliate,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tabby' => $responseData

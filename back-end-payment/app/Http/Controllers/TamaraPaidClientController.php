@@ -196,6 +196,7 @@ class TamaraPaidClientController extends Controller
                 $yearId = $data['yearId'] ?? null;
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
+                $affiliate = $data['affiliate'] ?? null;
 
                 // Check if the QR code already exists
                 $qrCode = TamaraPaidClient::where('paid_qr_code', $orderId)->first();
@@ -213,6 +214,7 @@ class TamaraPaidClientController extends Controller
                         'year' => $yearId ?? null,
                         'additionalServices' => $additionalServices ?? null,
                         'service' => $service ?? null,
+                        'affiliate' => $affiliate ?? null,
                         'date_of_visited' => null,
                     ]);
 
@@ -269,6 +271,14 @@ class TamaraPaidClientController extends Controller
             return response()->json(['error' => 'Invalid ID provided'], 400);
         }
 
+        $qrCodeExist = TamaraPaidClient::where('paid_qr_code', $id)->first();
+
+        if (!$qrCodeExist) {
+            return response()->json(['error' => 'QR code not found in the database'], 404);
+        }
+
+
+
         try {
             // Get Order Status from Tamara API
             $response = Http::withHeaders([
@@ -298,6 +308,7 @@ class TamaraPaidClientController extends Controller
                 $yearId = $data['yearId'] ?? null;
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
+                $affiliate = $data['affiliate'] ?? null;
 
 
                 // Find the corresponding PaidQrCode entry
@@ -326,6 +337,7 @@ class TamaraPaidClientController extends Controller
                         'year' => $yearId,
                         'additionalServices' => $additionalServices,
                         'service' => $service,
+                        'affiliate' => $affiliate,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tamara' => $responseData

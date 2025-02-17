@@ -37,6 +37,7 @@ class UnPaidQrCodeController extends Controller
             'year' => 'required|string|max:255',
             'additionalServices' => 'nullable|string|max:255',
             'service' => 'nullable|string|max:255',
+            'affiliate' => 'nullable|string|max:255',
         ]);
 
         // Create a new UnPaidQrCode entry with date_of_visited as null
@@ -152,5 +153,42 @@ class UnPaidQrCodeController extends Controller
 
         // Return the combined data as a JSON response
         return response()->json($allPhones, 200);
+    }
+
+    /**
+     * Delete a specific QR code from all tables.
+     */
+    public function deleteClient($qrCode)
+    {
+        // Try to delete from the un_paid_qr_codes table
+        $unPaidQrCode = UnPaidQrCode::where('un_paid_qr_code', $qrCode)->first();
+        if ($unPaidQrCode) {
+            $unPaidQrCode->delete();
+            return response()->json(['message' => 'UnPaid QR Code deleted successfully.'], 200);
+        }
+
+        // Try to delete from the paid_qr_codes table
+        $paidQrCode = PaidQrCode::where('paid_qr_code', $qrCode)->first();
+        if ($paidQrCode) {
+            $paidQrCode->delete();
+            return response()->json(['message' => 'Paid QR Code deleted successfully.'], 200);
+        }
+
+        // Try to delete from the tamara_paid_clients table
+        $tamaraPaidClient = TamaraPaidClient::where('paid_qr_code', $qrCode)->first();
+        if ($tamaraPaidClient) {
+            $tamaraPaidClient->delete();
+            return response()->json(['message' => 'Tamara Paid Client deleted successfully.'], 200);
+        }
+
+        // Try to delete from the tabby_paid_clients table
+        $tabbyPaidClient = TabbyPaidClient::where('paid_qr_code', $qrCode)->first();
+        if ($tabbyPaidClient) {
+            $tabbyPaidClient->delete();
+            return response()->json(['message' => 'Tabby Paid Client deleted successfully.'], 200);
+        }
+
+        // If the QR code was not found in any table
+        return response()->json(['message' => 'QR Code not found in any table.'], 404);
     }
 }

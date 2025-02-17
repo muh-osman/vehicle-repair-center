@@ -31,6 +31,7 @@ class PaidQrCodeController extends Controller
             'year' => 'nullable|string|max:255',
             'additionalServices' => 'nullable|string|max:255',
             'service' => 'nullable|string|max:255',
+            'affiliate' => 'nullable|string|max:255',
         ]);
 
         // Secret Key
@@ -59,11 +60,13 @@ class PaidQrCodeController extends Controller
                     'year' => $metadata['year'] ?? null,
                     'additionalServices' => $metadata['additionalServices'] ?? null,
                     'service' => $metadata['service'] ?? null,
+                    'affiliate' => $metadata['affiliate'] ?? null,
                     'date_of_visited' => null, // Set date_of_visited to null
                 ]);
 
                 // Send notification to multiple recipients
                 $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com']; // Replace with actual email addresses
+                // $recipients = ['song415400@gmail.com',]; // Replace with actual email addresses
 
                 try {
                     Notification::route('mail', $recipients)
@@ -104,6 +107,13 @@ class PaidQrCodeController extends Controller
             return response()->json(['error' => 'Invalid ID provided'], 400);
         }
 
+        // Check if the QR code exists in the database
+        $qrCodeExist  = PaidQrCode::where('paid_qr_code', $id)->first();
+
+        if (!$qrCodeExist) {
+            return response()->json(['error' => 'QR code not found in the database'], 404);
+        }
+
         // Secret Key
         $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY');
 
@@ -138,5 +148,4 @@ class PaidQrCodeController extends Controller
             return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);
         }
     }
-
 }

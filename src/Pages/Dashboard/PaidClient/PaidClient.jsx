@@ -26,7 +26,7 @@ export default function PaidClient() {
       const response = await axios.get(`${apiUrl}api/get-paid-payment/${id}`);
       // console.log(response.data);
       setData(response.data);
-      console.log(data);
+      // console.log(data);
 
       setLoadding(false);
     } catch (err) {
@@ -174,6 +174,17 @@ export default function PaidClient() {
                 <td>رقم المرجع:</td>
                 <td>{data?.id}</td>
               </tr>
+
+              {data?.metadata?.affiliate && (
+                <tr>
+                  <td>الإحالة:</td>
+                  <td>
+                    {data?.metadata?.affiliate
+                      ? data?.metadata?.affiliate
+                      : "N/A"}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

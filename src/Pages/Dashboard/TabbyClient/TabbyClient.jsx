@@ -168,6 +168,15 @@ export default function TabbyClient() {
                 <td>Order ID:</td>
                 <td>{data?.data?.paid_qr_code}</td>
               </tr>
+
+              {data?.data?.affiliate && (
+                <tr>
+                  <td>الإحالة:</td>
+                  <td>
+                    {data?.data?.affiliate ? data?.data?.affiliate : "N/A"}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

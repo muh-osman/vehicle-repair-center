@@ -73,8 +73,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/get-tamara-paid-client/{id}', [TamaraPaidClientController::class, 'show']); // Tamara
     Route::get('/get-tabby-paid-client/{id}', [TabbyPaidClientController::class, 'show']); // Tabby
 
+    Route::delete('/delete-client/{qrCode}', [UnPaidQrCodeController::class, 'deleteClient']); // Delete the client
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
-
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 });
