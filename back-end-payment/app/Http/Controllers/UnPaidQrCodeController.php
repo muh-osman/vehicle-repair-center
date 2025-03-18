@@ -8,6 +8,8 @@ use App\Models\TamaraPaidClient;
 use App\Models\TabbyPaidClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 
 class UnPaidQrCodeController extends Controller
@@ -25,6 +27,17 @@ class UnPaidQrCodeController extends Controller
      */
     public function store(Request $request)
     {
+
+        // Check if 'dc' is present in the request and assign it to 'discountCode'
+        if ($request->has('dc')) {
+            $request->merge(['discountCode' => $request->input('dc')]);
+        }
+
+        // Check if 'msh' is present in the request and assign it to 'marketerShare'
+        if ($request->has('msh')) {
+            $request->merge(['marketerShare' => $request->input('msh')]);
+        }
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'un_paid_qr_code' => 'required|string|unique:un_paid_qr_codes,un_paid_qr_code',
@@ -38,12 +51,15 @@ class UnPaidQrCodeController extends Controller
             'additionalServices' => 'nullable|string|max:255',
             'service' => 'nullable|string|max:255',
             'affiliate' => 'nullable|string|max:255',
+            'discountCode' => 'nullable|string|max:255',
+            'marketerShare' => 'nullable|numeric|min:0',
         ]);
 
         // Create a new UnPaidQrCode entry with date_of_visited as null
         $unPaidQrCode = UnPaidQrCode::create(array_merge($validatedData, [
             'date_of_visited' => null, // Set date_of_visited to null
         ]));
+
 
         // Return a response (could be a redirect or a JSON response)
         return response()->json([
@@ -74,8 +90,52 @@ class UnPaidQrCodeController extends Controller
         // Update the date_of_visited to the current date and time only if it is null
         if (is_null($unPaidQrCode->date_of_visited)) {
             $unPaidQrCode->date_of_visited = now(); // Set to current date and time
-            $unPaidQrCode->save(); // Save the updated record
+            $unPaidQrCode->save();
+
+
+            // Marketer API
+            // Check if discountCode and marketerShare are not null
+            if (!is_null($unPaidQrCode->discountCode) && !is_null($unPaidQrCode->marketerShare)) {
+                // Prepare data for the API Marketer request
+                $data = [
+                    'id' => 0,
+                    'code' => $unPaidQrCode->discountCode, // Assuming discountCode is already set
+                    'points' => (int) $unPaidQrCode->marketerShare, // Assuming marketerShare is already set
+                    'clientId' => 0,
+                    'cardCountFromSite' => 0,
+                    'isActive' => true
+                ];
+
+                // Make the API request
+                try {
+                    $res = Http::withHeaders([
+                        'Content-Type' => 'application/json-patch+json',
+                    ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $data);
+
+                    // Optionally handle the response from the API
+                    if ($res->successful()) {
+                        Log::info('API request successful', [
+                            'response' => $res->json(), // Log the response data
+                        ]);
+                    } else {
+                        Log::error('API request failed', [
+                            'status' => $res->status(),
+                            'response' => $res->json(), // Log the error response data
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    // Handle any exceptions that may occur during the request
+                    Log::error('Error occurred while making API request', [
+                        'message' => $e->getMessage(),
+                    ]);
+                    // Handle any exceptions that may occur during the request
+                    return response()->json([
+                        'message' => 'Error occurred while making API request: ' . $e->getMessage(),
+                    ], 500);
+                }
+            }
         }
+
 
         // Return the found record, including the original date_of_visited
         return response()->json([

@@ -22,5 +22,7 @@ class UnPaidQrCode extends Model
         'service',
         'date_of_visited',
         'affiliate',
+        'discountCode',
+        'marketerShare',
     ];
 }

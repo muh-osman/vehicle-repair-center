@@ -41,7 +41,8 @@ class QrCodeStored extends Notification
 
         return (new MailMessage)
             ->subject('New Order')
-            ->line('A new order has been created.');
+            ->line('A new order has been created.')
+            ->line('Payment method used: ' . ($this->qrCodeData['payment_method'] ?? 'N/A'));
         // ->line('Reference Number: ' . $referenceNumber)
         // ->line('Status: ' . $status) // Add the status line
         // ->line('Full Name: ' . ($this->qrCodeData['full_name'] ?? 'N/A'))

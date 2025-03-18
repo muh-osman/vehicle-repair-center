@@ -78,15 +78,17 @@ class TabbyPaidClientController extends Controller
             $additionalServices = $parsedData['additionalServices'] ?? null;
             $service = $parsedData['service'] ?? null;
             $affiliate = $parsedData['affiliate'] ?? null;
+            $discountCode = $parsedData['dc'] ?? null;
+            $marketerShare = $parsedData['msh'] ?? null;
 
             // Store the data in the database
-            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate);
+            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare);
         }
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
     }
 
-    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate)
+    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare)
     {
         // Check if the order already exists
         $existingOrder = TabbyPaidClient::where('paid_qr_code', $orderId)->first();
@@ -105,6 +107,8 @@ class TabbyPaidClientController extends Controller
                 'additionalServices' => $additionalServices,
                 'service' => $service ?? null,
                 'affiliate' => $affiliate ?? null,
+                'discountCode' => $discountCode ?? null,
+                'marketerShare' => $marketerShare ?? null,
                 'date_of_visited' => null,
             ]);
 
@@ -112,9 +116,13 @@ class TabbyPaidClientController extends Controller
             // Send notification to recipients
             $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
 
+            $paymentMethod = "Tabby";
+            // Prepare the data to pass to the notification
+            $notificationData = array_merge($newOrder->toArray(), ['payment_method' => $paymentMethod]);
+
             try {
                 Notification::route('mail', $recipients)
-                    ->notify(new QrCodeStored($newOrder->toArray()));
+                    ->notify(new QrCodeStored($notificationData));
             } catch (\Exception $e) {
                 Log::error('Email notification failed: ' . $e->getMessage());
             }
@@ -203,6 +211,9 @@ class TabbyPaidClientController extends Controller
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
                 $affiliate = $data['affiliate'] ?? null;
+                $discountCode = $data['dc'] ?? null;
+                $marketerShare = $data['msh'] ?? null;
+
 
 
                 // Find the corresponding PaidQrCode entry
@@ -217,6 +228,48 @@ class TabbyPaidClientController extends Controller
                 if ($qrCode && is_null($qrCode->date_of_visited)) {
                     $qrCode->date_of_visited = now(); // Set to current date and time
                     $qrCode->save(); // Save the updated record
+
+                    // Marketer API
+                    // Check if discountCode and marketerShare are not null
+                    if (!is_null($qrCode->discountCode) && !is_null($qrCode->marketerShare)) {
+                        // Prepare data for the API Marketer request
+                        $dataPayload = [
+                            'id' => 0,
+                            'code' => $qrCode->discountCode, // Assuming discountCode is already set
+                            'points' => (int) $qrCode->marketerShare, // Assuming marketerShare is already set
+                            'clientId' => 0,
+                            'cardCountFromSite' => 0,
+                            'isActive' => true
+                        ];
+
+                        // Make the API request
+                        try {
+                            $res = Http::withHeaders([
+                                'Content-Type' => 'application/json-patch+json',
+                            ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $dataPayload);
+
+                            // Optionally handle the response from the API
+                            if ($res->successful()) {
+                                Log::info('API request successful', [
+                                    'response' => $res->json(), // Log the response data
+                                ]);
+                            } else {
+                                Log::error('API request failed', [
+                                    'status' => $res->status(),
+                                    'response' => $res->json(), // Log the error response data
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            // Handle any exceptions that may occur during the request
+                            Log::error('Error occurred while making API request', [
+                                'message' => $e->getMessage(),
+                            ]);
+                            // Handle any exceptions that may occur during the request
+                            return response()->json([
+                                'message' => 'Error occurred while making API request: ' . $e->getMessage(),
+                            ], 500);
+                        }
+                    }
                 }
                 // Return the modified response
                 return response()->json([
@@ -232,6 +285,8 @@ class TabbyPaidClientController extends Controller
                         'additionalServices' => $additionalServices,
                         'service' => $service,
                         'affiliate' => $affiliate,
+                        'discountCode' => $discountCode,
+                        'marketerShare' => $marketerShare,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tabby' => $responseData

@@ -19,6 +19,7 @@ class PaidQrCodeController extends Controller
      */
     public function store(Request $request)
     {
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'paid_qr_code' => 'required|string|unique:paid_qr_codes,paid_qr_code',
@@ -32,6 +33,8 @@ class PaidQrCodeController extends Controller
             'additionalServices' => 'nullable|string|max:255',
             'service' => 'nullable|string|max:255',
             'affiliate' => 'nullable|string|max:255',
+            'discountCode' => 'nullable|string|max:255',
+            'marketerShare' => 'nullable|numeric|min:0',
         ]);
 
         // Secret Key
@@ -61,16 +64,22 @@ class PaidQrCodeController extends Controller
                     'additionalServices' => $metadata['additionalServices'] ?? null,
                     'service' => $metadata['service'] ?? null,
                     'affiliate' => $metadata['affiliate'] ?? null,
+                    'discountCode' => $metadata['dc'] ?? null,
+                    'marketerShare' => $metadata['msh'] ?? null,
                     'date_of_visited' => null, // Set date_of_visited to null
                 ]);
 
                 // Send notification to multiple recipients
-                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com']; // Replace with actual email addresses
+                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
                 // $recipients = ['song415400@gmail.com',]; // Replace with actual email addresses
+
+                $paymentMethod = "Moyasar";
+                // Prepare the data to pass to the notification
+                $notificationData = array_merge($qrCode->toArray(), ['payment_method' => $paymentMethod]);
 
                 try {
                     Notification::route('mail', $recipients)
-                        ->notify(new QrCodeStored($qrCode->toArray()));
+                        ->notify(new QrCodeStored($notificationData));
                 } catch (\Exception $e) {
                     // Log the error or handle it as needed
                     Log::error('Email notification failed: ' . $e->getMessage());
@@ -136,6 +145,49 @@ class PaidQrCodeController extends Controller
                 if ($qrCode && is_null($qrCode->date_of_visited)) {
                     $qrCode->date_of_visited = now(); // Set to current date and time
                     $qrCode->save(); // Save the updated record
+
+
+                    // Marketer API
+                    // Check if discountCode and marketerShare are not null
+                    if (!is_null($qrCode->discountCode) && !is_null($qrCode->marketerShare)) {
+                        // Prepare data for the API Marketer request
+                        $data = [
+                            'id' => 0,
+                            'code' => $qrCode->discountCode, // Assuming discountCode is already set
+                            'points' => (int) $qrCode->marketerShare, // Assuming marketerShare is already set
+                            'clientId' => 0,
+                            'cardCountFromSite' => 0,
+                            'isActive' => true
+                        ];
+
+                        // Make the API request
+                        try {
+                            $res = Http::withHeaders([
+                                'Content-Type' => 'application/json-patch+json',
+                            ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $data);
+
+                            // Optionally handle the response from the API
+                            if ($res->successful()) {
+                                Log::info('API request successful', [
+                                    'response' => $res->json(), // Log the response data
+                                ]);
+                            } else {
+                                Log::error('API request failed', [
+                                    'status' => $res->status(),
+                                    'response' => $res->json(), // Log the error response data
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            // Handle any exceptions that may occur during the request
+                            Log::error('Error occurred while making API request', [
+                                'message' => $e->getMessage(),
+                            ]);
+                            // Handle any exceptions that may occur during the request
+                            return response()->json([
+                                'message' => 'Error occurred while making API request: ' . $e->getMessage(),
+                            ], 500);
+                        }
+                    }
                 }
 
                 return response()->json($responseData); // Return the modified response

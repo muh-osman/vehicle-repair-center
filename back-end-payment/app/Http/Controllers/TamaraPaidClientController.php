@@ -197,6 +197,8 @@ class TamaraPaidClientController extends Controller
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
                 $affiliate = $data['affiliate'] ?? null;
+                $discountCode = $data['dc'] ?? null;
+                $marketerShare = $data['msh'] ?? null;
 
                 // Check if the QR code already exists
                 $qrCode = TamaraPaidClient::where('paid_qr_code', $orderId)->first();
@@ -215,15 +217,21 @@ class TamaraPaidClientController extends Controller
                         'additionalServices' => $additionalServices ?? null,
                         'service' => $service ?? null,
                         'affiliate' => $affiliate ?? null,
+                        'discountCode' => $discountCode ?? null,
+                        'marketerShare' => $marketerShare ?? null,
                         'date_of_visited' => null,
                     ]);
 
                     // Send notification to recipients
                     $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
 
+                    $paymentMethod = "Tamara";
+                    // Prepare the data to pass to the notification
+                    $notificationData = array_merge($qrCode->toArray(), ['payment_method' => $paymentMethod]);
+
                     try {
                         Notification::route('mail', $recipients)
-                            ->notify(new QrCodeStored($qrCode->toArray()));
+                            ->notify(new QrCodeStored($notificationData));
                     } catch (\Exception $e) {
                         Log::error('Email notification failed: ' . $e->getMessage());
                     }
@@ -309,6 +317,9 @@ class TamaraPaidClientController extends Controller
                 $additionalServices = $data['additionalServices'] ?? null;
                 $service = $data['service'] ?? null;
                 $affiliate = $data['affiliate'] ?? null;
+                $discountCode = $data['dc'] ?? null;
+                $marketerShare = $data['msh'] ?? null;
+
 
 
                 // Find the corresponding PaidQrCode entry
@@ -323,6 +334,49 @@ class TamaraPaidClientController extends Controller
                 if ($qrCode && is_null($qrCode->date_of_visited)) {
                     $qrCode->date_of_visited = now(); // Set to current date and time
                     $qrCode->save(); // Save the updated record
+
+
+                    // Marketer API
+                    // Check if discountCode and marketerShare are not null
+                    if (!is_null($qrCode->discountCode) && !is_null($qrCode->marketerShare)) {
+                        // Prepare data for the API Marketer request
+                        $dataPayload = [
+                            'id' => 0,
+                            'code' => $qrCode->discountCode, // Assuming discountCode is already set
+                            'points' => (int) $qrCode->marketerShare, // Assuming marketerShare is already set
+                            'clientId' => 0,
+                            'cardCountFromSite' => 0,
+                            'isActive' => true
+                        ];
+
+                        // Make the API request
+                        try {
+                            $res = Http::withHeaders([
+                                'Content-Type' => 'application/json-patch+json',
+                            ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $dataPayload);
+
+                            // Optionally handle the response from the API
+                            if ($res->successful()) {
+                                Log::info('API request successful', [
+                                    'response' => $res->json(), // Log the response data
+                                ]);
+                            } else {
+                                Log::error('API request failed', [
+                                    'status' => $res->status(),
+                                    'response' => $res->json(), // Log the error response data
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            // Handle any exceptions that may occur during the request
+                            Log::error('Error occurred while making API request', [
+                                'message' => $e->getMessage(),
+                            ]);
+                            // Handle any exceptions that may occur during the request
+                            return response()->json([
+                                'message' => 'Error occurred while making API request: ' . $e->getMessage(),
+                            ], 500);
+                        }
+                    }
                 }
                 // Return the modified response
                 return response()->json([
@@ -338,6 +392,8 @@ class TamaraPaidClientController extends Controller
                         'additionalServices' => $additionalServices,
                         'service' => $service,
                         'affiliate' => $affiliate,
+                        'discountCode' => $discountCode,
+                        'marketerShare' => $marketerShare,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tamara' => $responseData
