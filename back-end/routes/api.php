@@ -85,6 +85,9 @@ Route::middleware('guest')->group(function () {
     // Search car models (by any letter also limited with 10 result)
     Route::post('car-models/limited-general-search', [CarModelController::class, 'searchModelsLimited']);
 
+    // Get All car models
+    Route::get('all-car-models', [CarModelController::class, 'index']);
+
     // Getting prices by car model ID and year ID
     Route::get('get-prices-by-model-and-year', [PriceController::class, 'getPricesByModelAndYear']);
 
