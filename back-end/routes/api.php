@@ -12,6 +12,9 @@ use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\YearOfManufactureController;
 
+use App\Http\Controllers\PhoneNumberController;
+use App\Http\Controllers\MarketingPostController;
+
 
 
 // Group for protected routes
@@ -62,6 +65,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-price', [PriceController::class, 'getPrice']);
     // Search car models (by first letter)
     Route::post('car-models/search', [CarModelController::class, 'searchModels']);
+
+
+    // Accepted Phone Numbers (for reports dashboard)
+    Route::post('post-accepted-phone-number', [PhoneNumberController::class, 'store']);
+    Route::delete('delete-accepted-phone-number/{id}', [PhoneNumberController::class, 'destroy']);
+
+
+
+    // Create a new marketing post
+    Route::post('post/marketing-posts', [MarketingPostController::class, 'store']);
+    // Delete a marketing post
+    Route::delete('delete/marketing-posts/{id}', [MarketingPostController::class, 'destroy']);
 });
 
 
@@ -98,4 +113,12 @@ Route::middleware('guest')->group(function () {
     Route::get('all-manufacturers', [ManufacturerController::class, 'allManufacturers']);
     Route::get('all-models-by-manufacture-id/{manufactureId}', [CarModelController::class, 'allModelsByManufactureId']);
     Route::get('all-plans-prices-by-model-id/{modelId}/and-year-id/{yearId}', [PriceController::class, 'forMshraiAppGetDiscountedPricesByModelAndYear']);
+
+
+    // Accepted Phone Numbers (for reports dashboard)
+    Route::get('get-all-accepted-phone-numbers', [PhoneNumberController::class, 'index']);
+    // // Get all marketing posts
+    Route::get('get-all/marketing-posts', [MarketingPostController::class, 'index']);
+    // Get all marketing posts (return images as file)
+    Route::get('marketing-posts/with-images-as-files', [MarketingPostController::class, 'indexWithImages']);
 });

@@ -182,11 +182,11 @@ class UnPaidQrCodeController extends Controller
 
 
     /**
-     * Get all phone numbers from both paid and unpaid QR code tables with their corresponding QR codes.
+     * Get all phone numbers from (Paid, Unpaid Tabby and Tamara) QR code tables with their corresponding QR codes.
      */
     public function getAllPhonesWithQrCodes()
     {
-        // Retrieve all records from the paid QR codes table
+        // Retrieve all records from the paid QR codes table (Moyasar)
         $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get()->filter(function ($item) {
             return !is_null($item->phone);
         });

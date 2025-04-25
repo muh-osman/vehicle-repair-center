@@ -27,9 +27,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TocIcon from "@mui/icons-material/Toc";
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeIcon from "@mui/icons-material/QrCode";
+import DialpadIcon from "@mui/icons-material/Dialpad";
 import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
-// import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-// import PriceChangeIcon from "@mui/icons-material/PriceChange";
+import PostAddIcon from "@mui/icons-material/PostAdd";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -184,31 +184,87 @@ function ResponsiveDrawer(props) {
         </ListItem>
 
         {cookies.role === 255 && (
-          <ListItem
-            dir="ltr"
-            key={99999999999999}
-            disablePadding
-            button
-            component={NavLink}
-            to="/dashboard/requests"
-            selected={pathname === "/dashboard/requests"}
-          >
-            <ListItemButton sx={{ color: "#757575" }}>
-              <ListItemIcon>
-                <Avatar
-                  alt="icon"
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  <LocalGroceryStoreIcon sx={{ color: "#757575" }} />
-                </Avatar>
-              </ListItemIcon>
-              <ListItemText primary="Requests" />
-            </ListItemButton>
-          </ListItem>
+          <>
+            <ListItem
+              dir="ltr"
+              key={99999999999999}
+              disablePadding
+              button
+              component={NavLink}
+              to="/dashboard/requests"
+              selected={pathname === "/dashboard/requests"}
+            >
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <LocalGroceryStoreIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Requests" />
+              </ListItemButton>
+            </ListItem>
+
+            <Divider />
+
+            <ListItem
+              dir="ltr"
+              key={888888888888}
+              disablePadding
+              button
+              component={NavLink}
+              to="/dashboard/phone-number"
+              selected={pathname === "/dashboard/phone-number"}
+            >
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <DialpadIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Falak Phone" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem
+              dir="ltr"
+              key={77777777}
+              disablePadding
+              button
+              component={NavLink}
+              to="/dashboard/falak-post"
+              selected={pathname === "/dashboard/falak-post"}
+            >
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <PostAddIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Falak Post" />
+              </ListItemButton>
+            </ListItem>
+          </>
         )}
       </List>
     </div>

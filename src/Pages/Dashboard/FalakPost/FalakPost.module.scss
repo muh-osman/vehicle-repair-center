@@ -1,0 +1,67 @@
+.container {
+  min-height: calc(100vh - 112px);
+
+  //   display: flex;
+  //   justify-content: center;
+  // margin-top: 32px;
+}
+
+.progressContainer {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+
+  span {
+    height: 2px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    min-height: calc(100vh - 104px);
+  }
+
+  .progressContainer {
+    top: 56px;
+  }
+}
+
+// .inputRoot {
+//   padding-right: 14px !important;
+// }
+
+.upload_box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 360px;
+  margin: auto;
+}
+
+.img_box {
+  //   max-height: 300px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+  }
+}
+
+//
+.posts_box {
+  display: flex;
+  gap: 32px;
+  margin: auto;
+  flex-wrap: wrap;
+}
+
+.posts_card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 300px;
+  margin: auto;
+}

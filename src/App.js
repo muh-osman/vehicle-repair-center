@@ -45,6 +45,8 @@ import TamaraClient from "./Pages/Dashboard/TamaraClient/TamaraClient";
 import TabbyClient from "./Pages/Dashboard/TabbyClient/TabbyClient";
 import UnpaidClient from "./Pages/Dashboard/UnpaidClient/UnpaidClient";
 import Requests from "./Pages/Dashboard/Requests/Requests";
+import PhoneNumber from "./Pages/Dashboard/PhoneNumber/PhoneNumber";
+import FalakPost from "./Pages/Dashboard/FalakPost/FalakPost";
 
 
 export default function App() {
@@ -81,6 +83,8 @@ export default function App() {
 
             <Route path="requests" element={<Requests />} />
             <Route path="post/:id" element={<Post />} />
+            <Route path="phone-number" element={<PhoneNumber />} />
+            <Route path="falak-post" element={<FalakPost />} />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>

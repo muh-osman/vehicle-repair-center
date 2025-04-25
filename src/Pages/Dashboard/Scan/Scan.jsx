@@ -7,9 +7,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // MUI
 import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
+import LoadingButton from "@mui/lab/LoadingButton";
+// import Autocomplete from "@mui/material/Autocomplete";
 // Axios
 import axios from "axios";
+//
+import { toast } from "react-toastify";
 // Api
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
@@ -79,10 +82,46 @@ export default function Scan() {
     fetchPhoneNumbers();
   }, []);
 
-  const handleSelecteChange = (event, value) => {
-    if (value) {
-      setScanResult(value.qr_code);
+  // const handleSelecteChange = (event, value) => {
+  //   if (value) {
+  //     setScanResult(value.qr_code);
+  //   }
+  // };
+
+  //
+  const [isLoading, setIsLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    // Replace any non-digit character with empty string
+    const englishNumbersOnly = value.replace(/[^0-9]/g, "");
+    setInputValue(englishNumbersOnly);
+  };
+
+  const handleSubmit = () => {
+    setIsLoading(true);
+
+    // Normalize the input value by removing leading 0 if exists
+    const normalizedInput = inputValue.replace(/^0+/, "");
+
+    // Find all matching phones (ignoring leading 0s)
+    const matchingPhones = phoneNumbersData.filter((item) => {
+      const normalizedPhone = item.phone.replace(/^0+/, "");
+      return normalizedPhone === normalizedInput;
+    });
+
+    if (matchingPhones.length > 0) {
+      // Get the last matching phone as requested
+      toast.warn("رقم جوال مكرر, يفضل استخدام الباركود");
+      const lastMatchingPhone = matchingPhones[matchingPhones.length - 1];
+      setScanResult(lastMatchingPhone.qr_code);
+      setError(null);
+    } else {
+      setError("No matching phone number found");
+      toast.warn("No matching phone number found");
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -105,32 +144,31 @@ export default function Scan() {
 
         {/* <pre>{scanResult && scanResult}</pre> */}
 
-        <Autocomplete
-          disablePortal
-          options={phoneNumbersData.map((item) => ({
-            phone: item.phone,
-            qr_code: item.qr_code,
-          }))}
-          getOptionLabel={(option) => option.phone}
-          onChange={handleSelecteChange}
-          loading={loadding}
-          sx={{ width: "101%", marginTop: "32px", backgroundColor: "white" }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Phone Number"
-              sx={{ marginLeft: "-2px" }}
-            />
-          )}
-          renderOption={(props, option) => (
-            <li {...props} key={option.qr_code}>
-              {option.phone}
-            </li>
-          )}
-          isOptionEqualToValue={(option, value) =>
-            option.qr_code === value.qr_code
-          } // Custom equality check
+        <TextField
+          label="Phone Number"
+          placeholder="05XXXXXXXX"
+          variant="outlined"
+          sx={{ width: "100%", marginTop: "32px", backgroundColor: "white" }}
+          onChange={handleInputChange}
+          value={inputValue}
+          type="tel"
+          inputProps={{
+            minLength: 10,
+            maxLength: 10,
+          }}
         />
+
+        <LoadingButton
+          variant="contained"
+          onClick={handleSubmit}
+          loading={isLoading}
+          disabled={inputValue.length < 10}
+          fullWidth
+          size="large"
+          sx={{ marginTop: "16px" }}
+        >
+          Search
+        </LoadingButton>
 
         {/* Fetch error */}
         {error && (
