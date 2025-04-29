@@ -110,7 +110,13 @@ export default function Scan() {
       return normalizedPhone === normalizedInput;
     });
 
-    if (matchingPhones.length > 0) {
+
+    if (matchingPhones.length === 1) {
+      // Get the last matching phone as requested
+      const lastMatchingPhone = matchingPhones[matchingPhones.length - 1];
+      setScanResult(lastMatchingPhone.qr_code);
+      setError(null);
+    } else if (matchingPhones.length > 1) {
       // Get the last matching phone as requested
       toast.warn("رقم جوال مكرر, يفضل استخدام الباركود");
       const lastMatchingPhone = matchingPhones[matchingPhones.length - 1];
