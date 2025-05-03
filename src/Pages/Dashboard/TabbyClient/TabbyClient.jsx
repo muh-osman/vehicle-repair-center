@@ -151,7 +151,11 @@ export default function TabbyClient() {
               <tr>
                 <td>تاريخ الصنع:</td>
                 <td>
-                  {data?.data?.year === "2" ? "2015 أو اعلى" : "2014 أو ادنى"}
+                  {data?.data?.full_year
+                    ? data.data.full_year
+                    : data?.data?.year === "2"
+                    ? "2015 أو اعلى"
+                    : "2014 أو ادنى"}
                 </td>
               </tr>
 

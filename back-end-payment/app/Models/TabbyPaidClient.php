@@ -24,5 +24,6 @@ class TabbyPaidClient extends Model
         'affiliate',
         'discountCode',
         'marketerShare',
+        'full_year',
     ];
 }

@@ -35,6 +35,7 @@ class PaidQrCodeController extends Controller
             'affiliate' => 'nullable|string|max:255',
             'discountCode' => 'nullable|string|max:255',
             'marketerShare' => 'nullable|numeric|min:0',
+            'full_year' => 'nullable|string|max:255',
         ]);
 
         // Secret Key
@@ -66,6 +67,7 @@ class PaidQrCodeController extends Controller
                     'affiliate' => $metadata['affiliate'] ?? null,
                     'discountCode' => $metadata['dc'] ?? null,
                     'marketerShare' => $metadata['msh'] ?? null,
+                    'full_year' => $metadata['fy'] ?? null,
                     'date_of_visited' => null, // Set date_of_visited to null
                 ]);
 

@@ -38,6 +38,11 @@ class UnPaidQrCodeController extends Controller
             $request->merge(['marketerShare' => $request->input('msh')]);
         }
 
+        // Check if 'fy' is present in the request and assign it to 'full_year'
+        if ($request->has('fy')) {
+            $request->merge(['full_year' => $request->input('fy')]);
+        }
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'un_paid_qr_code' => 'required|string|unique:un_paid_qr_codes,un_paid_qr_code',
@@ -53,6 +58,7 @@ class UnPaidQrCodeController extends Controller
             'affiliate' => 'nullable|string|max:255',
             'discountCode' => 'nullable|string|max:255',
             'marketerShare' => 'nullable|numeric|min:0',
+            'full_year' => 'nullable|string|max:255',
         ]);
 
         // Create a new UnPaidQrCode entry with date_of_visited as null
@@ -187,22 +193,22 @@ class UnPaidQrCodeController extends Controller
     public function getAllPhonesWithQrCodes()
     {
         // Retrieve all records from the paid QR codes table (Moyasar)
-        $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code')->get()->filter(function ($item) {
+        $paidQrCodes = PaidQrCode::select('phone', 'paid_qr_code as qr_code', 'created_at')->get()->filter(function ($item) {
             return !is_null($item->phone);
         });
 
         // Retrieve all records from the tamara_paid_clients table and add "tamara" prefix to paid_qr_code
-        $tamaraPaidClients = TamaraPaidClient::select('phone', \DB::raw("CONCAT('tamara', paid_qr_code) as qr_code"))->get()->filter(function ($item) {
+        $tamaraPaidClients = TamaraPaidClient::select('phone', \DB::raw("CONCAT('tamara', paid_qr_code) as qr_code"), 'created_at')->get()->filter(function ($item) {
             return !is_null($item->phone);
         });
 
         // Retrieve all records from the unpaid QR codes table
-        $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code')->get()->filter(function ($item) {
+        $unPaidQrCodes = UnPaidQrCode::select('phone', 'un_paid_qr_code as qr_code', 'created_at')->get()->filter(function ($item) {
             return !is_null($item->phone);
         });
 
         // Retrieve all records from the tabby_paid_clients table and add "tabby" prefix to paid_qr_code
-        $tabbyPaidClients = TabbyPaidClient::select('phone', \DB::raw("CONCAT('tabby', paid_qr_code) as qr_code"))->get()->filter(function ($item) {
+        $tabbyPaidClients = TabbyPaidClient::select('phone', \DB::raw("CONCAT('tabby', paid_qr_code) as qr_code"), 'created_at')->get()->filter(function ($item) {
             return !is_null($item->phone);
         });
 
@@ -211,9 +217,13 @@ class UnPaidQrCodeController extends Controller
             ->concat($tamaraPaidClients)
             ->concat($tabbyPaidClients); // Include tabby paid clients
 
-        // Return the combined data as a JSON response
-        return response()->json($allPhones, 200);
+        // Sort the combined collection by created_at date in ascending order
+        $sortedPhones = $allPhones->sortBy('created_at');
+
+        // Return the sorted data as a JSON response
+        return response()->json($sortedPhones->values()->all(), 200);
     }
+
 
     /**
      * Delete a specific QR code from all tables.

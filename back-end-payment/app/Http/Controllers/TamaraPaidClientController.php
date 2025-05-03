@@ -199,6 +199,7 @@ class TamaraPaidClientController extends Controller
                 $affiliate = $data['affiliate'] ?? null;
                 $discountCode = $data['dc'] ?? null;
                 $marketerShare = $data['msh'] ?? null;
+                $fullYear = $data['fy'] ?? null;
 
                 // Check if the QR code already exists
                 $qrCode = TamaraPaidClient::where('paid_qr_code', $orderId)->first();
@@ -219,6 +220,7 @@ class TamaraPaidClientController extends Controller
                         'affiliate' => $affiliate ?? null,
                         'discountCode' => $discountCode ?? null,
                         'marketerShare' => $marketerShare ?? null,
+                        'full_year' => $fullYear ?? null,
                         'date_of_visited' => null,
                     ]);
 
@@ -319,6 +321,7 @@ class TamaraPaidClientController extends Controller
                 $affiliate = $data['affiliate'] ?? null;
                 $discountCode = $data['dc'] ?? null;
                 $marketerShare = $data['msh'] ?? null;
+                $fullYear = $data['fy'] ?? null;
 
 
 
@@ -394,6 +397,7 @@ class TamaraPaidClientController extends Controller
                         'affiliate' => $affiliate,
                         'discountCode' => $discountCode,
                         'marketerShare' => $marketerShare,
+                        'full_year' => $fullYear,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tamara' => $responseData

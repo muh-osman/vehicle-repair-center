@@ -161,7 +161,9 @@ export default function UnpaidClient() {
               <tr>
                 <td>تاريخ الصنع:</td>
                 <td>
-                  {data?.un_paid_qr_code?.year === "2"
+                  {data?.un_paid_qr_code?.full_year
+                    ? data.un_paid_qr_code.full_year
+                    : data?.un_paid_qr_code?.year === "2"
                     ? "2015 أو اعلى"
                     : "2014 أو ادنى"}
                 </td>

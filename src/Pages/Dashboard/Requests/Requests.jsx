@@ -18,7 +18,6 @@ import { useCookies } from "react-cookie";
 // API
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
-
 export default function Requests() {
   // Cookie
   const [cookies, setCookie] = useCookies(["role"]);
@@ -159,19 +158,27 @@ export default function Requests() {
       filterable: true,
     },
     {
-      field: "year",
+      field: "mergedYear",
       headerName: "Year",
       flex: 1,
-      minWidth: 100,
+      minWidth: 150,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value === "2" ? (
-          <div dir="rtl">2015 أو أعلى</div>
+        // Use fullYear if available, otherwise use year
+        const value = params.row.fullYear || params.row.year;
+        return value ? (
+          value === "2" ? (
+            <div dir="rtl">2015 أو أعلى</div>
+          ) : value === "1" ? (
+            <div dir="rtl">2014 أو أدنى</div>
+          ) : (
+            value
+          )
         ) : (
-          <div dir="rtl">2014 أو أدنى</div>
+          <div style={{ color: "#757575" }}>N/A</div>
         );
       },
     },
@@ -194,7 +201,7 @@ export default function Requests() {
     },
     {
       field: "additionalServices",
-      headerName: "AdditionalServices",
+      headerName: "Additional Services",
       flex: 1,
       minWidth: 200,
       sortable: false,
@@ -283,6 +290,7 @@ export default function Requests() {
         price: client.price,
         model: client.model,
         year: client.year,
+        full_year: client.full_year,
         additionalServices: client.additionalServices,
         service: client.service,
         affiliate: client.affiliate,
@@ -330,6 +338,8 @@ export default function Requests() {
       price: client.price,
       model: client.model,
       year: client.year,
+      fullYear: client.full_year,
+      mergedYear: client.full_year || client.year, // this is the merged field
       service: client.service,
       additionalServices: client.additionalServices,
       visited: client.visited,

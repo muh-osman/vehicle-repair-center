@@ -157,7 +157,9 @@ export default function PaidClient() {
               <tr>
                 <td>تاريخ الصنع:</td>
                 <td>
-                  {data?.metadata?.year === "2"
+                  {data?.metadata?.fy
+                    ? data.metadata.fy
+                    : data?.metadata?.year === "2"
                     ? "2015 أو اعلى"
                     : "2014 أو ادنى"}
                 </td>

@@ -80,15 +80,16 @@ class TabbyPaidClientController extends Controller
             $affiliate = $parsedData['affiliate'] ?? null;
             $discountCode = $parsedData['dc'] ?? null;
             $marketerShare = $parsedData['msh'] ?? null;
+            $fullYear = $parsedData['fy'] ?? null;
 
             // Store the data in the database
-            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare);
+            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear);
         }
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
     }
 
-    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare)
+    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear)
     {
         // Check if the order already exists
         $existingOrder = TabbyPaidClient::where('paid_qr_code', $orderId)->first();
@@ -109,6 +110,7 @@ class TabbyPaidClientController extends Controller
                 'affiliate' => $affiliate ?? null,
                 'discountCode' => $discountCode ?? null,
                 'marketerShare' => $marketerShare ?? null,
+                'full_year' => $fullYear ?? null,
                 'date_of_visited' => null,
             ]);
 
@@ -213,6 +215,7 @@ class TabbyPaidClientController extends Controller
                 $affiliate = $data['affiliate'] ?? null;
                 $discountCode = $data['dc'] ?? null;
                 $marketerShare = $data['msh'] ?? null;
+                $fullYear = $data['fy'] ?? null;
 
 
 
@@ -287,6 +290,7 @@ class TabbyPaidClientController extends Controller
                         'affiliate' => $affiliate,
                         'discountCode' => $discountCode,
                         'marketerShare' => $marketerShare,
+                        'full_year' => $fullYear,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tabby' => $responseData
