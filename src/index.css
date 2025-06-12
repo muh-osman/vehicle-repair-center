@@ -27,10 +27,19 @@ th {
 
 /*  */
 .visited {
-  background-color: #299bd8;
+  background-color: #c5ebff;
+  /* color: #fff; */
+}
+
+/* .visited:hover {
+  color: #299bd8;
+} */
+
+.notVisited {
+  background-color: #d32f2f;
   color: #fff;
 }
 
-.visited:hover {
-  color: #299bd8;
+.notVisited:hover {
+  color: #000;
 }

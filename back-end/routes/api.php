@@ -6,14 +6,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PriceController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CarModelController;
-use App\Http\Controllers\ManufacturerController;
-use App\Http\Controllers\YearOfManufactureController;
-
 use App\Http\Controllers\PhoneNumberController;
+
+use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\MarketingPostController;
+use App\Http\Controllers\YearOfManufactureController;
 
 
 
@@ -71,6 +72,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('post-accepted-phone-number', [PhoneNumberController::class, 'store']);
     Route::delete('delete-accepted-phone-number/{id}', [PhoneNumberController::class, 'destroy']);
 
+    // PDF Report
+    Route::post('post-pdf-report', [ReportController::class, 'store']);
+    Route::get('get-all-pdf-reports', [ReportController::class, 'index']);
+    Route::delete('delete-report/{id}', [ReportController::class, 'destroy']);
+
 
 
     // Create a new marketing post
@@ -109,6 +115,9 @@ Route::middleware('guest')->group(function () {
     // Getting discounted prices by car model ID and year ID
     Route::get('get-discounted-prices-by-model-and-year', [PriceController::class, 'getDiscountedPricesByModelAndYear']);
 
+    // Getting discounted prices by car model ID and year ID (discounte 50%)
+    Route::get('get-fifty-precent-discounted-prices-by-model-and-year', [PriceController::class, 'getAllPlansWith50PercentDiscount']);
+
     // Mshrai App
     Route::get('all-manufacturers', [ManufacturerController::class, 'allManufacturers']);
     Route::get('all-models-by-manufacture-id/{manufactureId}', [CarModelController::class, 'allModelsByManufactureId']);
@@ -121,4 +130,9 @@ Route::middleware('guest')->group(function () {
     Route::get('get-all/marketing-posts', [MarketingPostController::class, 'index']);
     // Get all marketing posts (return images as file)
     Route::get('marketing-posts/with-images-as-files', [MarketingPostController::class, 'indexWithImages']);
+
+
+    // PDF Report
+    Route::get('get-all-summary-reports-numbers', [ReportController::class, 'showArrayOfSummaryReportsNumbers']);
+    Route::get('download-summary-report/{report_number}', [ReportController::class, 'downloadSummaryReport']);
 });

@@ -329,6 +329,54 @@ class PriceController extends Controller
         return response()->json($prices->values());
     }
 
+
+    /**
+     * Get discounted prices (50% off) for specific model and year
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllPlansWith50PercentDiscount(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $carModelId = $request->query('car_model_id');
+        $yearId = $request->query('year_id');
+
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $carModelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                return [
+                    'model_name' => $carModel->model_name,
+                    'manufacturer_name' => $manufacturer->manufacture_name,
+                    'prices' => $groupedPrices->map(function ($price) {
+                        // Apply 50% discount to all prices
+                        $discountedPrice = $price->price * 0.5;
+
+                        return [
+                            'service_name' => $price->service->service_name,
+                            'price' => number_format($discountedPrice, 2, '.', ''),
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json(array_values($prices->toArray()));
+    }
+
     // Mshrai App
     // All plans prices by model id and year id
     public function forMshraiAppGetDiscountedPricesByModelAndYear(Request $request, $modelId, $yearId)

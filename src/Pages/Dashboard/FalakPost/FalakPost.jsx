@@ -160,7 +160,6 @@ export default function FalakPost() {
       <p
         style={{
           marginTop: "64px",
-          backgroundColor: "#fff",
           width: "fit-content",
           padding: "0 6px",
           borderRadius: "3px",

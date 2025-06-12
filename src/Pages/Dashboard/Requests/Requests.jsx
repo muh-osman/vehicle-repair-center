@@ -1,10 +1,11 @@
 import style from "./Requests.module.scss";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 // MUI
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
+import TableChartIcon from "@mui/icons-material/TableChart";
 import {
   Dialog,
   DialogActions,
@@ -15,6 +16,13 @@ import {
 import axios from "axios";
 // Cookies
 import { useCookies } from "react-cookie";
+// Excel Export
+import { DownloadTableExcel } from "react-export-table-to-excel";
+// Images
+import Tabby from "../../../Assets/Images/tabby.png";
+import Tamara from "../../../Assets/Images/tamara.png";
+import Moyasar from "../../../Assets/Images/moyasar.png";
+import unPaid from "../../../Assets/Images/unPaid.png";
 // API
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
@@ -24,7 +32,9 @@ export default function Requests() {
 
   const [open, setOpen] = useState(false);
   const [itemIdToDelete, setItemIdToDelete] = useState(null);
-
+  // Export As Excel Button
+  const tableRef = useRef();
+  //
   const handleDelete = (id) => {
     setItemIdToDelete(id);
     setOpen(true);
@@ -54,6 +64,7 @@ export default function Requests() {
     setOpen(false);
   };
 
+  //
   const columns = [
     {
       field: "index",
@@ -64,21 +75,8 @@ export default function Requests() {
       align: "center",
     },
     {
-      field: "created_at",
+      field: "date", // This will be the date part only
       headerName: "Date",
-      flex: 1,
-      minWidth: 200,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      filterable: true,
-      renderCell: (params) => {
-        return formatDate(params.value); // Use the formatDate function to format the date
-      },
-    },
-    {
-      field: "status",
-      headerName: "Status",
       flex: 1,
       minWidth: 100,
       sortable: false,
@@ -86,13 +84,56 @@ export default function Requests() {
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value === "Paid" ? (
-          <div style={{ backgroundColor: "#2e7d32", color: "#fff" }}>
-            {params.value}
-          </div>
-        ) : (
-          <div style={{ backgroundColor: "#d32f2f", color: "#fff" }}>
-            {params.value}
+        return formatDate(params.value);
+      },
+    },
+    {
+      field: "time", // This will be the time part only
+      headerName: "Time",
+      flex: 1,
+      minWidth: 100,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return formatTime(params.value);
+      },
+    },
+    {
+      field: "gateway",
+      headerName: "Gateway",
+      flex: 1,
+      minWidth: 100,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        let imageSrc;
+        switch (params.value) {
+          case "Tamara":
+            imageSrc = Tamara;
+            break;
+          case "Tabby":
+            imageSrc = Tabby;
+            break;
+          case "Moyasar":
+            imageSrc = Moyasar;
+            break;
+          default:
+            imageSrc = unPaid; // or a default image if you have one
+        }
+
+        return (
+          <div style={{ width: "100%", textAlign: "center" }}>
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={params.value}
+                style={{ maxWidth: "100%", maxHeight: "50px" }}
+              />
+            ) : null}
           </div>
         );
       },
@@ -171,9 +212,9 @@ export default function Requests() {
         const value = params.row.fullYear || params.row.year;
         return value ? (
           value === "2" ? (
-            <div dir="rtl">2015 أو أعلى</div>
+            <div dir="rtl">2017 أو أعلى</div>
           ) : value === "1" ? (
-            <div dir="rtl">2014 أو أدنى</div>
+            <div dir="rtl">2016 أو أدنى</div>
           ) : (
             value
           )
@@ -295,7 +336,7 @@ export default function Requests() {
         service: client.service,
         affiliate: client.affiliate,
         created_at: client.created_at,
-        status: client.un_paid_qr_code ? "Unpaid" : "Paid", // Optional: Add a status based on QR code
+        gateway: client.table_name,
         visited: client.date_of_visited,
       }));
       // console.log(response.data);
@@ -319,18 +360,27 @@ export default function Requests() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+    };
+    return date.toLocaleDateString("en-GB", options);
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const options = {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     };
-    return date.toLocaleString("en-GB", options).replace(",", " at");
+    return date.toLocaleTimeString("en-GB", options);
   };
 
   const rows = data
     .map((client, index) => ({
       index: data.length - index,
+      date: client.created_at, // Will be formatted as date only
+      time: client.created_at, // Will be formatted as time only
       created_at: client.created_at,
-      status: client.status,
+      gateway: client.gateway,
       name: client.full_name,
       phone: client.phone,
       branch: client.branch,
@@ -349,9 +399,8 @@ export default function Requests() {
     }))
     .filter((client) => {
       if (activeButton === "all") return true;
-      if (activeButton === "paid") return client.status === "Paid";
-      if (activeButton === "unpaid") return client.status === "Unpaid";
       if (activeButton === "visited") return client.visited; // Assuming visited is truthy if visited
+      if (activeButton === "notVisited") return !client.visited; // Assuming visited is truthy if visited
       return true; // Fallback
     });
 
@@ -429,7 +478,7 @@ export default function Requests() {
           All
         </Button>
 
-        <Button
+        {/* <Button
           sx={{
             width: "100%",
             flex: 1,
@@ -440,20 +489,7 @@ export default function Requests() {
           onClick={() => handleButtonClick("paid")}
         >
           Paid
-        </Button>
-
-        <Button
-          sx={{
-            width: "100%",
-            flex: 1,
-          }}
-          color="error"
-          size="large"
-          variant={activeButton === "unpaid" ? "contained" : "outlined"}
-          onClick={() => handleButtonClick("unpaid")}
-        >
-          Unpaid
-        </Button>
+        </Button> */}
 
         <Button
           sx={{
@@ -467,8 +503,84 @@ export default function Requests() {
         >
           Visited
         </Button>
+
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="error"
+          size="large"
+          variant={activeButton === "notVisited" ? "contained" : "outlined"}
+          onClick={() => handleButtonClick("notVisited")}
+        >
+          Not Visited
+        </Button>
+
+        <DownloadTableExcel
+          filename="orders table"
+          sheet="orders"
+          currentTableRef={tableRef.current}
+        >
+          <Button
+            sx={{
+              width: "100%",
+              flex: 1,
+            }}
+            variant="outlined"
+            color="secondary"
+            size="large"
+          >
+            <TableChartIcon />
+          </Button>
+        </DownloadTableExcel>
       </Stack>
 
+      {/* Hidden table for export */}
+      <table ref={tableRef} style={{ display: "none" }}>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Gateway</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Branch</th>
+            <th>Plan</th>
+            <th>Price</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>Service</th>
+            <th>Additional Services</th>
+            <th>Reference Number</th>
+            <th>Affiliate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>{row.index}</td>
+              <td>{formatDate(row.date)}</td>
+              <td>{formatTime(row.time)}</td>
+              <td>{row.gateway}</td>
+              <td>{row.name}</td>
+              <td>{row.phone}</td>
+              <td>{row.branch}</td>
+              <td>{row.plan}</td>
+              <td>{row.price}</td>
+              <td>{row.model}</td>
+              <td>{row.mergedYear}</td>
+              <td>{row.service || "N/A"}</td>
+              <td>{row.additionalServices || "N/A"}</td>
+              <td>{row.barCode}</td>
+              <td>{row.affiliate || "N/A"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/*  */}
       <div
         className={style.datagrid_container}
         style={{

@@ -48,6 +48,8 @@ class TabbyPaidClientController extends Controller
         // Get the data from the request
         $data = $request->all();
 
+        Log::info('Tabby data: ' . json_encode($data));
+
         // Check if the status is "authorized" and closed_at is null
         if (isset($data['status']) && $data['status'] === 'authorized' && is_null($data['closed_at'])) {
             // Capture the payment
@@ -55,42 +57,89 @@ class TabbyPaidClientController extends Controller
 
             // Check if the capture was successful
             if ($captureResponse['success']) {
-                // Log::info('Payment captured successfully for ID: ' . $data['id']);
+                Log::info('Tabby Payment captured successfully for ID: ' . $data['id']);
             } else {
-                // Log::error('Payment capture failed for ID: ' . $data['id'] . ' - ' . $captureResponse['error']);
+                Log::error('Tabby Payment capture failed for ID: ' . $data['id'] . ' - ' . $captureResponse['error']);
             }
         }
 
         // Check if the status is "closed"
         if (isset($data['status']) && $data['status'] === 'closed' && !is_null($data['closed_at'])) {
-            // Parse the description to extract data
-            $description = $data['description'] ?? '';
-            parse_str($description, $parsedData); // Parse the query string into an array
+            // Get the order ID
+            $orderId = $data['id'];
 
-            // Assign variables
-            $fullname = $parsedData['fullname'] ?? null;
-            $phone = $parsedData['phone'] ?? null;
-            $plan = $parsedData['plan'] ?? null;
-            $branch = $parsedData['branch'] ?? null;
-            $price = $parsedData['price'] ?? 0;
-            $model = $parsedData['model'] ?? null;
-            $yearId = $parsedData['yearId'] ?? null;
-            $additionalServices = $parsedData['additionalServices'] ?? null;
-            $service = $parsedData['service'] ?? null;
-            $affiliate = $parsedData['affiliate'] ?? null;
-            $discountCode = $parsedData['dc'] ?? null;
-            $marketerShare = $parsedData['msh'] ?? null;
-            $fullYear = $parsedData['fy'] ?? null;
+            // Fetch the full order details from the Tabby API
+            $orderDetailsResponse = $this->getOrderDetails($orderId);
 
-            // Store the data in the database
-            $this->storeClosedOrderData($data['id'], $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear);
+            if ($orderDetailsResponse['success']) {
+                $orderDetails = $orderDetailsResponse['data'];
+
+                // Parse the description string
+                $description = $orderDetails['description'] ?? '';
+                parse_str($description, $parsedDescription);
+
+                // Extract necessary fields from the parsed description
+                $fullname = $parsedDescription['fullname'] ?? null;
+                $phone = $parsedDescription['phone'] ?? null;
+                $branch = $parsedDescription['branch'] ?? null;
+                $plan = $parsedDescription['plan'] ?? null;
+                $price = $parsedDescription['price'] ?? 0; // Use the amount from the order details
+                $model = $parsedDescription['model'] ?? null;
+                $yearId = $parsedDescription['yearId'] ?? null;
+                $additionalServices = $parsedDescription['additionalServices'] ?? null;
+                $service = $parsedDescription['service'] ?? null; // Adjust based on actual structure
+                $affiliate = $parsedDescription['affiliate'] ?? null; // Adjust based on actual structure
+                $discountCode = $parsedDescription['dc'] ?? null; // Adjust based on actual structure
+                $marketerShare = $parsedDescription['msh'] ?? null; // Adjust based on actual structure
+                $fullYear = $parsedDescription['fy'] ?? null; // Adjust based on actual structure
+
+                // Store the data in the database
+                $this->storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear);
+            } else {
+                Log::error('Failed to fetch order details for ID: ' . $orderId);
+            }
         }
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
     }
 
+    private function getOrderDetails($orderId)
+    {
+        // Get the Tabby Secret Key from the .env file
+        $tabbySecretKey = env('TABBY_SECRET_KEY');
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $tabbySecretKey,
+                'Content-Type' => 'application/json',
+            ])->get("https://api.tabby.ai/api/v2/payments/{$orderId}");
+
+            if ($response->successful()) {
+                // Log the successful response data
+                Log::info('Successfully fetched order details for ID: ' . $orderId, [
+                    'data' => $response->json() // Log the entire response data
+                ]);
+                return ['success' => true, 'data' => $response->json()];
+            } else {
+                Log::error('Error fetching order details', [
+                    'orderId' => $orderId,
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+                return ['success' => false];
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching order details', [
+                'orderId' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+            return ['success' => false];
+        }
+    }
+
     private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear)
     {
+        Log::info('Start store Tabby Payment orderId: ' . $orderId);
         // Check if the order already exists
         $existingOrder = TabbyPaidClient::where('paid_qr_code', $orderId)->first();
 
@@ -144,8 +193,8 @@ class TabbyPaidClientController extends Controller
         // Get the Tabby Secret Key from the .env file
         $tabbySecretKey = env('TABBY_SECRET_KEY');
 
-        // Log::info('paymentId: ' . $paymentId);
-        // Log::info('amount: ' . $amount);
+        Log::info('Start capture Tabby Payment paymentId: ' . $paymentId);
+
         try {
             $response = Http::withToken($tabbySecretKey)
                 ->post("https://api.tabby.ai/api/v2/payments/{$paymentId}/captures", [
@@ -153,11 +202,26 @@ class TabbyPaidClientController extends Controller
                 ]);
 
             if ($response->successful()) {
+                Log::info('Capture Tabby Payment Successfully');
                 return ['success' => true];
             } else {
+                // Log the failed response
+                Log::error('Tabby payment capture failed', [
+                    'paymentId' => $paymentId,
+                    'amount' => $amount,
+                    'response' => $response->body(),
+                    'status' => $response->status()
+                ]);
                 return ['success' => false, 'error' => $response->body()];
             }
         } catch (\Exception $e) {
+            // Log the exception
+            Log::error('Tabby payment capture exception', [
+                'paymentId' => $paymentId,
+                'amount' => $amount,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }

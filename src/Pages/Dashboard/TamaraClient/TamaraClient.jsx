@@ -158,8 +158,8 @@ export default function TamaraClient() {
                   {data?.data?.full_year
                     ? data.data.full_year
                     : data?.data?.year === "2"
-                    ? "2015 أو اعلى"
-                    : "2014 أو ادنى"}
+                    ? "2017 أو أعلى"
+                    : "2016 أو أدنى"}
                 </td>
               </tr>
 

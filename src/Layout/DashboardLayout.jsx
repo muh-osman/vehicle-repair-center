@@ -30,6 +30,7 @@ import QrCodeIcon from "@mui/icons-material/QrCode";
 import DialpadIcon from "@mui/icons-material/Dialpad";
 import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
 import PostAddIcon from "@mui/icons-material/PostAdd";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -266,6 +267,34 @@ function ResponsiveDrawer(props) {
             </ListItem>
           </>
         )}
+
+        <Divider />
+
+        <ListItem
+          dir="ltr"
+          key={666666}
+          disablePadding
+          button
+          component={NavLink}
+          to="/dashboard/reports"
+          selected={pathname === "/dashboard/reports"}
+        >
+          <ListItemButton sx={{ color: "#757575" }}>
+            <ListItemIcon>
+              <Avatar
+                alt="icon"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <InsertDriveFileIcon sx={{ color: "#757575" }} />
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText primary="Mojaz" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </div>
   );

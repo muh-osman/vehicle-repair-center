@@ -158,18 +158,33 @@ class UnPaidQrCodeController extends Controller
      */
     public function getAllQrCodes()
     {
-        // Retrieve all records from both tables
-        $paidQrCodes = PaidQrCode::all();
-        $unPaidQrCodes = UnPaidQrCode::all();
-        $tamaraPaidClients = TamaraPaidClient::all();
-        $tabbyPaidClients = TabbyPaidClient::all(); // Retrieve records from tabby_paid_clients
+        // Retrieve all records from both tables and add table name
+        $paidQrCodes = PaidQrCode::all()->map(function ($item) {
+            $item->table_name = 'Moyasar';
+            return $item;
+        });
 
-        // Filter out records in $tamaraPaidClients where full_name, phone, and plan are null
+        $unPaidQrCodes = UnPaidQrCode::all()->map(function ($item) {
+            $item->table_name = 'unPaid';
+            return $item;
+        });
+
+        $tamaraPaidClients = TamaraPaidClient::all()->map(function ($item) {
+            $item->table_name = 'Tamara';
+            return $item;
+        });
+
+        $tabbyPaidClients = TabbyPaidClient::all()->map(function ($item) {
+            $item->table_name = 'Tabby';
+            return $item;
+        });
+
+        // Filter out records where full_name, phone, and plan are null
         $filteredTamaraPaidClients = $tamaraPaidClients->filter(function ($client) {
             return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
         });
 
-        // Filter out records in $tabbyPaidClients where full_name, phone, and plan are null
+        // Filter out records where full_name, phone, and plan are null
         $filteredTabbyPaidClients = $tabbyPaidClients->filter(function ($client) {
             return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
         });

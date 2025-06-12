@@ -160,8 +160,8 @@ export default function PaidClient() {
                   {data?.metadata?.fy
                     ? data.metadata.fy
                     : data?.metadata?.year === "2"
-                    ? "2015 أو اعلى"
-                    : "2014 أو ادنى"}
+                    ? "2017 أو أعلى"
+                    : "2016 أو أدنى"}
                 </td>
               </tr>
 

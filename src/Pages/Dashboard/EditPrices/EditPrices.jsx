@@ -215,7 +215,7 @@ export default function EditPrices() {
                   fullWidth
                   type="text"
                   label="سنة الصنع"
-                  value="سنة 2015 أو أعلى"
+                  value="سنة 2017 أو أعلى"
                   disabled={true}
                 ></TextField>
               </Grid>
@@ -363,7 +363,7 @@ export default function EditPrices() {
                   fullWidth
                   type="text"
                   label="سنة الصنع"
-                  value="سنة 2014 أو أدنى"
+                  value="سنة 2016 أو أدنى"
                   disabled={true}
                 ></TextField>
               </Grid>
