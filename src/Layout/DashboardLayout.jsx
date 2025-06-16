@@ -31,6 +31,7 @@ import DialpadIcon from "@mui/icons-material/Dialpad";
 import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import VideocamIcon from "@mui/icons-material/Videocam";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -293,6 +294,32 @@ function ResponsiveDrawer(props) {
               </Avatar>
             </ListItemIcon>
             <ListItemText primary="Mojaz" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem
+          dir="ltr"
+          key={7777}
+          disablePadding
+          button
+          component={NavLink}
+          to="/dashboard/videos"
+          selected={pathname === "/dashboard/videos"}
+        >
+          <ListItemButton sx={{ color: "#757575" }}>
+            <ListItemIcon>
+              <Avatar
+                alt="icon"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <VideocamIcon sx={{ color: "#757575" }} />
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText primary="Videos" />
           </ListItemButton>
         </ListItem>
       </List>

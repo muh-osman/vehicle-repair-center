@@ -48,6 +48,7 @@ import Requests from "./Pages/Dashboard/Requests/Requests";
 import PhoneNumber from "./Pages/Dashboard/PhoneNumber/PhoneNumber";
 import FalakPost from "./Pages/Dashboard/FalakPost/FalakPost";
 import Reports from "./Pages/Dashboard/Reports/Reports";
+import Videos from "./Pages/Dashboard/Videos/Videos";
 
 
 export default function App() {
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="phone-number" element={<PhoneNumber />} />
             <Route path="falak-post" element={<FalakPost />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="videos" element={<Videos />} />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>
