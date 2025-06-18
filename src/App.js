@@ -49,7 +49,8 @@ import PhoneNumber from "./Pages/Dashboard/PhoneNumber/PhoneNumber";
 import FalakPost from "./Pages/Dashboard/FalakPost/FalakPost";
 import Reports from "./Pages/Dashboard/Reports/Reports";
 import Videos from "./Pages/Dashboard/Videos/Videos";
-
+import FreeOrder from "./Pages/Dashboard/FreeOrder/FreeOrder";
+import FreeOrderResult from "./Pages/Dashboard/FreeOrderResult/FreeOrderResult";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -83,15 +84,18 @@ export default function App() {
             <Route path="tabby-client/:id" element={<TabbyClient />} />
             <Route path="unpaid-client/:id" element={<UnpaidClient />} />
 
-            <Route path="requests" element={<Requests />} />
-            <Route path="post/:id" element={<Post />} />
-            <Route path="phone-number" element={<PhoneNumber />} />
-            <Route path="falak-post" element={<FalakPost />} />
+            {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="videos" element={<Videos />} />
+            <Route path="free-order-result/:phoneNumber" element={<FreeOrderResult />} />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>
+              <Route path="requests" element={<Requests />} />
+              <Route path="phone-number" element={<PhoneNumber />} />
+              <Route path="falak-post" element={<FalakPost />} />
+              <Route path="free-order" element={<FreeOrder />} />
+
               <Route path="add" element={<Add />}>
                 <Route index element={<AddIndex />} />
                 <Route path="model" element={<AddModel />} />

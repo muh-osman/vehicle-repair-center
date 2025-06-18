@@ -2,7 +2,6 @@
 import style from "./Table.module.scss";
 import { useEffect, useRef } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
-import useFetchAllTableDataApi from "../../../API/useFetchAllTableDataApi";
 import { toast } from "react-toastify";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -13,6 +12,8 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
+// API
+import useFetchAllTableDataApi from "../../../API/useFetchAllTableDataApi";
 // Excel
 import { DownloadTableExcel } from "react-export-table-to-excel";
 // Cookies

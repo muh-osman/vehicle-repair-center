@@ -7,6 +7,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\FreeOrderController;
 use App\Http\Controllers\VideosController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ServiceController;
@@ -82,6 +83,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('post-video', [VideosController::class, 'store']);
     Route::get('get-all-videos', [VideosController::class, 'index']);
     Route::delete('delete-video/{id}', [VideosController::class, 'destroy']);
+
+    // Free order
+    Route::get('get-all-free-Orders', [FreeOrderController::class, 'index']);
+    Route::post('post-free-order', [FreeOrderController::class, 'store']);
+    Route::delete('delete-free-order/{id}', [FreeOrderController::class, 'destroy']);
+    Route::get('show-free-order/{phone_number}', [FreeOrderController::class, 'show']);
 
 
     // Create a new marketing post

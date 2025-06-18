@@ -29,7 +29,11 @@ export default function Scan() {
   const scanUserId = async () => {
     qrScanSoundEffect.play(); // Sound
     try {
-      if (scanResult.length === 14) {
+      if (scanResult.startsWith("free-")) {
+        // Free Order
+        const trimmedFreeOrderScanResult = scanResult.replace(/^free-/, "");
+        navigate(`/dashboard/free-order-result/${trimmedFreeOrderScanResult}`);
+      } else if (scanResult.length === 14) {
         // UnPaid user
         navigate(`/dashboard/unpaid-client/${scanResult}`);
       } else if (scanResult.startsWith("tamara")) {
@@ -109,7 +113,6 @@ export default function Scan() {
       const normalizedPhone = item.phone.replace(/^0+/, "");
       return normalizedPhone === normalizedInput;
     });
-
 
     if (matchingPhones.length === 1) {
       // Get the last matching phone as requested

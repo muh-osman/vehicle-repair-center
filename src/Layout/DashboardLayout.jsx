@@ -32,6 +32,7 @@ import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import VideocamIcon from "@mui/icons-material/Videocam";
+import LoyaltyIcon from "@mui/icons-material/Loyalty";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -264,6 +265,32 @@ function ResponsiveDrawer(props) {
                   </Avatar>
                 </ListItemIcon>
                 <ListItemText primary="Falak Post" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem
+              dir="ltr"
+              key={777111}
+              disablePadding
+              button
+              component={NavLink}
+              to="/dashboard/free-order"
+              selected={pathname === "/dashboard/free-order"}
+            >
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <LoyaltyIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Free Order" />
               </ListItemButton>
             </ListItem>
           </>
