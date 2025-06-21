@@ -51,6 +51,7 @@ import Reports from "./Pages/Dashboard/Reports/Reports";
 import Videos from "./Pages/Dashboard/Videos/Videos";
 import FreeOrder from "./Pages/Dashboard/FreeOrder/FreeOrder";
 import FreeOrderResult from "./Pages/Dashboard/FreeOrderResult/FreeOrderResult";
+import Analytics from "./Pages/Analytics/Analytics";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -95,6 +96,7 @@ export default function App() {
               <Route path="phone-number" element={<PhoneNumber />} />
               <Route path="falak-post" element={<FalakPost />} />
               <Route path="free-order" element={<FreeOrder />} />
+              <Route path="analytics" element={<Analytics />} />
 
               <Route path="add" element={<Add />}>
                 <Route index element={<AddIndex />} />

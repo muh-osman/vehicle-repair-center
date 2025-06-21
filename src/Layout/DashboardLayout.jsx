@@ -33,6 +33,7 @@ import PostAddIcon from "@mui/icons-material/PostAdd";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -211,6 +212,32 @@ function ResponsiveDrawer(props) {
                   </Avatar>
                 </ListItemIcon>
                 <ListItemText primary="Requests" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem
+              dir="ltr"
+              key={9999999999}
+              disablePadding
+              button
+              component={NavLink}
+              to="/dashboard/analytics"
+              selected={pathname === "/dashboard/analytics"}
+            >
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <AssessmentIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Analytics" />
               </ListItemButton>
             </ListItem>
 
