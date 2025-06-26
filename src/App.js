@@ -51,7 +51,7 @@ import Reports from "./Pages/Dashboard/Reports/Reports";
 import Videos from "./Pages/Dashboard/Videos/Videos";
 import FreeOrder from "./Pages/Dashboard/FreeOrder/FreeOrder";
 import FreeOrderResult from "./Pages/Dashboard/FreeOrderResult/FreeOrderResult";
-import Analytics from "./Pages/Analytics/Analytics";
+import Analytics from "./Pages/Dashboard/Analytics/Analytics";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -88,7 +88,10 @@ export default function App() {
             {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="videos" element={<Videos />} />
-            <Route path="free-order-result/:phoneNumber" element={<FreeOrderResult />} />
+            <Route
+              path="free-order-result/:phoneNumber"
+              element={<FreeOrderResult />}
+            />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>

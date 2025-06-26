@@ -13,6 +13,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\PhoneNumberController;
+use App\Http\Controllers\VisitorInfoController;
 
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\MarketingPostController;
@@ -95,6 +96,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('post/marketing-posts', [MarketingPostController::class, 'store']);
     // Delete a marketing post
     Route::delete('delete/marketing-posts/{id}', [MarketingPostController::class, 'destroy']);
+
+
+    // Get Users IP (analytics)
+    Route::get('get-all-users-analytics', [VisitorInfoController::class, 'index']);
 });
 
 
@@ -151,4 +156,7 @@ Route::middleware('guest')->group(function () {
     // Videos
     Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
     Route::get('download-video/{report_number}', [VideosController::class, 'downloadVideo']);
+
+    // Get User IP (analytics)
+    Route::post('visitors/track', [VisitorInfoController::class, 'store']);
 });
