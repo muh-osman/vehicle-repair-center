@@ -315,7 +315,7 @@ class PriceController extends Controller
                     'manufacturer_name' => $manufacturer->manufacture_name,
                     'prices' => $groupedPrices->map(function ($price) {
                         $discountedPrice = $price->service->service_name === "شامل"
-                            ? $price->price * 0.8 // Apply 20% discount
+                            ? $price->price * 0.9 // Apply 10% discount
                             : $price->price;
 
                         return [

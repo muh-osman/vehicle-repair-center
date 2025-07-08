@@ -115,6 +115,16 @@ export default function PaidClient() {
               </tr>
 
               <tr>
+                <td>كود الخصم:</td>
+                <td>{data?.metadata?.dc || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>وسيلة الدفع:</td>
+                <td>ميسر</td>
+              </tr>
+
+              <tr>
                 <td>الحالة:</td>
                 <td
                   style={{

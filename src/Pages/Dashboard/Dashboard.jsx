@@ -7,13 +7,14 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import LinearProgress from "@mui/material/LinearProgress";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
+// import OutlinedInput from "@mui/material/OutlinedInput";
+// import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import ListItemText from "@mui/material/ListItemText";
-import Select from "@mui/material/Select";
-import Checkbox from "@mui/material/Checkbox";
+// import FormControl from "@mui/material/FormControl";
+// import ListItemText from "@mui/material/ListItemText";
+// import Select from "@mui/material/Select";
+// import Checkbox from "@mui/material/Checkbox";
+// import Radio from "@mui/material/Radio";
 import Tooltip from "@mui/material/Tooltip";
 
 import IconButton from "@mui/material/IconButton";
@@ -55,10 +56,10 @@ export default function Dashboard() {
     setSelectedManufacturerId(""); // Reset selected manufacturer ID
     setSelectedModelId(""); // Reset selected model ID
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId([]); // Reset selected service ID
+    setSelectedServicesId(""); // Reset selected service ID
     setPrice(""); // Reset the price
     setIsSaleClicked(false); // Reset sale 10% show
-    setIsSale20Clicked(false); // Reset sale 20% show
+    setIsSale5Clicked(false); // Reset sale 5% show
   }
 
   // Manufactures logic
@@ -82,10 +83,10 @@ export default function Dashboard() {
     setSelectedManufacturerId(manufacturerId);
     setSelectedModelId(""); // Reset selected model ID
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId([]); // Reset selected service ID
+    setSelectedServicesId(""); // Reset selected service ID
     setPrice(""); // Reset the price
     setIsSaleClicked(false); //Reset 10% sale show
-    setIsSale20Clicked(false); // Reset sale 20% show
+    setIsSale5Clicked(false); // Reset sale 5% show
   }
 
   // Models logic
@@ -108,10 +109,10 @@ export default function Dashboard() {
     const modelId = e.target.value;
     setSelectedModelId(modelId);
     setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId([]); // Reset selected service ID
+    setSelectedServicesId(""); // Reset selected service ID
     setPrice(""); // Reset the price
     setIsSaleClicked(false); //Reset sale 10% show
-    setIsSale20Clicked(false); // Reset sale 20% show
+    setIsSale5Clicked(false); // Reset sale 5% show
   }
 
   // Years logic
@@ -133,14 +134,14 @@ export default function Dashboard() {
   function handleYearChange(e) {
     const yearId = e.target.value;
     setSelectedYearId(yearId);
-    setSelectedServicesId([]); // Reset selected service ID
+    setSelectedServicesId(""); // Reset selected service ID
     setPrice(""); // Reset the price
     setIsSaleClicked(false); //Reset sale 10% show
-    setIsSale20Clicked(false); // Reset sale 20% show
+    setIsSale5Clicked(false); // Reset sale 5% show
   }
 
   // Services logic
-  const [selectedServicesId, setSelectedServicesId] = useState([]);
+  const [selectedServicesId, setSelectedServicesId] = useState("");
   const {
     refetch: fetchServices,
     data: services,
@@ -156,16 +157,24 @@ export default function Dashboard() {
   }, [selectedYearId]);
 
   function handleServiceChange(e) {
+    // setSelectedServicesId([e.target.value]);
+
+    const serviceId = e.target.value;
+    setSelectedServicesId(serviceId);
+    setPrice(""); // Reset the price
+    setIsSaleClicked(false); //Reset sale 10% show
+    setIsSale5Clicked(false); // Reset sale 5% show
+
     // const serviceId = e.target.value;
     // setSelectedServicesId(serviceId);
 
-    const {
-      target: { value },
-    } = e;
-    setSelectedServicesId(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
+    // const {
+    //   target: { value },
+    // } = e;
+    // setSelectedServicesId(
+    //   // On autofill we get a stringified value.
+    //   typeof value === "string" ? value.split(",") : value
+    // );
 
     // console.log(selectedServicesId);
     // setPrice(""); // Reset the price
@@ -191,7 +200,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (selectedServicesId.length > 0) {
+      if (selectedServicesId) {
         // Check if selectedServicesId has changed
         await fetchPrice(selectedModelId, selectedYearId, selectedServicesId);
         setPrice(priceData);
@@ -225,17 +234,17 @@ export default function Dashboard() {
     }
   };
 
-  const [isSale20Clicked, setIsSale20Clicked] = useState(false);
-  const discounted20Price = priceData * 0.8; // 20% discount
+  const [isSale5Clicked, setIsSale5Clicked] = useState(false);
+  const discounted5Price = priceData * 0.95; // 5% discount
 
   const sale10 = () => {
-    setIsSale20Clicked(false); // turn off 20% discount
+    setIsSale5Clicked(false); // turn off 5% discount
     setIsSaleClicked((prevState) => !prevState); // turn on 10% discount
   };
 
-  const sale20 = () => {
+  const sale5 = () => {
     setIsSaleClicked(false); // turn off 10% discount
-    setIsSale20Clicked((prevState) => !prevState); // turn on 20% discount
+    setIsSale5Clicked((prevState) => !prevState); // turn on 5% discount
   };
 
   return (
@@ -420,45 +429,82 @@ export default function Dashboard() {
 
           {/* Start Services input */}
           {services && (
-            <div>
-              <FormControl
-                sx={{ m: 0, width: "100%", backgroundColor: "#fff" }}
-              >
-                <InputLabel id="demo-multiple-checkbox-label">
-                  الخدمات
-                </InputLabel>
-                <Select
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <TextField
+                  sx={{ backgroundColor: "#fff" }}
                   dir="rtl"
                   required
-                  labelId="demo-multiple-checkbox-label"
-                  id="demo-multiple-checkbox"
-                  multiple
+                  fullWidth
+                  select
+                  label="الخدمة"
                   value={selectedServicesId}
                   onChange={handleServiceChange}
-                  input={<OutlinedInput label="الخدمات" />}
-                  renderValue={(selected) => {
-                    return selected
-                      .map(
-                        (id) =>
-                          services.find((service) => service.id === id)
-                            ?.service_name
-                      )
-                      .filter(Boolean)
-                      .join(", ");
-                  }}
-                  MenuProps={MenuProps}
+                  // disabled={}
                 >
-                  {services?.map((service) => (
-                    <MenuItem key={service.id} value={service.id}>
-                      <Checkbox
-                        checked={selectedServicesId.indexOf(service.id) > -1}
-                      />
-                      <ListItemText primary={service.service_name} />
+                  {services === undefined && (
+                    <MenuItem value="">
+                      <em>Loading...</em>
                     </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
+                  )}
+
+                  {services?.length === 0 && (
+                    <MenuItem value="">
+                      <em>No services to show.</em>
+                    </MenuItem>
+                  )}
+
+                  {services !== undefined &&
+                    services?.length !== 0 &&
+                    services?.map((service) => (
+                      <MenuItem dir="rtl" key={service.id} value={service.id}>
+                        {service.service_name}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+
+            // <div>
+            //   <FormControl
+            //     sx={{ m: 0, width: "100%", backgroundColor: "#fff" }}
+            //   >
+            //     <InputLabel id="demo-multiple-checkbox-label">
+            //       الخدمات
+            //     </InputLabel>
+            //     <Select
+            //       dir="rtl"
+            //       required
+            //       labelId="demo-multiple-checkbox-label"
+            //       id="demo-multiple-checkbox"
+            //       // multiple
+            //       // value={selectedServicesId}
+            //       value={selectedServicesId.length > 0 ? selectedServicesId[0] : ''}
+            //       onChange={handleServiceChange}
+            //       input={<OutlinedInput label="الخدمات" />}
+            //       renderValue={(selected) => {
+            //         return selected
+            //           .map(
+            //             (id) =>
+            //               services.find((service) => service.id === id)
+            //                 ?.service_name
+            //           )
+            //           .filter(Boolean)
+            //           .join(", ");
+            //       }}
+            //       MenuProps={MenuProps}
+            //     >
+            //       {services?.map((service) => (
+            //         <MenuItem key={service.id} value={service.id}>
+            //           <Radio
+            //             checked={selectedServicesId.indexOf(service.id) > -1}
+            //           />
+            //           <ListItemText primary={service.service_name} />
+            //         </MenuItem>
+            //       ))}
+            //     </Select>
+            //   </FormControl>
+            // </div>
           )}
           {/* End Services input */}
 
@@ -469,7 +515,7 @@ export default function Dashboard() {
                 dir="rtl"
                 style={{ color: "#757575" }}
                 className={
-                  isSaleClicked || isSale20Clicked ? "originalPrice" : ""
+                  isSaleClicked || isSale5Clicked ? "originalPrice" : ""
                 }
               >
                 {priceData} <span>ريال</span>
@@ -481,22 +527,25 @@ export default function Dashboard() {
           {isSaleClicked && priceData && (
             <div className={style.price_box}>
               <h1 dir="rtl" style={{ color: "#7431fa" }}>
-                {discountedPrice} <span>ريال</span>
+                {Math.trunc(discountedPrice)} <span>ريال</span>
               </h1>
             </div>
           )}
 
-          {/* Price after sale 20% */}
-          {isSale20Clicked && priceData && selectedServicesId.includes(1) && (
-            <div className={style.price_box}>
-              <h1 dir="rtl" style={{ color: "#d32f2f" }}>
-                {discounted20Price} <span>ريال</span>
-              </h1>
-            </div>
-          )}
+          {/* Price after sale 5% */}
+          {isSale5Clicked &&
+            priceData &&
+            (selectedServicesId === 2 || selectedServicesId === 3) && (
+              <div className={style.price_box}>
+                <h1 dir="rtl" style={{ color: "#d32f2f" }}>
+                  {Math.trunc(discounted5Price)} <span>ريال</span>
+                </h1>
+              </div>
+            )}
 
           {/* Sale btn 10% */}
-          {priceData && (
+          {/* باقة الشامل فقط */}
+          {priceData && selectedServicesId === 1 && (
             <div className={style.saleBtn}>
               <Tooltip title="10%" arrow>
                 <IconButton color="primary" onClick={sale10}>
@@ -506,16 +555,18 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Sale btn 20% */}
-          {priceData && selectedServicesId.includes(1) && (
-            <div className={style.saleBtn_20}>
-              <Tooltip title="20%" arrow>
-                <IconButton color="error" onClick={sale20}>
-                  <LoyaltyIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-          )}
+          {/* Sale btn 5% */}
+          {/* باقة الأساسي والمحركات فقط */}
+          {priceData &&
+            (selectedServicesId === 2 || selectedServicesId === 3) && (
+              <div className={style.saleBtn_5}>
+                <Tooltip title="5%" arrow>
+                  <IconButton color="error" onClick={sale5}>
+                    <LoyaltyIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )}
 
           {/* End Price */}
         </Box>

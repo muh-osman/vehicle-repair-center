@@ -115,7 +115,19 @@ export default function UnpaidClient() {
 
               <tr>
                 <td>المبلغ:</td>
-                <td>SAR {data?.un_paid_qr_code?.price}</td>
+                <td dir="rtl">
+                  {Math.trunc(data?.un_paid_qr_code?.price)} ريال
+                </td>
+              </tr>
+
+              <tr>
+                <td>كود الخصم:</td>
+                <td>{data?.un_paid_qr_code?.discountCode || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>وسيلة الدفع:</td>
+                <td>في المركز</td>
               </tr>
 
               <tr>

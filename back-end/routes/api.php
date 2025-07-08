@@ -9,6 +9,7 @@ use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FreeOrderController;
 use App\Http\Controllers\VideosController;
+use App\Http\Controllers\FalakVideoController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CarModelController;
@@ -80,10 +81,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-all-pdf-reports', [ReportController::class, 'index']);
     Route::delete('delete-report/{id}', [ReportController::class, 'destroy']);
 
-    // Videos
+    // Videos of Reports
     Route::post('post-video', [VideosController::class, 'store']);
     Route::get('get-all-videos', [VideosController::class, 'index']);
     Route::delete('delete-video/{id}', [VideosController::class, 'destroy']);
+
+    // Falak Videos
+    Route::post('post-falak-video', [FalakVideoController::class, 'store']);
+    Route::delete('delete-falak-video/{id}', [FalakVideoController::class, 'destroy']);
 
     // Free order
     Route::get('get-all-free-Orders', [FreeOrderController::class, 'index']);
@@ -153,9 +158,14 @@ Route::middleware('guest')->group(function () {
     Route::get('get-all-summary-reports-numbers', [ReportController::class, 'showArrayOfSummaryReportsNumbers']);
     Route::get('download-summary-report/{report_number}', [ReportController::class, 'downloadSummaryReport']);
 
-    // Videos
+    // Videos of Reports
     Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
     Route::get('download-video/{report_number}', [VideosController::class, 'downloadVideo']);
+
+    // Falak Videos
+    Route::get('get-all-falak-videos', [FalakVideoController::class, 'index']);
+    Route::get('download-falak-video/{id}', [FalakVideoController::class, 'download']);
+
 
     // Get User IP (analytics)
     Route::post('visitors/track', [VisitorInfoController::class, 'store']);

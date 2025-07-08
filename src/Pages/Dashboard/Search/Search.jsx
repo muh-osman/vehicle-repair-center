@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 // MUI
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import CircularProgress from "@mui/material/CircularProgress";
+import Avatar from "@mui/material/Avatar";
 // API
 import { useSearchModelByNameApi } from "../../../API/useSearchModelByNameApi";
 
@@ -37,7 +39,19 @@ export default function Search() {
 
   return (
     <div className={style.container}>
-      <h1>Search</h1>
+      <Avatar
+        sx={{
+          margin: "auto",
+          marginBottom: "0px",
+          bgcolor: "transparent",
+          color: "#757575",
+          width: "100px",
+          height: "100px",
+        }}
+      >
+        <SearchIcon sx={{ fontSize: "75px" }} />
+      </Avatar>
+
       <div className={style.box}>
         <div>
           <TextField
@@ -61,7 +75,7 @@ export default function Search() {
                     {isPending ? (
                       <CircularProgress size={24} color="inherit" />
                     ) : (
-                      <SearchIcon size={24} style={{ fill: "#757575" }} />
+                      <KeyboardIcon size={24} style={{ fill: "#757575" }} />
                     )}
                   </IconButton>
                 </InputAdornment>

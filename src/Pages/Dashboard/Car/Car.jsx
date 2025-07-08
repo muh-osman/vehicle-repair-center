@@ -7,6 +7,8 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
+// import { Divider } from "@mui/material";
 
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
@@ -150,10 +152,14 @@ export default function Car() {
         </Button>
       </Stack>
 
-      <div dir="rtl" style={{ padding: "0px 16px 16px" }}>
-        <h1>{carModelData?.[0].model_name}</h1>
-        <h1>{carModelData?.[0].manufacturer_name}</h1>
-      </div>
+      {carModelData && (
+        <div style={{ padding: "0px 16px 22px" }}>
+          <Stack direction="row-reverse" spacing={1} justifyContent="center">
+            <Chip label={carModelData?.[0].manufacturer_name} />
+            <Chip variant="outlined" label={carModelData?.[0].model_name} />
+          </Stack>
+        </div>
+      )}
 
       {carModelData && (
         <div className={style.card_container}>
@@ -167,7 +173,7 @@ export default function Car() {
                   textAlign: "center",
                   color: "#757575 !important",
                   fontSize:
-                    isSaleClicked[0].clicked || sale20 ? "24px" : "48px",
+                    isSaleClicked[0].clicked || sale20 ? "22px" : "48px",
                   textDecoration:
                     isSaleClicked[0].clicked || sale20
                       ? "line-through"
@@ -203,7 +209,7 @@ export default function Car() {
               >
                 {isSaleClicked[0].clicked &&
                   carModelData &&
-                  carModelData?.[0].prices?.[0].price * (0.9).toFixed(2) +
+                  Math.trunc(carModelData?.[0].prices?.[0].price * 0.9) +
                     " ريال"}
               </Typography>
 
@@ -251,7 +257,7 @@ export default function Car() {
               </ExpandMore>
 
               {/* Sale btn 20%*/}
-              <Tooltip title="20%" arrow>
+              {/* <Tooltip title="20%" arrow>
                 <IconButton
                   className={style.sale20Btn}
                   color={sale20 ? "error" : "#757575"}
@@ -259,7 +265,7 @@ export default function Car() {
                 >
                   <LoyaltyIcon />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
 
               {/* Sale btn 10%*/}
               <Tooltip title="10%" arrow>
@@ -327,7 +333,7 @@ export default function Car() {
                 style={{
                   textAlign: "center",
                   color: "#757575 !important",
-                  fontSize: isSaleClicked[1].clicked ? "24px" : "48px",
+                  fontSize: isSaleClicked[1].clicked ? "22px" : "48px",
                   textDecoration: isSaleClicked[1].clicked
                     ? "line-through"
                     : "none",
@@ -348,13 +354,13 @@ export default function Car() {
                 variant="h3"
                 sx={{
                   textAlign: "center",
-                  color: isSaleClicked[1].clicked ? "#7431fa" : "#757575",
+                  color: isSaleClicked[1].clicked ? "#d32f2f" : "#757575",
                   fontWeight: "700",
                 }}
               >
                 {isSaleClicked[1].clicked &&
                   carModelData &&
-                  carModelData?.[0].prices?.[1].price * (0.9).toFixed(2) +
+                  Math.trunc(carModelData?.[0].prices?.[1].price * 0.95) +
                     " ريال"}
               </Typography>
 
@@ -386,10 +392,10 @@ export default function Car() {
               </ExpandMore>
 
               {/* Sale btn */}
-              <Tooltip title="10%" arrow>
+              <Tooltip title="5%" arrow>
                 <IconButton
-                  className={style.sale10Btn}
-                  color={isSaleClicked[1].clicked ? "primary" : "#757575"}
+                  className={style.sale5Btn}
+                  color={isSaleClicked[1].clicked ? "error" : "#757575"}
                   onClick={() => handleClick(!isSaleClicked[1].clicked, 1)}
                 >
                   <LoyaltyIcon />
@@ -437,7 +443,7 @@ export default function Car() {
                 style={{
                   textAlign: "center",
                   color: "#757575 !important",
-                  fontSize: isSaleClicked[2].clicked ? "24px" : "48px",
+                  fontSize: isSaleClicked[2].clicked ? "22px" : "48px",
                   textDecoration: isSaleClicked[2].clicked
                     ? "line-through"
                     : "none",
@@ -458,13 +464,13 @@ export default function Car() {
                 variant="h3"
                 sx={{
                   textAlign: "center",
-                  color: isSaleClicked[2].clicked ? "#7431fa" : "#757575",
+                  color: isSaleClicked[2].clicked ? "#d32f2f" : "#757575",
                   fontWeight: "700",
                 }}
               >
                 {isSaleClicked[2].clicked &&
                   carModelData &&
-                  carModelData?.[0].prices?.[2].price * (0.9).toFixed(2) +
+                  Math.trunc(carModelData?.[0].prices?.[2].price * 0.95) +
                     " ريال"}
               </Typography>
 
@@ -496,10 +502,10 @@ export default function Car() {
               </ExpandMore>
 
               {/* Sale btn */}
-              <Tooltip title="10%" arrow>
+              <Tooltip title="5%" arrow>
                 <IconButton
-                  className={style.sale10Btn}
-                  color={isSaleClicked[2].clicked ? "primary" : "#757575"}
+                  className={style.sale5Btn}
+                  color={isSaleClicked[2].clicked ? "error" : "#757575"}
                   onClick={() => handleClick(!isSaleClicked[2].clicked, 2)}
                 >
                   <LoyaltyIcon />
@@ -541,7 +547,7 @@ export default function Car() {
                 style={{
                   textAlign: "center",
                   color: "#757575 !important",
-                  fontSize: isSaleClicked[3].clicked ? "24px" : "48px",
+                  fontSize: isSaleClicked[3].clicked ? "22px" : "48px",
                   textDecoration: isSaleClicked[3].clicked
                     ? "line-through"
                     : "none",
@@ -600,7 +606,7 @@ export default function Car() {
               </ExpandMore>
 
               {/* Sale btn */}
-              <Tooltip title="10%" arrow>
+              {/* <Tooltip title="10%" arrow>
                 <IconButton
                   className={style.sale10Btn}
                   color={isSaleClicked[3].clicked ? "primary" : "#757575"}
@@ -608,7 +614,7 @@ export default function Car() {
                 >
                   <LoyaltyIcon />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
             </CardActions>
 
             <Collapse in={expandedId === 3} timeout="auto" unmountOnExit>
@@ -652,7 +658,7 @@ export default function Car() {
                 style={{
                   textAlign: "center",
                   color: "#757575 !important",
-                  fontSize: isSaleClicked[4].clicked ? "24px" : "48px",
+                  fontSize: isSaleClicked[4].clicked ? "22px" : "48px",
                   textDecoration: isSaleClicked[4].clicked
                     ? "line-through"
                     : "none",
@@ -711,7 +717,7 @@ export default function Car() {
               </ExpandMore>
 
               {/* Sale btn */}
-              <Tooltip title="10%" arrow>
+              {/* <Tooltip title="10%" arrow>
                 <IconButton
                   className={style.sale10Btn}
                   color={isSaleClicked[4].clicked ? "primary" : "#757575"}
@@ -719,7 +725,7 @@ export default function Car() {
                 >
                   <LoyaltyIcon />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
             </CardActions>
 
             <Collapse in={expandedId === 4} timeout="auto" unmountOnExit>

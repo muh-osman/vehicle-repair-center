@@ -3,9 +3,12 @@ import { useState, useEffect, useRef } from "react";
 // MUI
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
-import TableChartIcon from "@mui/icons-material/TableChart";
+// import TableChartIcon from "@mui/icons-material/TableChart";
+import DownloadIcon from "@mui/icons-material/Download";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Dialog,
   DialogActions,
@@ -68,11 +71,34 @@ export default function Requests() {
   const columns = [
     {
       field: "index",
-      headerName: "No.",
+      headerName: "",
       width: 70,
       sortable: false,
       headerAlign: "center",
       align: "center",
+      disableColumnMenu: true,
+      renderHeader: () => (
+        <DownloadTableExcel
+          filename="orders table"
+          sheet="orders"
+          currentTableRef={tableRef.current}
+        >
+          <IconButton
+            size="small"
+            color="primary"
+            title="Export to Excel"
+            sx={{
+              backgroundColor: "rgba(25, 118, 210, 0.08)",
+              "&:hover": {
+                backgroundColor: "rgba(25, 118, 210, 0.12)",
+              },
+            }}
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
+        </DownloadTableExcel>
+      ),
+      renderCell: (params) => params.value, // Keep showing the row numbers
     },
     {
       field: "date", // This will be the date part only
@@ -187,6 +213,39 @@ export default function Requests() {
       headerAlign: "center",
       align: "center",
       filterable: true,
+      renderCell: (params) => (
+        <div dir="rtl">{Math.trunc(params.value)} ريال</div>
+      ),
+    },
+    {
+      field: "discountCode",
+      headerName: "Discount code",
+      flex: 1,
+      minWidth: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? params.value : <div>N/A</div>;
+      },
+    },
+    {
+      field: "marketerShare",
+      headerName: "Marketer share",
+      flex: 1,
+      minWidth: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? (
+          <div dir="rtl">{Math.trunc(params.value)} ريال</div>
+        ) : (
+          <div>N/A</div>
+        );
+      },
     },
     {
       field: "model",
@@ -219,7 +278,7 @@ export default function Requests() {
             value
           )
         ) : (
-          <div style={{ color: "#757575" }}>N/A</div>
+          <div>N/A</div>
         );
       },
     },
@@ -233,11 +292,7 @@ export default function Requests() {
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value ? (
-          params.value
-        ) : (
-          <div style={{ color: "#757575" }}>N/A</div>
-        );
+        return params.value ? params.value : <div>N/A</div>;
       },
     },
     {
@@ -267,20 +322,39 @@ export default function Requests() {
       align: "center",
       filterable: true,
     },
+    // {
+    //   field: "affiliate",
+    //   headerName: "Affiliate",
+    //   flex: 1,
+    //   minWidth: 150,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   filterable: true,
+    //   renderCell: (params) => {
+    //     return params.value ? (
+    //       params.value
+    //     ) : (
+    //       <div style={{ color: "#757575" }}>N/A</div>
+    //     );
+    //   },
+    // },
     {
-      field: "affiliate",
-      headerName: "Affiliate",
+      field: "date_of_visited",
+      headerName: "Date of visited",
       flex: 1,
-      minWidth: 150,
+      minWidth: 170,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
       renderCell: (params) => {
         return params.value ? (
-          params.value
+          <div>
+            {formatDate(params.value)} - {formatTime(params.value)}
+          </div>
         ) : (
-          <div style={{ color: "#757575" }}>N/A</div>
+          <div style={{ color: "#fff" }}>N/A</div>
         );
       },
     },
@@ -296,13 +370,18 @@ export default function Requests() {
             headerAlign: "center",
             align: "center",
             renderCell: (params) => (
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleDelete(params.row.id)}
-              >
-                Delete
-              </Button>
+              <div style={{ pointerEvents: "auto" }}>
+                {" "}
+                {/* Add this wrapper */}
+                <IconButton
+                  variant="contained"
+                  sx={{ backgroundColor: "#c5ebff" }}
+                  color="error"
+                  onClick={() => handleDelete(params.row.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </div>
             ),
           },
         ]
@@ -335,6 +414,9 @@ export default function Requests() {
         additionalServices: client.additionalServices,
         service: client.service,
         affiliate: client.affiliate,
+        date_of_visited: client.date_of_visited,
+        discountCode: client.discountCode,
+        marketerShare: client.marketerShare,
         created_at: client.created_at,
         gateway: client.table_name,
         visited: client.date_of_visited,
@@ -396,6 +478,9 @@ export default function Requests() {
       id: client.qr_code,
       barCode: client.qr_code,
       affiliate: client.affiliate,
+      date_of_visited: client.date_of_visited,
+      discountCode: client.discountCode,
+      marketerShare: client.marketerShare,
     }))
     .filter((client) => {
       if (activeButton === "all") return true;
@@ -462,7 +547,7 @@ export default function Requests() {
         sx={{ pb: 3, maxWidth: "617px", margin: "auto" }}
         spacing={2}
         justifyContent="center"
-        direction={{ xs: "column", sm: "row" }}
+        direction={{ xs: "row", sm: "row" }}
         alignItems="stretch"
       >
         <Button
@@ -517,7 +602,7 @@ export default function Requests() {
           Not Visited
         </Button>
 
-        <DownloadTableExcel
+        {/* <DownloadTableExcel
           filename="orders table"
           sheet="orders"
           currentTableRef={tableRef.current}
@@ -531,9 +616,9 @@ export default function Requests() {
             color="secondary"
             size="large"
           >
-            <TableChartIcon />
+            <DownloadIcon />
           </Button>
-        </DownloadTableExcel>
+        </DownloadTableExcel> */}
       </Stack>
 
       {/* Hidden table for export */}
@@ -555,6 +640,9 @@ export default function Requests() {
             <th>Additional Services</th>
             <th>Reference Number</th>
             <th>Affiliate</th>
+            <th>Date of visited</th>
+            <th>Discount code</th>
+            <th>Marketer share</th>
           </tr>
         </thead>
         <tbody>
@@ -575,6 +663,9 @@ export default function Requests() {
               <td>{row.additionalServices || "N/A"}</td>
               <td>{row.barCode}</td>
               <td>{row.affiliate || "N/A"}</td>
+              <td>{row.date_of_visited || "N/A"}</td>
+              <td>{row.discountCode || "N/A"}</td>
+              <td>{row.marketerShare || "N/A"}</td>
             </tr>
           ))}
         </tbody>
@@ -606,6 +697,13 @@ export default function Requests() {
           getRowClassName={(params) => {
             return params.row.visited ? "visited" : "notVisited";
           }}
+          sx={{
+            "& .MuiDataGrid-row": {
+              pointerEvents: "none", // Disable hover/click effects
+            },
+          }}
+          disableRowSelectionOnClick // Prevents selection on click
+          disableVirtualization // Sometimes helps with styling issues
         />
       </div>
     </div>

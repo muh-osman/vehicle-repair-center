@@ -275,8 +275,8 @@ function ResponsiveDrawer(props) {
               disablePadding
               button
               component={NavLink}
-              to="/dashboard/falak-post"
-              selected={pathname === "/dashboard/falak-post"}
+              to="/dashboard/falak-media"
+              selected={pathname === "/dashboard/falak-media"}
             >
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
@@ -291,7 +291,7 @@ function ResponsiveDrawer(props) {
                     <PostAddIcon sx={{ color: "#757575" }} />
                   </Avatar>
                 </ListItemIcon>
-                <ListItemText primary="Falak Post" />
+                <ListItemText primary="Falak Media" />
               </ListItemButton>
             </ListItem>
 

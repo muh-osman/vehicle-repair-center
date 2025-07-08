@@ -52,6 +52,8 @@ import Videos from "./Pages/Dashboard/Videos/Videos";
 import FreeOrder from "./Pages/Dashboard/FreeOrder/FreeOrder";
 import FreeOrderResult from "./Pages/Dashboard/FreeOrderResult/FreeOrderResult";
 import Analytics from "./Pages/Dashboard/Analytics/Analytics";
+import FalakMedia from "./Pages/Dashboard/FalakMedia/FalakMedia";
+import FalakVideo from "./Pages/Dashboard/FalakVideo/FalakVideo";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -97,7 +99,9 @@ export default function App() {
             <Route element={<SuperAuth />}>
               <Route path="requests" element={<Requests />} />
               <Route path="phone-number" element={<PhoneNumber />} />
+              <Route path="falak-media" element={<FalakMedia />} />
               <Route path="falak-post" element={<FalakPost />} />
+              <Route path="falak-video" element={<FalakVideo />} />
               <Route path="free-order" element={<FreeOrder />} />
               <Route path="analytics" element={<Analytics />} />
 

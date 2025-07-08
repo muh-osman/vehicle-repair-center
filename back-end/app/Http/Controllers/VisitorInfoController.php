@@ -43,11 +43,28 @@ class VisitorInfoController extends Controller
             'country' => $this->getCountryFromIP($request->ip()),
         ]);
 
+        // Delete records older than 24 hours
+        $this->deleteOldRecords();
+
         return response()->json([
             'success' => true,
             'message' => 'Visitor tracked successfully.',
             'data' => $visitor
         ], 201);
+    }
+
+    /**
+     * Delete records older than 24 hours
+     */
+    private function deleteOldRecords()
+    {
+        try {
+            $cutoff = now()->subDay();
+            $deletedCount = VisitorInfo::where('created_at', '<', $cutoff)->delete();
+            // \Log::info("Deleted {$deletedCount} old visitor records.");
+        } catch (\Exception $e) {
+            \Log::error("Failed to delete old visitor records: " . $e->getMessage());
+        }
     }
 
 

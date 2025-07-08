@@ -107,7 +107,17 @@ export default function TamaraClient() {
 
               <tr>
                 <td>المبلغ:</td>
-                <td>{data?.data?.price}</td>
+                <td dir="rtl">{Math.trunc(data?.data?.price)} ريال</td>
+              </tr>
+
+              <tr>
+                <td>كود الخصم:</td>
+                <td>{data?.data?.discountCode || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>وسيلة الدفع:</td>
+                <td>تمارا</td>
               </tr>
 
               <tr>
