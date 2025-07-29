@@ -225,11 +225,21 @@ class TamaraPaidClientController extends Controller
                     ]);
 
                     // Send notification to recipients
-                    $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
+                    $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
 
                     $paymentMethod = "Tamara";
+
                     // Prepare the data to pass to the notification
-                    $notificationData = array_merge($qrCode->toArray(), ['payment_method' => $paymentMethod]);
+                    $notificationData = array_merge($qrCode->toArray(), [
+                        'payment_method' => $paymentMethod,
+                        'service' => $service ?? null,
+                        'additionalServices' => $additionalServices ?? null,
+                        'branch' => $branch ?? null,
+                        'plan' => $plan ?? null,
+                        'model' => $model ?? null,
+                        'full_name' => $fullname ?? null,
+                        'phone' => $phone ?? null,
+                    ]);
 
                     try {
                         Notification::route('mail', $recipients)

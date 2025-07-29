@@ -34,6 +34,7 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import SummarizeIcon from "@mui/icons-material/Summarize";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -163,7 +164,7 @@ function ResponsiveDrawer(props) {
         <Divider />
         <ListItem
           dir="ltr"
-          key={9999999}
+          key={101}
           disablePadding
           button
           component={NavLink}
@@ -191,7 +192,7 @@ function ResponsiveDrawer(props) {
           <>
             <ListItem
               dir="ltr"
-              key={99999999999999}
+              key={102}
               disablePadding
               button
               component={NavLink}
@@ -217,7 +218,7 @@ function ResponsiveDrawer(props) {
 
             <ListItem
               dir="ltr"
-              key={9999999999}
+              key={103}
               disablePadding
               button
               component={NavLink}
@@ -245,7 +246,7 @@ function ResponsiveDrawer(props) {
 
             <ListItem
               dir="ltr"
-              key={888888888888}
+              key={104}
               disablePadding
               button
               component={NavLink}
@@ -271,7 +272,7 @@ function ResponsiveDrawer(props) {
 
             <ListItem
               dir="ltr"
-              key={77777777}
+              key={105}
               disablePadding
               button
               component={NavLink}
@@ -297,7 +298,7 @@ function ResponsiveDrawer(props) {
 
             <ListItem
               dir="ltr"
-              key={777111}
+              key={106}
               disablePadding
               button
               component={NavLink}
@@ -327,7 +328,7 @@ function ResponsiveDrawer(props) {
 
         <ListItem
           dir="ltr"
-          key={666666}
+          key={107}
           disablePadding
           button
           component={NavLink}
@@ -353,7 +354,7 @@ function ResponsiveDrawer(props) {
 
         <ListItem
           dir="ltr"
-          key={7777}
+          key={108}
           disablePadding
           button
           component={NavLink}
@@ -374,6 +375,34 @@ function ResponsiveDrawer(props) {
               </Avatar>
             </ListItemIcon>
             <ListItemText primary="Videos" />
+          </ListItemButton>
+        </ListItem>
+
+        <Divider />
+
+        <ListItem
+          dir="ltr"
+          key={109}
+          disablePadding
+          button
+          component={NavLink}
+          to="/dashboard/disclaimer-form"
+          selected={pathname === "/dashboard/disclaimer-form"}
+        >
+          <ListItemButton sx={{ color: "#757575" }}>
+            <ListItemIcon>
+              <Avatar
+                alt="icon"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <SummarizeIcon sx={{ color: "#757575" }} />
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText primary="Disclaimer Form" />
           </ListItemButton>
         </ListItem>
       </List>

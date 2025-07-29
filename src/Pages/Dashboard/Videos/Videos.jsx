@@ -9,12 +9,28 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
+
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { styled } from "@mui/material/styles";
 // API
 import useGetAllVideosApi from "../../../API/useGetAllVideosApi";
 import { useAddVideoApi } from "../../../API/useAddVideoApi";
 import { useDeleteVideoApi } from "../../../API/useDeleteVideoApi";
 // Toastify
 import { toast } from "react-toastify";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 export default function Videos() {
   useEffect(() => {
@@ -28,7 +44,7 @@ export default function Videos() {
 
   const [formData, setFormData] = useState({
     report_number: "",
-    video_file: null,
+    video_files: [],
   });
 
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
@@ -44,9 +60,21 @@ export default function Videos() {
 
   // Handle file input change
   const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    // Limit to 3 files
+    if (files.length > 3) {
+      toast.error("You can upload a maximum of 3 videos");
+      setFormData((prev) => ({
+        ...prev,
+        video_files: [],
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      video_file: e.target.files[0],
+      video_files: files,
     }));
   };
 
@@ -59,23 +87,32 @@ export default function Videos() {
     const isValid = modelFormRef.current.reportValidity();
     if (!isValid) return;
 
-    if (!formData.video_file) {
-      toast.error("Please select a video file");
+    if (formData.video_files.length === 0) {
+      toast.error("Please select at least one video file");
       return;
     }
 
     // Create FormData for file upload
     const submitData = new FormData();
     submitData.append("report_number", formData.report_number);
-    submitData.append("video_file", formData.video_file);
+    // Append each file
+    formData.video_files.forEach((file, index) => {
+      if (index === 0) {
+        submitData.append("video_file", file); // First file
+      } else if (index === 1) {
+        submitData.append("video_file_2", file); // Second file
+      } else if (index === 2) {
+        submitData.append("video_file_3", file); // Third file
+      }
+    });
 
     mutate(submitData, {
       onSuccess: () => {
-        toast.success("Video submitted successfully!");
+        toast.success("Videos submitted successfully!");
         // Reset form after successful submission
         setFormData({
           report_number: "",
-          video_file: null,
+          video_file: [],
         });
         // Clear file input
         if (modelFormRef.current) {
@@ -152,21 +189,62 @@ export default function Videos() {
         {/* End report number input */}
 
         {/* Start video file input */}
+
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12}>
-            <TextField
-              sx={{ backgroundColor: "#fff" }}
-              dir="ltr"
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<CloudUploadIcon />}
               fullWidth
-              type="file"
-              inputProps={{ accept: ".mp4" }}
-              name="video_file"
-              onChange={handleFileChange}
-              required
               disabled={isAddVideoPending}
-            />
+              sx={{
+                height: "56px",
+                backgroundColor: "#fff",
+                color: "rgba(0, 0, 0, 0.87)",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+              }}
+            >
+              Upload Videos (Max 3)
+              <VisuallyHiddenInput
+                type="file"
+                accept=".mp4"
+                multiple
+                onChange={handleFileChange}
+                required
+              />
+            </Button>
+
+            {/* Show selected files */}
+            {formData?.video_files?.length > 0 && (
+              <div style={{ marginTop: "16px" }}>
+                <p>Selected files:</p>
+                <ul style={{ paddingLeft: "20px", margin: "8px 0" }}>
+                  {formData.video_files.map((file, index) => (
+                    <li key={index} style={{ fontSize: "0.875rem" }}>
+                      {file.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {formData?.video_files?.length >= 3 && (
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "green",
+                  marginTop: "8px",
+                }}
+              >
+                Maximum of 3 videos selected
+              </p>
+            )}
           </Grid>
         </Grid>
+
         {/* End video file input */}
 
         {/* Start loading button for form 1 */}

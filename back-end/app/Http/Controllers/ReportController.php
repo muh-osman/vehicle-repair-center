@@ -222,4 +222,45 @@ class ReportController extends Controller
             'data' => $reportNumbers
         ]);
     }
+
+    /**
+     * Check which card IDs have summary reports.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkIfCardsHaveSummaryReport(Request $request)
+    {
+        // Validate the request contains a card_ids array
+        $validator = Validator::make($request->all(), [
+            'card_ids' => 'required|array',
+            'card_ids.*' => 'integer' // Ensure each ID is an integer
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $cardIds = $request->input('card_ids');
+
+        // Get all report numbers that match the card IDs
+        $existingReports = Report::whereIn('report_number', $cardIds)
+            ->pluck('report_number')
+            ->toArray();
+
+        // Create a response showing which cards have reports
+        $response = [];
+        foreach ($cardIds as $cardId) {
+            $response[$cardId] = in_array($cardId, $existingReports);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $response
+        ]);
+    }
 }

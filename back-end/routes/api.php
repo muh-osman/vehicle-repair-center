@@ -19,7 +19,7 @@ use App\Http\Controllers\VisitorInfoController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\MarketingPostController;
 use App\Http\Controllers\YearOfManufactureController;
-
+use App\Http\Controllers\DisclaimerController;
 
 
 // Group for protected routes
@@ -105,6 +105,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Get Users IP (analytics)
     Route::get('get-all-users-analytics', [VisitorInfoController::class, 'index']);
+
+    // اخلاء المسؤلية
+    Route::post('store-disclaimers', [DisclaimerController::class, 'store']);
+    Route::get('get-all-disclaimers', [DisclaimerController::class, 'index']);
+    Route::get('get-one-disclaimers/{id}', [DisclaimerController::class, 'show']);
+    Route::delete('delete-one-disclaimers/{id}', [DisclaimerController::class, 'destroy']);
 });
 
 
@@ -156,10 +162,12 @@ Route::middleware('guest')->group(function () {
 
     // PDF Report
     Route::get('get-all-summary-reports-numbers', [ReportController::class, 'showArrayOfSummaryReportsNumbers']);
+    Route::post('check-if-cards-have-summary-reports', [ReportController::class, 'checkIfCardsHaveSummaryReport']);
     Route::get('download-summary-report/{report_number}', [ReportController::class, 'downloadSummaryReport']);
 
     // Videos of Reports
     Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
+    Route::post('check-if-cards-have-videos', [VideosController::class, 'checkIfCardsHaveVideos']);
     Route::get('download-video/{report_number}', [VideosController::class, 'downloadVideo']);
 
     // Falak Videos

@@ -72,12 +72,22 @@ class PaidQrCodeController extends Controller
                 ]);
 
                 // Send notification to multiple recipients
-                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com'];
+                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
                 // $recipients = ['song415400@gmail.com',]; // Replace with actual email addresses
 
                 $paymentMethod = "Moyasar";
+
                 // Prepare the data to pass to the notification
-                $notificationData = array_merge($qrCode->toArray(), ['payment_method' => $paymentMethod]);
+                $notificationData = array_merge($qrCode->toArray(), [
+                    'payment_method' => $paymentMethod,
+                    'service' => $metadata['service'] ?? null,
+                    'additionalServices' => $metadata['additionalServices'] ?? null,
+                    'branch' => $metadata['branch'] ?? null,
+                    'plan' => $metadata['plan'] ?? null,
+                    'model' => $metadata['model'] ?? null,
+                    'full_name' => $metadata['name'] ?? null, // Use name from metadata
+                    'phone' => $metadata['phone'] ?? null, // Use phone from metadata
+                ]);
 
                 try {
                     Notification::route('mail', $recipients)

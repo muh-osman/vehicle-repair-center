@@ -196,4 +196,45 @@ class VideosController extends Controller
             'data' => $reportNumbers
         ]);
     }
+
+    /**
+     * Check which card IDs have video reports.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkIfCardsHaveVideos(Request $request)
+    {
+        // Validate the request contains a card_ids array
+        $validator = Validator::make($request->all(), [
+            'card_ids' => 'required|array',
+            'card_ids.*' => 'integer' // Ensure each ID is an integer
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $cardIds = $request->input('card_ids');
+
+        // Get all video report numbers that match the card IDs
+        $existingVideos = Video::whereIn('report_number', $cardIds)
+            ->pluck('report_number')
+            ->toArray();
+
+        // Create a response showing which cards have videos
+        $response = [];
+        foreach ($cardIds as $cardId) {
+            $response[$cardId] = in_array($cardId, $existingVideos);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $response
+        ]);
+    }
 }

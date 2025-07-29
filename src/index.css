@@ -45,3 +45,14 @@ th {
 .notVisited:hover {
   color: #000;
 }
+
+/* inputs label RTL*/
+.custom-label-rtl {
+  left: inherit !important;
+  right: 1.75rem !important;
+  transform-origin: right !important;
+}
+
+.custom-label-rtl + .MuiOutlinedInput-root fieldset {
+  text-align: right;
+}

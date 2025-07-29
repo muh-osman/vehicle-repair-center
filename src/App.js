@@ -54,6 +54,8 @@ import FreeOrderResult from "./Pages/Dashboard/FreeOrderResult/FreeOrderResult";
 import Analytics from "./Pages/Dashboard/Analytics/Analytics";
 import FalakMedia from "./Pages/Dashboard/FalakMedia/FalakMedia";
 import FalakVideo from "./Pages/Dashboard/FalakVideo/FalakVideo";
+import DisclaimerForm from "./Pages/Dashboard/DisclaimerForm/DisclaimerForm";
+import DisclaimerTable from "./Pages/Dashboard/DisclaimerTable/DisclaimerTable";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -90,6 +92,8 @@ export default function App() {
             {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="videos" element={<Videos />} />
+            <Route path="disclaimer-form" element={<DisclaimerForm />} />
+            <Route path="disclaimer-table" element={<DisclaimerTable />} />
             <Route
               path="free-order-result/:phoneNumber"
               element={<FreeOrderResult />}

@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
-// import TableChartIcon from "@mui/icons-material/TableChart";
+//
 import DownloadIcon from "@mui/icons-material/Download";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -26,8 +26,13 @@ import Tabby from "../../../Assets/Images/tabby.png";
 import Tamara from "../../../Assets/Images/tamara.png";
 import Moyasar from "../../../Assets/Images/moyasar.png";
 import unPaid from "../../../Assets/Images/unPaid.png";
+// Ant Design
+import { DatePicker } from "antd";
+import dayjs from 'dayjs';
 // API
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
+// Ant Design
+const { RangePicker } = DatePicker;
 
 export default function Requests() {
   // Cookie
@@ -456,6 +461,21 @@ export default function Requests() {
     return date.toLocaleTimeString("en-GB", options);
   };
 
+  /////////////////////////////////
+  // Add this state near your other state declarations
+  const [dateRange, setDateRange] = useState([]);
+
+  // Add this function to handle date range changes
+  const handleDateRangeChange = (dates) => {
+    setDateRange(dates);
+  };
+
+  const disabledDate = (current) => {
+    // Disable dates after today
+    return current && current > dayjs().endOf("day");
+  };
+  //////////////////////////
+
   const rows = data
     .map((client, index) => ({
       index: data.length - index,
@@ -483,10 +503,22 @@ export default function Requests() {
       marketerShare: client.marketerShare,
     }))
     .filter((client) => {
-      if (activeButton === "all") return true;
-      if (activeButton === "visited") return client.visited; // Assuming visited is truthy if visited
-      if (activeButton === "notVisited") return !client.visited; // Assuming visited is truthy if visited
-      return true; // Fallback
+      // Apply active button filter
+      let buttonFilter = true;
+      if (activeButton === "visited") buttonFilter = client.visited;
+      if (activeButton === "notVisited") buttonFilter = !client.visited;
+
+      // Apply date range filter if dates are selected
+      let dateFilter = true;
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        const startDate = dateRange[0].startOf("day");
+        const endDate = dateRange[1].endOf("day");
+        const clientDate = new Date(client.created_at);
+
+        dateFilter = clientDate >= startDate && clientDate <= endDate;
+      }
+
+      return buttonFilter && dateFilter;
     });
 
   // Responsive table
@@ -519,6 +551,8 @@ export default function Requests() {
   const handleButtonClick = (buttonType) => {
     setActiveButton(buttonType);
   };
+
+  // Date picker
 
   return (
     <div className={style.container}>
@@ -670,6 +704,14 @@ export default function Requests() {
           ))}
         </tbody>
       </table>
+
+      {/*  */}
+      <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        <RangePicker
+          onChange={handleDateRangeChange}
+          disabledDate={disabledDate}
+        />
+      </div>
 
       {/*  */}
       <div
