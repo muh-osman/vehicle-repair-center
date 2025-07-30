@@ -168,7 +168,7 @@ Route::middleware('guest')->group(function () {
     // Videos of Reports
     Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
     Route::post('check-if-cards-have-videos', [VideosController::class, 'checkIfCardsHaveVideos']);
-    Route::get('download-video/{report_number}', [VideosController::class, 'downloadVideo']);
+    Route::get('download-video/by/{report_number}/and/{fileNumber}', [VideosController::class, 'downloadVideo']);
 
     // Falak Videos
     Route::get('get-all-falak-videos', [FalakVideoController::class, 'index']);

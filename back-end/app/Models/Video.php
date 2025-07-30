@@ -11,6 +11,8 @@ class Video extends Model
 
     protected $fillable = [
         'report_number',
-        'video_file_path'
+        'video_file_path',
+        'video_file_path_2',
+        'video_file_path_3'
     ];
 }

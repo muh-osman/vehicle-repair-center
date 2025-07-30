@@ -18,6 +18,8 @@ class VideosController extends Controller
         $videos = Video::latest()->get()
             ->map(function ($video) {
                 $video->video_url = asset('videos/' . $video->video_file_path);
+                $video->video_url_2 = $video->video_file_path_2 ? asset('videos/' . $video->video_file_path_2) : null;
+                $video->video_url_3 = $video->video_file_path_3 ? asset('videos/' . $video->video_file_path_3) : null;
                 return $video;
             });
 
@@ -37,6 +39,8 @@ class VideosController extends Controller
         $validator = Validator::make($request->all(), [
             'report_number' => 'required|string|max:255|unique:videos,report_number',
             'video_file' => 'required|file|mimes:mp4,mov,avi|max:51200', // 50MB max
+            'video_file_2' => 'nullable|file|mimes:mp4,mov,avi|max:51200',
+            'video_file_3' => 'nullable|file|mimes:mp4,mov,avi|max:51200',
         ]);
 
         if ($validator->fails()) {
@@ -49,32 +53,60 @@ class VideosController extends Controller
 
         try {
             $reportNumber = $request->input('report_number');
+            $videoData = [
+                'report_number' => $reportNumber,
+            ];
+
+            // Process main video file
             $videoFile = $request->file('video_file');
             $filename = Str::uuid() . '.' . $videoFile->getClientOriginalExtension();
-
             $videoFile->move(public_path('videos'), $filename);
+            $videoData['video_file_path'] = $filename;
 
-            $video = Video::create([
-                'report_number' => $reportNumber,
-                'video_file_path' => $filename,
-            ]);
+            // Process second video file if exists
+            if ($request->hasFile('video_file_2')) {
+                $videoFile2 = $request->file('video_file_2');
+                $filename2 = Str::uuid() . '.' . $videoFile2->getClientOriginalExtension();
+                $videoFile2->move(public_path('videos'), $filename2);
+                $videoData['video_file_path_2'] = $filename2;
+            }
+
+            // Process third video file if exists
+            if ($request->hasFile('video_file_3')) {
+                $videoFile3 = $request->file('video_file_3');
+                $filename3 = Str::uuid() . '.' . $videoFile3->getClientOriginalExtension();
+                $videoFile3->move(public_path('videos'), $filename3);
+                $videoData['video_file_path_3'] = $filename3;
+            }
+
+            $video = Video::create($videoData);
+
+            $responseData = [
+                'video' => $video,
+                'video_url' => asset('videos/' . $filename),
+            ];
+
+            if (isset($filename2)) {
+                $responseData['video_url_2'] = asset('videos/' . $filename2);
+            }
+            if (isset($filename3)) {
+                $responseData['video_url_3'] = asset('videos/' . $filename3);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Video created successfully',
-                'data' => [
-                    'video' => $video,
-                    'video_url' => asset('videos/' . $filename)
-                ]
+                'message' => 'Video(s) created successfully',
+                'data' => $responseData
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create video',
+                'message' => 'Failed to create video(s)',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
 
     /**
      * Display the specified video.
@@ -89,6 +121,10 @@ class VideosController extends Controller
                 'message' => 'Video not found'
             ], 404);
         }
+
+        $video->video_url = asset('videos/' . $video->video_file_path);
+        $video->video_url_2 = $video->video_file_path_2 ? asset('videos/' . $video->video_file_path_2) : null;
+        $video->video_url_3 = $video->video_file_path_3 ? asset('videos/' . $video->video_file_path_3) : null;
 
         return response()->json([
             'success' => true,
@@ -112,16 +148,24 @@ class VideosController extends Controller
         }
 
         try {
-            $filePath = public_path('videos/' . $video->video_file_path);
-            if (file_exists($filePath)) {
-                unlink($filePath);
+            // Delete all associated video files
+            $files = [
+                public_path('videos/' . $video->video_file_path),
+                $video->video_file_path_2 ? public_path('videos/' . $video->video_file_path_2) : null,
+                $video->video_file_path_3 ? public_path('videos/' . $video->video_file_path_3) : null,
+            ];
+
+            foreach ($files as $file) {
+                if ($file && file_exists($file)) {
+                    unlink($file);
+                }
             }
 
             $video->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Video deleted successfully'
+                'message' => 'Video and all associated files deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -147,6 +191,10 @@ class VideosController extends Controller
             ], 404);
         }
 
+        $video->video_url = asset('videos/' . $video->video_file_path);
+        $video->video_url_2 = $video->video_file_path_2 ? asset('videos/' . $video->video_file_path_2) : null;
+        $video->video_url_3 = $video->video_file_path_3 ? asset('videos/' . $video->video_file_path_3) : null;
+
         return response()->json([
             'success' => true,
             'data' => $video
@@ -156,7 +204,7 @@ class VideosController extends Controller
     /**
      * Download the video file by report number.
      */
-    public function downloadVideo($reportNumber)
+    public function downloadVideo($reportNumber, $fileNumber)
     {
         $video = Video::where('report_number', $reportNumber)->first();
 
@@ -167,24 +215,52 @@ class VideosController extends Controller
             ], 404);
         }
 
-        $filePath = public_path('videos/' . $video->video_file_path);
+        // Determine which file to download
+        $filePath = null;
+        $filename = null;
 
-        if (!file_exists($filePath)) {
+        switch ($fileNumber) {
+            case 1:
+                if ($video->video_file_path) {
+                    $filePath = public_path('videos/' . $video->video_file_path);
+                    $filename = $reportNumber . '_1.' . pathinfo($video->video_file_path, PATHINFO_EXTENSION);
+                }
+                break;
+            case 2:
+                if ($video->video_file_path_2) {
+                    $filePath = public_path('videos/' . $video->video_file_path_2);
+                    $filename = $reportNumber . '_2.' . pathinfo($video->video_file_path_2, PATHINFO_EXTENSION);
+                }
+                break;
+            case 3:
+                if ($video->video_file_path_3) {
+                    $filePath = public_path('videos/' . $video->video_file_path_3);
+                    $filename = $reportNumber . '_3.' . pathinfo($video->video_file_path_3, PATHINFO_EXTENSION);
+                }
+                break;
+        }
+
+        if (!$filePath || !file_exists($filePath)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Video file not found'
             ], 404);
         }
 
-        $downloadFilename = $video->report_number . '.' . pathinfo($video->video_file_path, PATHINFO_EXTENSION);
+        // Set proper headers for download
+        $headers = [
+            'Content-Type' => 'video/' . pathinfo($filePath, PATHINFO_EXTENSION),
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => filesize($filePath),
+            'Cache-Control' => 'must-revalidate',
+            'Pragma' => 'public',
+        ];
 
-        return response()->download($filePath, $downloadFilename, [
-            'Content-Type' => 'video/' . pathinfo($video->video_file_path, PATHINFO_EXTENSION),
-            'Content-Disposition' => 'attachment; filename="' . $downloadFilename . '"',
-        ]);
+        return response()->download($filePath, $filename, $headers);
     }
 
     /**
+     * This method unused.
      * Return an array of all video report numbers.
      */
     public function showArrayOfVideoReportNumbers()

@@ -281,7 +281,7 @@ export default function Videos() {
               <tr>
                 <th>Report Number</th>
                 <th>Date</th>
-                <th>File</th>
+                <th>Video</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -294,14 +294,32 @@ export default function Videos() {
                     {new Date(report.created_at).toLocaleDateString("en-GB")}
                   </td>
 
-                  <td>
+                  <td style={{ whiteSpace: "nowrap" }}>
                     <a
                       href={report.video_url}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Video
-                    </a>
+                      1
+                    </a>{" "}
+                    {report?.video_url_2 && (
+                      <a
+                        href={report.video_url_2}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        2
+                      </a>
+                    )}{" "}
+                    {report?.video_url_3 && (
+                      <a
+                        href={report.video_url_3}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        3
+                      </a>
+                    )}
                   </td>
 
                   <td>
