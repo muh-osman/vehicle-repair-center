@@ -28,7 +28,7 @@ import Moyasar from "../../../Assets/Images/moyasar.png";
 import unPaid from "../../../Assets/Images/unPaid.png";
 // Ant Design
 import { DatePicker } from "antd";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 // API
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 // Ant Design

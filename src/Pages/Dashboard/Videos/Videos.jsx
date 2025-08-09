@@ -9,6 +9,11 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
+// import EditIcon from "@mui/icons-material/Edit";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -17,6 +22,7 @@ import { styled } from "@mui/material/styles";
 import useGetAllVideosApi from "../../../API/useGetAllVideosApi";
 import { useAddVideoApi } from "../../../API/useAddVideoApi";
 import { useDeleteVideoApi } from "../../../API/useDeleteVideoApi";
+import { useEditVideoApi } from "../../../API/useEditVideoApi";
 // Toastify
 import { toast } from "react-toastify";
 
@@ -72,6 +78,17 @@ export default function Videos() {
       return;
     }
 
+    // Check if all files are videos
+    const allVideos = files.every((file) => file.type.startsWith("video/"));
+    if (!allVideos) {
+      toast.error("Please select only video files");
+      setFormData((prev) => ({
+        ...prev,
+        video_files: [],
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       video_files: files,
@@ -80,6 +97,9 @@ export default function Videos() {
 
   // Submit form
   const modelFormRef = useRef();
+
+  // Handle file input change for main form
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -136,6 +156,74 @@ export default function Videos() {
       });
     }
   };
+
+  // Handle edit report
+  const [uploadingVideoId, setUploadingVideoId] = useState(null); // Track which video is being uploaded
+  const fileInputRef = useRef(null); // Ref for the hidden file input
+
+  const { mutate: mutateEditVideo, isPending: isEditVideoPending } =
+    useEditVideoApi();
+
+  // Handle file input change for AddCircleIcon
+  const handleAddVideoClick = (reportId) => {
+    setUploadingVideoId(reportId); // Set the ID of the report being added to
+    fileInputRef.current.click(); // Trigger the file input
+  };
+
+  // Handle file selection for AddCircleIcon
+  const handleSingleFileChange = (e) => {
+    const file = e.target.files[0]; // Get only the first file
+    if (!file) {
+      setUploadingVideoId(null);
+      return;
+    }
+
+    // Check if file is a video
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please select a video file");
+      setUploadingVideoId(null);
+      return;
+    }
+
+    // Find the report to update
+    const report = data.data.find((r) => r.id === uploadingVideoId);
+    if (!report) {
+      setUploadingVideoId(null);
+      return;
+    }
+
+    // Create FormData for file upload
+    const submitData = new FormData();
+    submitData.append("id", uploadingVideoId);
+    submitData.append("report_number", report.report_number);
+
+    // Determine which video slot to use (first empty slot)
+    if (!report.video_url) {
+      submitData.append("video_file", file);
+    } else if (!report.video_url_2) {
+      submitData.append("video_file_2", file);
+    } else if (!report.video_url_3) {
+      submitData.append("video_file_3", file);
+    } else {
+      toast.error("This report already has 3 videos");
+      setUploadingVideoId(null);
+      return;
+    }
+
+    mutateEditVideo(submitData, {
+      onSuccess: () => {
+        toast.success("Video added successfully!");
+      },
+      onError: () => {
+        toast.error("Failed to add video");
+      },
+      onSettled: () => {
+        setUploadingVideoId(null);
+        fileInputRef.current.value = "";
+      },
+    });
+  };
+
   return (
     <div className={style.container}>
       {isGetAllVideosPending && (
@@ -210,7 +298,8 @@ export default function Videos() {
               Upload Videos (Max 3)
               <VisuallyHiddenInput
                 type="file"
-                accept=".mp4"
+                // accept=".mp4"
+                accept="video/*" // Accept all video types
                 multiple
                 onChange={handleFileChange}
                 required
@@ -261,6 +350,14 @@ export default function Videos() {
         {/* End loading button for form 1 */}
       </Box>
       {/* End Form one */}
+
+      {/* Hidden file input for AddCircleIcon */}
+      <VisuallyHiddenInput
+        type="file"
+        accept="video/*"
+        ref={fileInputRef}
+        onChange={handleSingleFileChange}
+      />
 
       <p
         style={{
@@ -323,7 +420,7 @@ export default function Videos() {
                   </td>
 
                   <td>
-                    <LoadingButton
+                    {/* <LoadingButton
                       type="button"
                       fullWidth
                       variant="contained"
@@ -334,7 +431,50 @@ export default function Videos() {
                       disabled={deletingId !== null && deletingId !== report.id} // Disable other buttons while one is loading
                     >
                       Delete
-                    </LoadingButton>
+                    </LoadingButton> */}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        justifyContent: "space-evenly",
+                      }}
+                    >
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleAddVideoClick(report.id)}
+                        disabled={
+                          isDeleteVideoPending ||
+                          isEditVideoPending ||
+                          report.video_file_path_3 ||
+                          isAddVideoPending
+                        }
+                      >
+                        {uploadingVideoId === report.id &&
+                        isEditVideoPending ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <AddCircleIcon />
+                        )}
+                      </IconButton>
+
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteReport(report.id)}
+                        disabled={
+                          (deletingId !== null && deletingId !== report.id) ||
+                          isDeleteVideoPending ||
+                          isEditVideoPending ||
+                          isAddVideoPending
+                        }
+                      >
+                        {deletingId === report.id ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <DeleteIcon />
+                        )}
+                      </IconButton>
+                    </div>
                   </td>
                 </tr>
               ))}

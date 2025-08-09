@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('post-video', [VideosController::class, 'store']);
     Route::get('get-all-videos', [VideosController::class, 'index']);
     Route::delete('delete-video/{id}', [VideosController::class, 'destroy']);
+    Route::post('edit-video', [VideosController::class, 'update']);
 
     // Falak Videos
     Route::post('post-falak-video', [FalakVideoController::class, 'store']);
