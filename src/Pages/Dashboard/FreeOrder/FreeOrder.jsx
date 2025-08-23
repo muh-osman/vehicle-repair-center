@@ -1,8 +1,8 @@
 import style from "./FreeOrder.module.scss";
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 // LOGO
-import logo from "../../../Assets/Images/logo.png";
+// import logo from "../../../Assets/Images/logo.png";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
 import Grid from "@mui/material/Grid";
@@ -13,6 +13,8 @@ import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
+import InputAdornment from "@mui/material/InputAdornment";
+import PercentIcon from "@mui/icons-material/Percent";
 // API
 import useGetAllFreeOrdersApi from "../../../API/useGetAllFreeOrdersApi";
 import { useAddFreeOrdersApi } from "../../../API/useAddFreeOrdersApi";
@@ -35,6 +37,7 @@ export default function FreeOrder() {
 
   const [formData, setFormData] = useState({
     phone_number: "",
+    discount_percent: "",
   });
 
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
@@ -42,6 +45,19 @@ export default function FreeOrder() {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // For discount_percent, remove any decimal values
+    if (name === "discount_percent") {
+      const wholeNumber = value.includes(".")
+        ? Math.floor(Number(value))
+        : value;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: wholeNumber,
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -62,12 +78,21 @@ export default function FreeOrder() {
       return;
     }
 
-    mutate(formData, {
+    // Prepare data for submission
+    const submissionData = {
+      phone_number: formData.phone_number,
+      discount_percent: formData.discount_percent
+        ? parseInt(formData.discount_percent)
+        : null, // Changed to parseInt
+    };
+
+    mutate(submissionData, {
       onSuccess: () => {
         toast.success("Added successfully!");
         // Reset form after successful submission
         setFormData({
           phone_number: "",
+          discount_percent: "",
         });
       },
     });
@@ -88,7 +113,7 @@ export default function FreeOrder() {
     }
   };
 
-  const downloadQrCode = async (phoneNumber) => {
+  const downloadQrCode = async (phoneNumber, discountPercent) => {
     try {
       // Generate QR code as data URL
       const qrCodeUrl = await QRCode.toDataURL(`free-${phoneNumber}`, {
@@ -122,7 +147,8 @@ export default function FreeOrder() {
         borderColor: "#174545", // Border color
         backgroundColor: "#f5f5f5", // Background color for entire image
         textHeight: 50, // Space for text
-        text: "لقد حصلت على فحص مجاني  ", // Text to display
+        // text: "لقد حصلت على فحص مجاني  ", // Text to display
+        text: `%لقد حصلت على خصم ${discountPercent}  `,
         textColor: "#174545", // Text color
         textFont: "bold 24px Tajawal, sans-serif", // Using Cairo font with fallback
         // textFont: 'bold 20px Arial', // Text font
@@ -216,6 +242,30 @@ export default function FreeOrder() {
     }
   };
 
+  // Responsive table
+  const [tableWidth, setTableWidth] = useState("auto");
+
+  // Add this useEffect to handle responsive width
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if screen is small (e.g., less than 768px)
+      if (window.innerWidth < 768) {
+        setTableWidth(window.innerWidth - 63);
+      } else {
+        setTableWidth("auto");
+      }
+    };
+
+    // Set initial width
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className={style.container}>
       {isGetAllFreeOrdersPending && (
@@ -270,6 +320,35 @@ export default function FreeOrder() {
               }}
             />
           </Grid>
+
+          {/* Add discount percent input */}
+          <Grid item xs={12}>
+            <TextField
+              sx={{ backgroundColor: "#fff" }}
+              dir="ltr"
+              fullWidth
+              label="Discount Percent"
+              required
+              placeholder="e.g. 10"
+              type="number"
+              name="discount_percent"
+              disabled={isAddFreeOrdersPending}
+              value={formData.discount_percent}
+              onChange={handleInputChange}
+              inputProps={{
+                min: 0,
+                max: 100,
+                step: 1,
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <PercentIcon color="disabled" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
         </Grid>
         {/* End report number input */}
 
@@ -301,11 +380,16 @@ export default function FreeOrder() {
       <Divider sx={{ marginBottom: "32px" }} />
 
       {data && (
-        <div className={style.table_container} dir="ltr">
-          <table>
+        <div
+          className={style.table_container}
+          dir="ltr"
+          style={{ width: tableWidth === "auto" ? "auto" : `${tableWidth}px` }}
+        >
+          <table style={{ width: "100%" }}>
             <thead>
               <tr style={{ backgroundColor: "#dddddd" }}>
                 <th>Phone Number</th>
+                <th>Discount</th>
                 <th>QR</th>
                 <th>Date</th>
                 <th>Action</th>
@@ -323,9 +407,20 @@ export default function FreeOrder() {
                   <td>{client.phone_number}</td>
 
                   <td>
+                    {client.discount_percent
+                      ? `${Math.floor(client.discount_percent)}%`
+                      : "N/A"}
+                  </td>
+
+                  <td>
                     <button
                       style={{ borderRadius: "4px" }}
-                      onClick={() => downloadQrCode(client.phone_number)}
+                      onClick={() =>
+                        downloadQrCode(
+                          client.phone_number,
+                          Math.floor(client.discount_percent)
+                        )
+                      }
                     >
                       <QrCode2Icon />
                     </button>

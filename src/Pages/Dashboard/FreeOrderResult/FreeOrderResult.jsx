@@ -49,7 +49,9 @@ export default function FreeOrderResult() {
       {data?.status === "success" && (
         <>
           <CheckCircleIcon sx={{ fontSize: 99, color: "green" }} />
-          <h1>فحص مجاني</h1>
+          <h1 dir="rtl">
+            خصم <span>{Math.floor(data?.discount_percent)}%</span>
+          </h1>
           {/* <h3 style={{ color: "#757575" }}>{phoneNumber}</h3> */}
           <p style={{ color: "#757575" }}>لمرة واحدة فقط</p>
           <Chip

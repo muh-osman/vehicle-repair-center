@@ -12,5 +12,6 @@ class FreeOrder extends Model
     protected $fillable = [
         'phone_number',
         'is_scanned',
+        'discount_percent',
     ];
 }

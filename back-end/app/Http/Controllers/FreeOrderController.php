@@ -29,6 +29,7 @@ class FreeOrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|string|unique:free_orders,phone_number|max:20',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -40,6 +41,7 @@ class FreeOrderController extends Controller
         $freeOrder = FreeOrder::create([
             'phone_number' => $request->phone_number,
             'is_scanned' => false,
+            'discount_percent' => $request->discount_percent ?? null,
         ]);
 
         return response()->json($freeOrder, Response::HTTP_CREATED);
@@ -68,7 +70,8 @@ class FreeOrderController extends Controller
                 return response()->json([
                     'data' => $freeOrder,
                     'status' => "expired",
-                    'message' => 'This QR code has expired'
+                    'message' => 'This QR code has expired',
+                    'discount_percent' => $freeOrder->discount_percent
                 ]);
             }
 
@@ -77,7 +80,8 @@ class FreeOrderController extends Controller
                 return response()->json([
                     'data' => $freeOrder,
                     'status' => "scanned before",
-                    'message' => 'This QR code was scanned before'
+                    'message' => 'This QR code was scanned before',
+                    'discount_percent' => $freeOrder->discount_percent
                 ]);
             }
 
@@ -90,7 +94,8 @@ class FreeOrderController extends Controller
             return response()->json([
                 'data' => $freeOrder,
                 'status' => "success",
-                'message' => 'QR code successfully scanned'
+                'message' => 'QR code successfully scanned',
+                'discount_percent' => $freeOrder->discount_percent
             ]);
         });
     }
