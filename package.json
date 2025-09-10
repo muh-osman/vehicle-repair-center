@@ -1,6 +1,6 @@
 {
   "name": "vehicle-repair-center",
-  "version": "29.30.31",
+  "version": "34.35.36",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -10,6 +10,7 @@
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.14",
     "@mui/x-data-grid": "^7.19.0",
+    "@mui/x-date-pickers": "^7.22.3",
     "@tanstack/react-query": "^5.40.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -19,6 +20,7 @@
     "antd": "^5.26.4",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
+    "dayjs": "^1.11.18",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "qrcode": "^1.5.4",

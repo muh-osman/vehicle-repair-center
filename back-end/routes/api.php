@@ -7,19 +7,20 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\FreeOrderController;
 use App\Http\Controllers\VideosController;
-use App\Http\Controllers\FalakVideoController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CarModelController;
+use App\Http\Controllers\FreeOrderController;
+use App\Http\Controllers\DisclaimerController;
+use App\Http\Controllers\FalakVideoController;
 use App\Http\Controllers\PhoneNumberController;
-use App\Http\Controllers\VisitorInfoController;
 
+use App\Http\Controllers\RefundClineController;
+use App\Http\Controllers\VisitorInfoController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\MarketingPostController;
 use App\Http\Controllers\YearOfManufactureController;
-use App\Http\Controllers\DisclaimerController;
 
 
 // Group for protected routes
@@ -112,6 +113,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-all-disclaimers', [DisclaimerController::class, 'index']);
     Route::get('get-one-disclaimers/{id}', [DisclaimerController::class, 'show']);
     Route::delete('delete-one-disclaimers/{id}', [DisclaimerController::class, 'destroy']);
+
+
+    // Refund Clients
+    Route::post('create-refund-client', [RefundClineController::class, 'store']);
+    Route::get('get-all-refund-clients', [RefundClineController::class, 'index']);
+    Route::get('get-one-refund-client/{id}', [RefundClineController::class, 'show']);
+    Route::delete('delete-refund-client/{id}', [RefundClineController::class, 'destroy']);
 });
 
 
@@ -178,4 +186,8 @@ Route::middleware('guest')->group(function () {
 
     // Get User IP (analytics)
     Route::post('visitors/track', [VisitorInfoController::class, 'store']);
+
+    // Refund Clients
+    Route::get('get-one-refund-client-by-rand/{rand}', [RefundClineController::class, 'showByRand']);
+    Route::post('update-refund-client-data/{id}', [RefundClineController::class, 'update']);
 });

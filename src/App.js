@@ -8,7 +8,6 @@ import {
 import Layout from "./Layout/Layout";
 import HomeLayout from "./Layout/HomeLayout";
 import Home from "./Pages/Home/Home";
-import Blog from "./Pages/Blog/Blog";
 import About from "./Pages/About/About";
 import LogIn from "./Pages/LogIn/LogIn";
 import SignUp from "./Pages/SignUp/SignUp";
@@ -56,14 +55,19 @@ import FalakMedia from "./Pages/Dashboard/FalakMedia/FalakMedia";
 import FalakVideo from "./Pages/Dashboard/FalakVideo/FalakVideo";
 import DisclaimerForm from "./Pages/Dashboard/DisclaimerForm/DisclaimerForm";
 import DisclaimerTable from "./Pages/Dashboard/DisclaimerTable/DisclaimerTable";
+import RefundForm from "./Pages/Dashboard/RefundForm/RefundForm";
+import RefundTable from "./Pages/Dashboard/RefundTable/RefundTable";
+import RefundClientForm from "./Pages/RefundClientForm/RefundClientForm";
 
 export default function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
+
+        <Route path="refund-form" element={<RefundClientForm />} />
+
         <Route element={<HomeLayout />}>
           <Route index element={<Home />} />
-          <Route path="blog" element={<Blog />} />
           <Route path="about" element={<About />} />
         </Route>
 
@@ -94,6 +98,8 @@ export default function App() {
             <Route path="videos" element={<Videos />} />
             <Route path="disclaimer-form" element={<DisclaimerForm />} />
             <Route path="disclaimer-table" element={<DisclaimerTable />} />
+            <Route path="refund-form" element={<RefundForm />} />
+            <Route path="refund-table" element={<RefundTable />} />
             <Route
               path="free-order-result/:phoneNumber"
               element={<FreeOrderResult />}

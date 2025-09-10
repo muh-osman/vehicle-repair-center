@@ -1,0 +1,63 @@
+.container {
+  min-height: calc(100vh - 112px);
+
+  //   display: flex;
+  //   justify-content: center;
+  // margin-top: 32px;
+}
+
+.progressContainer {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+
+  span {
+    height: 2px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    min-height: calc(100vh - 104px);
+  }
+
+  .progressContainer {
+    top: 56px;
+  }
+}
+
+//
+.bio {
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding: 16px;
+  height: fit-content;
+  border-radius: 6px;
+  background-color: #f0f1f3;
+  color: #757575;
+  position: relative;
+
+  p{
+    margin: 0;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 3px;
+    position: absolute;
+    top: 11px;
+    right: 8px;
+    padding: 3px;
+
+    &:hover svg {
+      fill: #0c2525;
+    }
+
+    svg {
+      vertical-align: middle;
+      fill: #174545;
+    }
+  }
+}

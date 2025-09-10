@@ -35,6 +35,7 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import SummarizeIcon from "@mui/icons-material/Summarize";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -405,6 +406,34 @@ function ResponsiveDrawer(props) {
             <ListItemText primary="Disclaimer Form" />
           </ListItemButton>
         </ListItem>
+
+        {cookies.role === 255 && (
+          <ListItem
+            dir="ltr"
+            key={110}
+            disablePadding
+            button
+            component={NavLink}
+            to="/dashboard/refund-form"
+            selected={pathname === "/dashboard/refund-form"}
+          >
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <CurrencyExchangeIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Refund Form" />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
     </div>
   );

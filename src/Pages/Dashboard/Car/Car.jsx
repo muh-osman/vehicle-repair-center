@@ -178,7 +178,6 @@ export default function Car() {
                     isSaleClicked[0].clicked || sale20
                       ? "line-through"
                       : "none",
-                  color: "#757575",
                   fontWeight:
                     isSaleClicked[0].clicked || sale20 ? "600" : "700",
                 }}
@@ -337,7 +336,6 @@ export default function Car() {
                   textDecoration: isSaleClicked[1].clicked
                     ? "line-through"
                     : "none",
-                  color: "#757575",
                   fontWeight: isSaleClicked[1].clicked ? "600" : "700",
                 }}
               >
@@ -447,7 +445,6 @@ export default function Car() {
                   textDecoration: isSaleClicked[2].clicked
                     ? "line-through"
                     : "none",
-                  color: "#757575",
                   fontWeight: isSaleClicked[2].clicked ? "600" : "700",
                 }}
               >
@@ -551,7 +548,6 @@ export default function Car() {
                   textDecoration: isSaleClicked[3].clicked
                     ? "line-through"
                     : "none",
-                  color: "#757575",
                   fontWeight: isSaleClicked[3].clicked ? "600" : "700",
                 }}
               >
@@ -662,7 +658,6 @@ export default function Car() {
                   textDecoration: isSaleClicked[4].clicked
                     ? "line-through"
                     : "none",
-                  color: "#757575",
                   fontWeight: isSaleClicked[4].clicked ? "600" : "700",
                 }}
               >
