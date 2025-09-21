@@ -21,6 +21,16 @@ class PhoneNumberController extends Controller
         ]);
     }
 
+    public function checkIfPhoneNumberExistInDb($phoneNumber)
+    {
+        $exists = PhoneNumber::where('accepted_phone_number', $phoneNumber)->exists();
+
+        return response()->json([
+            'status' => 'success',
+            'exists' => $exists,
+            'phone_number' => $phoneNumber
+        ]);
+    }
 
 
     /**

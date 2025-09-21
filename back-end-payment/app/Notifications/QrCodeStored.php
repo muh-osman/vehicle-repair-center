@@ -43,10 +43,11 @@ class QrCodeStored extends Notification
             ->subject('New Order')
             ->line('A new order has been created.')
             ->line('Method: ' . ($this->qrCodeData['payment_method'] ?? 'N/A'))
+            ->line('Code: ' . ($this->qrCodeData['discountCode'] ?? 'N/A'))
+            ->line('Plan: ' . ($this->qrCodeData['plan'] ?? 'N/A'))
             ->line('Service: ' . ($this->qrCodeData['service'] ?? 'N/A'))
             ->line('Additional Services: ' . ($this->qrCodeData['additionalServices'] ?? 'N/A'))
             ->line('Branch: ' . ($this->qrCodeData['branch'] ?? 'N/A'))
-            ->line('Plan: ' . ($this->qrCodeData['plan'] ?? 'N/A'))
             ->line('Model: ' . ($this->qrCodeData['model'] ?? 'N/A'))
             ->line('Name: ' . ($this->qrCodeData['full_name'] ?? 'N/A'))
             ->line('Phone: ' . ($this->qrCodeData['phone'] ?? 'N/A'));

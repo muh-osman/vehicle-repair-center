@@ -132,13 +132,7 @@ export default function FalakPost() {
         />
 
         {!uploadedImage && (
-          <Button
-            component="label"
-            role={undefined}
-            variant="contained"
-            tabIndex={-1}
-            startIcon={<CloudUploadIcon />}
-          >
+          <Button component="label" role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
             Upload image
             <VisuallyHiddenInput type="file" onChange={handleUploadImage} />
           </Button>

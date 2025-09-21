@@ -87,6 +87,7 @@ class PaidQrCodeController extends Controller
                     'model' => $metadata['model'] ?? null,
                     'full_name' => $metadata['name'] ?? null, // Use name from metadata
                     'phone' => $metadata['phone'] ?? null, // Use phone from metadata
+                    'discountCode' => $metadata['dc'] ?? null, // Use from metadata
                 ]);
 
                 try {

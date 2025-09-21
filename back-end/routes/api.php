@@ -74,7 +74,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // Accepted Phone Numbers (for reports dashboard)
-    Route::post('post-accepted-phone-number', [PhoneNumberController::class, 'store']);
     Route::delete('delete-accepted-phone-number/{id}', [PhoneNumberController::class, 'destroy']);
 
     // PDF Report
@@ -162,7 +161,9 @@ Route::middleware('guest')->group(function () {
 
 
     // Accepted Phone Numbers (for reports dashboard)
+    Route::post('post-accepted-phone-number', [PhoneNumberController::class, 'store']);
     Route::get('get-all-accepted-phone-numbers', [PhoneNumberController::class, 'index']);
+    Route::get('check-if-phone-numbers-exist-in-db/{phoneNumber}', [PhoneNumberController::class, 'checkIfPhoneNumberExistInDb']);
     // // Get all marketing posts
     Route::get('get-all/marketing-posts', [MarketingPostController::class, 'index']);
     // Get all marketing posts (return images as file)

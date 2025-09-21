@@ -179,6 +179,7 @@ class TabbyPaidClientController extends Controller
                 'model' => $model ?? null,
                 'full_name' => $fullname ?? null,
                 'phone' => $phone ?? null,
+                'discountCode' => $discountCode ?? null,
             ]);
             try {
                 Notification::route('mail', $recipients)
