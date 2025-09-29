@@ -1,6 +1,6 @@
 {
   "name": "vehicle-repair-center",
-  "version": "34.35.36",
+  "version": "35.36.37",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",

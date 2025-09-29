@@ -314,13 +314,32 @@ class PriceController extends Controller
                     'model_name' => $carModel->model_name,
                     'manufacturer_name' => $manufacturer->manufacture_name,
                     'prices' => $groupedPrices->map(function ($price) {
-                        $discountedPrice = $price->service->service_name === "شامل"
-                            ? $price->price * 0.9 // Apply 10% discount
-                            : $price->price;
+
+                        $originalPrice = $price->price;
+                        $serviceName = $price->service->service_name;
+
+                        // Apply different discounts based on service type
+                        if ($serviceName === "شامل") {
+                            $discountedPrice = $originalPrice * 0.90; // 10% discount
+                            $discountPercent = 10;
+                        } elseif ($serviceName === "أساسي") {
+                            $discountedPrice = $originalPrice * 1; // 0% discount
+                            $discountPercent = 0;
+                        } elseif ($serviceName === "محركات") {
+                            $discountedPrice = $originalPrice * 1; // 0% discount
+                            $discountPercent = 0;
+                        } else {
+                            $discountedPrice = $originalPrice; // No discount
+                            $discountPercent = 0;
+                        }
+
 
                         return [
-                            'service_name' => $price->service->service_name,
-                            'price' => number_format($discountedPrice, 2, '.', ''), // No thousands separator
+                            'service_name' => $serviceName,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
+                            'original_price' => number_format($originalPrice, 2, '.', ''), // Price before dicount (if exist)
+                            'discount_percent' => $discountPercent,
+                            'you_save' => number_format($originalPrice - $discountedPrice, 2, '.', ''),
                         ];
                     }),
                 ];
@@ -363,18 +382,83 @@ class PriceController extends Controller
                     'model_name' => $carModel->model_name,
                     'manufacturer_name' => $manufacturer->manufacture_name,
                     'prices' => $groupedPrices->map(function ($price) {
-                        // Apply 50% discount to all prices
-                        $discountedPrice = $price->price * 0.5;
+
+                        $originalPrice = $price->price;
+                        $serviceName = $price->service->service_name;
+
+                        // Apply different discounts based on service type
+                        if ($serviceName === "شامل") {
+                            $discountedPrice = $originalPrice * 0.5; // 50% discount
+                            $discountPercent = 50;
+                        } elseif ($serviceName === "أساسي") {
+                            $discountedPrice = $originalPrice * 0.5; // 50% discount
+                            $discountPercent = 50;
+                        } elseif ($serviceName === "محركات") {
+                            $discountedPrice = $originalPrice * 0.5; // 50% discount
+                            $discountPercent = 50;
+                        } else {
+                            $discountedPrice = $originalPrice * 0.5; // 50% discount
+                            $discountPercent = 50;
+                        }
+
 
                         return [
-                            'service_name' => $price->service->service_name,
-                            'price' => number_format($discountedPrice, 2, '.', ''),
+                            'service_name' => $serviceName,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
+                            'original_price' => number_format($originalPrice, 2, '.', ''), // Price before dicount (if exist)
+                            'discount_percent' => $discountPercent,
+                            'you_save' => number_format($originalPrice - $discountedPrice, 2, '.', ''),
                         ];
                     }),
                 ];
             });
 
-        return response()->json(array_values($prices->toArray()));
+        return response()->json($prices->values());
+    }
+
+    /**
+     * Get passenger services data with dynamic pricing
+     */
+    public function getPassengerServices()
+    {
+        $passengerServices = collect([
+            [
+                "service_name" => "luxury",
+                "original_price" => 200.00,
+                "discount_percent" => 0,
+            ],
+            [
+                "service_name" => "suv",
+                "original_price" => 150.00,
+                "discount_percent" => 0,
+            ],
+            [
+                "service_name" => "sedan",
+                "original_price" => 100.00,
+                "discount_percent" => 0,
+            ]
+        ]);
+
+        $processedServices = $passengerServices->map(function ($service) {
+            $originalPrice = $service['original_price'];
+            $discountPercent = $service['discount_percent'];
+            $youSave = ($discountPercent / 100) * $originalPrice;
+            $finalPrice = $originalPrice - $youSave;
+
+            return [
+                "service_name" => $service['service_name'],
+                "original_price" => number_format($originalPrice, 2),
+                "discount_percent" => $discountPercent,
+                "price" => number_format($finalPrice, 2),
+                "you_save" => number_format($youSave, 2)
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $processedServices,
+            'message' => 'Passenger services retrieved successfully'
+        ]);
     }
 
     // Mshrai App

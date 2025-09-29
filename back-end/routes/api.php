@@ -154,6 +154,9 @@ Route::middleware('guest')->group(function () {
     // Getting discounted prices by car model ID and year ID (discounte 50%)
     Route::get('get-fifty-precent-discounted-prices-by-model-and-year', [PriceController::class, 'getAllPlansWith50PercentDiscount']);
 
+    // Getting Passenger Services Prices
+    Route::get('get-passenger-services-prices', [PriceController::class, 'getPassengerServices']);
+
     // Mshrai App
     Route::get('all-manufacturers', [ManufacturerController::class, 'allManufacturers']);
     Route::get('all-models-by-manufacture-id/{manufactureId}', [CarModelController::class, 'allModelsByManufactureId']);
