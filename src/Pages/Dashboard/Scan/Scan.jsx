@@ -68,9 +68,7 @@ export default function Scan() {
     try {
       setLoadding(true);
 
-      const response = await axios.get(
-        `${apiUrl}api/get-all-phones-with-their-qr-codes`
-      );
+      const response = await axios.get(`${apiUrl}api/get-all-phones-with-their-qr-codes`);
 
       // console.log(response.data);
       setPhoneNumbersData(response.data);
@@ -180,9 +178,7 @@ export default function Scan() {
         </LoadingButton>
 
         {/* Fetch error */}
-        {error && (
-          <pre style={{ color: "red", overflow: "hidden" }}>{error}</pre>
-        )}
+        {error && <pre style={{ color: "red", overflow: "hidden" }}>{error}</pre>}
       </div>
     </div>
   );

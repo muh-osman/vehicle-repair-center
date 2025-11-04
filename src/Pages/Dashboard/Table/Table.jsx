@@ -23,14 +23,12 @@ export default function TablePage() {
   const tableRef = useRef(null);
   const [cookies, setCookie] = useCookies(["role"]);
 
-  const { data, isLoading, isError, error, fetchStatus, isSuccess } =
-    useFetchAllTableDataApi();
+  const { data, isLoading, isError, error, fetchStatus, isSuccess } = useFetchAllTableDataApi();
 
   useEffect(() => {
     if (isError) {
       console.error(error);
-      const errorMessage =
-        error?.response?.data?.message || error?.message || "An error occurred";
+      const errorMessage = error?.response?.data?.message || error?.message || "An error occurred";
       toast.error(errorMessage);
     }
   }, [error]);
@@ -68,11 +66,7 @@ export default function TablePage() {
         </div>
       )}
 
-      <DownloadTableExcel
-        filename="cashif table"
-        sheet="cashif"
-        currentTableRef={tableRef.current}
-      >
+      <DownloadTableExcel filename="cashif table" sheet="cashif" currentTableRef={tableRef.current}>
         {cookies.role === 255 && (
           <Button sx={{ marginBottom: "16px" }} variant="outlined">
             Export excel
@@ -96,42 +90,24 @@ export default function TablePage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {modelsData.map(
-              (
-                { model_name, manufacturer, country, year, services },
-                index
-              ) => (
-                <TableRow
-                  key={index}
-                  className={`${style.row} ${getRowColorClass(index)}`}
-                >
-                  <TableCell align="center">
-                    {services["كمبيوتر"] || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {services["هيكل خارجي"] || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {services["محركات"] || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {services["أساسي"] || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {services["شامل"] || "-"}
-                  </TableCell>
+            {modelsData.map(({ model_name, manufacturer, country, year, services }, index) => (
+              <TableRow key={index} className={`${style.row} ${getRowColorClass(index)}`}>
+                <TableCell align="center">{services["كمبيوتر"] || "-"}</TableCell>
+                <TableCell align="center">{services["هيكل خارجي"] || "-"}</TableCell>
+                <TableCell align="center">{services["محركات"] || "-"}</TableCell>
+                <TableCell align="center">{services["أساسي"] || "-"}</TableCell>
+                <TableCell align="center">{services["شامل"] || "-"}</TableCell>
 
-                  <TableCell align="center">{year}</TableCell>
-                  <TableCell align="center">
-                    <Chip label={model_name} variant="filled" />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip label={manufacturer} variant="outlined" />
-                  </TableCell>
-                  <TableCell align="center">{country}</TableCell>
-                </TableRow>
-              )
-            )}
+                <TableCell align="center">{year}</TableCell>
+                <TableCell align="center">
+                  <Chip label={model_name} variant="filled" />
+                </TableCell>
+                <TableCell align="center">
+                  <Chip label={manufacturer} variant="outlined" />
+                </TableCell>
+                <TableCell align="center">{country}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

@@ -8,6 +8,7 @@ use App\Http\Controllers\PaidQrCodeController;
 use App\Http\Controllers\UnPaidQrCodeController;
 use App\Http\Controllers\TabbyPaidClientController;
 use App\Http\Controllers\TamaraPaidClientController;
+use App\Http\Controllers\MoyasarShippingPaymentController;
 
 
 
@@ -77,4 +78,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
+
+    // Shipping payments Webhook
+    Route::post('/shipping-payment-paid-webhook', [MoyasarShippingPaymentController::class, 'ShippingPaymentPaidWebhook']);
+    // Get all shipping payments
+    Route::get('/shipping-payments', [MoyasarShippingPaymentController::class, 'getAllShippingPayments']);
 });

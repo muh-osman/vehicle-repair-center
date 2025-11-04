@@ -36,6 +36,7 @@ import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import CarRepairIcon from "@mui/icons-material/CarRepair";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -137,11 +138,7 @@ function ResponsiveDrawer(props) {
               component={Link}
               to={item.path}
               // selected={item.path === pathname}
-              selected={
-                item.path !== "/dashboard"
-                  ? pathname.includes(item.path)
-                  : pathname === item.path
-              }
+              selected={item.path !== "/dashboard" ? pathname.includes(item.path) : pathname === item.path}
             >
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
@@ -163,15 +160,7 @@ function ResponsiveDrawer(props) {
         })}
 
         <Divider />
-        <ListItem
-          dir="ltr"
-          key={101}
-          disablePadding
-          button
-          component={NavLink}
-          to="/dashboard/scan"
-          selected={pathname === "/dashboard/scan"}
-        >
+        <ListItem dir="ltr" key={101} disablePadding button component={NavLink} to="/dashboard/scan" selected={pathname === "/dashboard/scan"}>
           <ListItemButton sx={{ color: "#757575" }}>
             <ListItemIcon>
               <Avatar
@@ -191,15 +180,7 @@ function ResponsiveDrawer(props) {
 
         {cookies.role === 255 && (
           <>
-            <ListItem
-              dir="ltr"
-              key={102}
-              disablePadding
-              button
-              component={NavLink}
-              to="/dashboard/requests"
-              selected={pathname === "/dashboard/requests"}
-            >
+            <ListItem dir="ltr" key={102} disablePadding button component={NavLink} to="/dashboard/requests" selected={pathname === "/dashboard/requests"}>
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
                   <Avatar
@@ -217,15 +198,25 @@ function ResponsiveDrawer(props) {
               </ListItemButton>
             </ListItem>
 
-            <ListItem
-              dir="ltr"
-              key={103}
-              disablePadding
-              button
-              component={NavLink}
-              to="/dashboard/analytics"
-              selected={pathname === "/dashboard/analytics"}
-            >
+            <ListItem dir="ltr" key={1002} disablePadding button component={NavLink} to="/dashboard/shipping" selected={pathname === "/dashboard/shipping"}>
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar
+                    alt="icon"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <CarRepairIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Shipping" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem dir="ltr" key={103} disablePadding button component={NavLink} to="/dashboard/analytics" selected={pathname === "/dashboard/analytics"}>
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
                   <Avatar
@@ -245,15 +236,7 @@ function ResponsiveDrawer(props) {
 
             <Divider />
 
-            <ListItem
-              dir="ltr"
-              key={104}
-              disablePadding
-              button
-              component={NavLink}
-              to="/dashboard/phone-number"
-              selected={pathname === "/dashboard/phone-number"}
-            >
+            <ListItem dir="ltr" key={104} disablePadding button component={NavLink} to="/dashboard/phone-number" selected={pathname === "/dashboard/phone-number"}>
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
                   <Avatar
@@ -271,15 +254,7 @@ function ResponsiveDrawer(props) {
               </ListItemButton>
             </ListItem>
 
-            <ListItem
-              dir="ltr"
-              key={105}
-              disablePadding
-              button
-              component={NavLink}
-              to="/dashboard/falak-media"
-              selected={pathname === "/dashboard/falak-media"}
-            >
+            <ListItem dir="ltr" key={105} disablePadding button component={NavLink} to="/dashboard/falak-media" selected={pathname === "/dashboard/falak-media"}>
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
                   <Avatar
@@ -297,15 +272,7 @@ function ResponsiveDrawer(props) {
               </ListItemButton>
             </ListItem>
 
-            <ListItem
-              dir="ltr"
-              key={106}
-              disablePadding
-              button
-              component={NavLink}
-              to="/dashboard/free-order"
-              selected={pathname === "/dashboard/free-order"}
-            >
+            <ListItem dir="ltr" key={106} disablePadding button component={NavLink} to="/dashboard/free-order" selected={pathname === "/dashboard/free-order"}>
               <ListItemButton sx={{ color: "#757575" }}>
                 <ListItemIcon>
                   <Avatar
@@ -327,15 +294,7 @@ function ResponsiveDrawer(props) {
 
         <Divider />
 
-        <ListItem
-          dir="ltr"
-          key={107}
-          disablePadding
-          button
-          component={NavLink}
-          to="/dashboard/reports"
-          selected={pathname === "/dashboard/reports"}
-        >
+        <ListItem dir="ltr" key={107} disablePadding button component={NavLink} to="/dashboard/reports" selected={pathname === "/dashboard/reports"}>
           <ListItemButton sx={{ color: "#757575" }}>
             <ListItemIcon>
               <Avatar
@@ -353,15 +312,7 @@ function ResponsiveDrawer(props) {
           </ListItemButton>
         </ListItem>
 
-        <ListItem
-          dir="ltr"
-          key={108}
-          disablePadding
-          button
-          component={NavLink}
-          to="/dashboard/videos"
-          selected={pathname === "/dashboard/videos"}
-        >
+        <ListItem dir="ltr" key={108} disablePadding button component={NavLink} to="/dashboard/videos" selected={pathname === "/dashboard/videos"}>
           <ListItemButton sx={{ color: "#757575" }}>
             <ListItemIcon>
               <Avatar
@@ -381,15 +332,7 @@ function ResponsiveDrawer(props) {
 
         <Divider />
 
-        <ListItem
-          dir="ltr"
-          key={109}
-          disablePadding
-          button
-          component={NavLink}
-          to="/dashboard/disclaimer-form"
-          selected={pathname === "/dashboard/disclaimer-form"}
-        >
+        <ListItem dir="ltr" key={109} disablePadding button component={NavLink} to="/dashboard/disclaimer-form" selected={pathname === "/dashboard/disclaimer-form"}>
           <ListItemButton sx={{ color: "#757575" }}>
             <ListItemIcon>
               <Avatar
@@ -408,15 +351,7 @@ function ResponsiveDrawer(props) {
         </ListItem>
 
         {cookies.role === 255 && (
-          <ListItem
-            dir="ltr"
-            key={110}
-            disablePadding
-            button
-            component={NavLink}
-            to="/dashboard/refund-form"
-            selected={pathname === "/dashboard/refund-form"}
-          >
+          <ListItem dir="ltr" key={110} disablePadding button component={NavLink} to="/dashboard/refund-form" selected={pathname === "/dashboard/refund-form"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
                 <Avatar
@@ -438,8 +373,7 @@ function ResponsiveDrawer(props) {
     </div>
   );
 
-  const container =
-    window !== undefined ? () => window().document.body : undefined;
+  const container = window !== undefined ? () => window().document.body : undefined;
 
   // Check verification
   const notify = () => toast.warn(<CustomToast />);
@@ -467,13 +401,7 @@ function ResponsiveDrawer(props) {
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
-          >
+          <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, display: { sm: "none" } }}>
             <MenuIcon />
           </IconButton>
 
@@ -483,9 +411,7 @@ function ResponsiveDrawer(props) {
               variant="contained"
               disableRipple
               loading={isPending}
-              loadingIndicator={
-                <CircularProgress sx={{ color: "#fbfbfb" }} size={24} />
-              } // Customize the loader color here
+              loadingIndicator={<CircularProgress sx={{ color: "#fbfbfb" }} size={24} />} // Customize the loader color here
               sx={{
                 backgroundColor: "#fbfbfb",
                 color: "#7431fa",
@@ -502,11 +428,7 @@ function ResponsiveDrawer(props) {
           </div>
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
+      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }} aria-label="mailbox folders">
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Drawer
           container={container}

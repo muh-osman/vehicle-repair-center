@@ -1,9 +1,4 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  Route,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
 // Pages & components
 import Layout from "./Layout/Layout";
 import HomeLayout from "./Layout/HomeLayout";
@@ -58,12 +53,12 @@ import DisclaimerTable from "./Pages/Dashboard/DisclaimerTable/DisclaimerTable";
 import RefundForm from "./Pages/Dashboard/RefundForm/RefundForm";
 import RefundTable from "./Pages/Dashboard/RefundTable/RefundTable";
 import RefundClientForm from "./Pages/RefundClientForm/RefundClientForm";
+import Shipping from "./Pages/Dashboard/Shipping/Shipping";
 
 export default function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
-
         <Route path="refund-form" element={<RefundClientForm />} />
 
         <Route element={<HomeLayout />}>
@@ -100,14 +95,12 @@ export default function App() {
             <Route path="disclaimer-table" element={<DisclaimerTable />} />
             <Route path="refund-form" element={<RefundForm />} />
             <Route path="refund-table" element={<RefundTable />} />
-            <Route
-              path="free-order-result/:phoneNumber"
-              element={<FreeOrderResult />}
-            />
+            <Route path="free-order-result/:phoneNumber" element={<FreeOrderResult />} />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>
               <Route path="requests" element={<Requests />} />
+              <Route path="shipping" element={<Shipping />} />
               <Route path="phone-number" element={<PhoneNumber />} />
               <Route path="falak-media" element={<FalakMedia />} />
               <Route path="falak-post" element={<FalakPost />} />
