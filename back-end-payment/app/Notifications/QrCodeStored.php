@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\URL;
 
 class QrCodeStored extends Notification
 {
@@ -25,35 +26,40 @@ class QrCodeStored extends Notification
 
     public function toMail($notifiable)
     {
-
         // Determine the year value to display
         $yearDisplay = match ($this->qrCodeData['year'] ?? null) {
             '1' => '2016 أو أدنى',
             '2' => '2017 أو أعلى',
-            default => 'N/A', // Default value if year is not 1 or 2
+            default => 'غير محدد',
         };
 
         // Determine the status based on the length of the Reference Number
-        $referenceNumber = $this->qrCodeData['paid_qr_code'] ?? $this->qrCodeData['un_paid_qr_code'];
-        $status = (strlen($referenceNumber) === 14) ? 'Unpaid' : 'Paid';
+        $referenceNumber = $this->qrCodeData['paid_qr_code'] ?? $this->qrCodeData['un_paid_qr_code'] ?? null;
+        $status = $referenceNumber && (strlen($referenceNumber) === 14) ? 'Unpaid' : 'Paid';
 
-
+        // Prepare data for the view
+        $mailData = [
+            'payment_method' => $this->qrCodeData['payment_method'] ?? 'غير محدد',
+            'discountCode' => $this->qrCodeData['discountCode'] ?? 'لا يوجد',
+            'plan' => $this->qrCodeData['plan'] ?? 'غير محدد',
+            'service' => $this->qrCodeData['service'] ?? null,
+            'additionalServices' => $this->qrCodeData['additionalServices'] ?? 'لا يوجد',
+            'branch' => $this->qrCodeData['branch'] ?? 'غير محدد',
+            'model' => $this->qrCodeData['model'] ?? 'غير محدد',
+            'full_name' => $this->qrCodeData['full_name'] ?? 'غير محدد',
+            'phone' => $this->qrCodeData['phone'] ?? 'غير متوفر',
+            'yearDisplay' => $yearDisplay,
+            'referenceNumber' => $referenceNumber,
+            'status' => $status,
+            'price' => $this->qrCodeData['price'] ?? null,
+            'full_year' => $this->qrCodeData['full_year'] ?? 'غير محدد',
+            'address' => $this->qrCodeData['address'] ?? 'غير محدد',
+        ];
 
         return (new MailMessage)
-            ->subject('New Order')
-            ->line('A new order has been created.')
-            ->line('Method: ' . ($this->qrCodeData['payment_method'] ?? 'N/A'))
-            ->line('Code: ' . ($this->qrCodeData['discountCode'] ?? 'N/A'))
-            ->line('Plan: ' . ($this->qrCodeData['plan'] ?? 'N/A'))
-            ->line('Service: ' . ($this->qrCodeData['service'] ?? 'N/A'))
-            ->line('Additional Services: ' . ($this->qrCodeData['additionalServices'] ?? 'N/A'))
-            ->line('Branch: ' . ($this->qrCodeData['branch'] ?? 'N/A'))
-            ->line('Model: ' . ($this->qrCodeData['model'] ?? 'N/A'))
-            ->line('Name: ' . ($this->qrCodeData['full_name'] ?? 'N/A'))
-            ->line('Phone: ' . ($this->qrCodeData['phone'] ?? 'N/A'));
-        // ->line('Reference Number: ' . $referenceNumber)
-        // ->line('Status: ' . $status) // Add the status line
-        // ->line('Price: ' . ($this->qrCodeData['price'] ?? 'N/A'))
-        // ->line('Year: ' . $yearDisplay)
+            ->subject('طلب خدمة جديد')
+            ->view('emails.order-notification', ['data' => $mailData])
+            ->from('noreply@yourdomain.com', 'Cashif')
+            ->replyTo('support@yourdomain.com', 'Support Team');
     }
 }

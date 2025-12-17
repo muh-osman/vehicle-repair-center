@@ -150,6 +150,7 @@ Route::middleware('guest')->group(function () {
 
     // Getting discounted prices by car model ID and year ID
     Route::get('get-discounted-prices-by-model-and-year', [PriceController::class, 'getDiscountedPricesByModelAndYear']);
+    Route::get('get-discounted-prices-by-model-and-year-for-mertah-service', [PriceController::class, 'getDiscountedPricesByModelAndYearForMertahService']);
 
     // Getting discounted prices by car model ID and year ID (discounte 50%)
     Route::get('get-fifty-precent-discounted-prices-by-model-and-year', [PriceController::class, 'getAllPlansWith50PercentDiscount']);

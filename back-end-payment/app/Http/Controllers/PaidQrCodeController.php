@@ -36,6 +36,12 @@ class PaidQrCodeController extends Controller
             'discountCode' => 'nullable|string|max:255',
             'marketerShare' => 'nullable|numeric|min:0',
             'full_year' => 'nullable|string|max:255',
+
+            'clientId' => 'nullable|string|max:255',
+            'redeemeAmoumntValue' => 'nullable|numeric|min:0',
+
+            // 'isShipped' => 'nullable|boolean', no need herer
+            'address' => 'nullable|string|max:1000',
         ]);
 
         // Secret Key
@@ -68,8 +74,48 @@ class PaidQrCodeController extends Controller
                     'discountCode' => $metadata['dc'] ?? null,
                     'marketerShare' => $metadata['msh'] ?? null,
                     'full_year' => $metadata['fy'] ?? null,
+                    'clientId' => $metadata['cd'] ?? null,
+                    'redeemeAmoumntValue' => $metadata['rv'] ?? 0,
                     'date_of_visited' => null, // Set date_of_visited to null
+                    'address' => $metadata['ad'] ?? null,
                 ]);
+
+
+                // Make API request if redeemeAmoumntValue > 0
+                if ($qrCode->redeemeAmoumntValue > 0 && !empty($qrCode->clientId)) {
+                    try {
+                        $data = [
+                            'clientId' => (int) $qrCode->clientId,
+                            'points' => (int) $qrCode->redeemeAmoumntValue
+                        ];
+
+                        $apiResponse = Http::withHeaders([
+                            'Content-Type' => 'application/json-patch+json',
+                        ])->put('https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto', $data);
+
+                        if ($apiResponse->successful()) {
+                            Log::info('Client points update API request successful', [
+                                'clientId' => $qrCode->clientId,
+                                'points' => $qrCode->redeemeAmoumntValue,
+                                'response' => $apiResponse->json(),
+                            ]);
+                        } else {
+                            Log::error('Client points update API request failed', [
+                                'clientId' => $qrCode->clientId,
+                                'points' => $qrCode->redeemeAmoumntValue,
+                                'status' => $apiResponse->status(),
+                                'response' => $apiResponse->json(),
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Error occurred while making client points update API request', [
+                            'clientId' => $qrCode->clientId,
+                            'points' => $qrCode->redeemeAmoumntValue,
+                            'message' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
 
                 // Send notification to multiple recipients
                 $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
@@ -79,8 +125,8 @@ class PaidQrCodeController extends Controller
 
                 // Prepare the data to pass to the notification
                 $notificationData = array_merge($qrCode->toArray(), [
-                    'payment_method' => $paymentMethod,
                     'service' => $metadata['service'] ?? null,
+                    'payment_method' => $paymentMethod,
                     'additionalServices' => $metadata['additionalServices'] ?? null,
                     'branch' => $metadata['branch'] ?? null,
                     'plan' => $metadata['plan'] ?? null,
@@ -88,6 +134,8 @@ class PaidQrCodeController extends Controller
                     'full_name' => $metadata['name'] ?? null, // Use name from metadata
                     'phone' => $metadata['phone'] ?? null, // Use phone from metadata
                     'discountCode' => $metadata['dc'] ?? null, // Use from metadata
+                    'address' => $metadata['ad'] ?? null, // Use from metadata
+                    'full_year' => $metadata['fy'] ?? null,
                 ]);
 
                 try {
@@ -211,6 +259,211 @@ class PaidQrCodeController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    /**
+     * Handle Moyasar payment paid webhook
+     */
+    public function  purchaseCheckMoyasarWebhook(Request $request)
+    {
+        try {
+            // Verify the webhook signature
+            $this->verifyWebhookSignature($request);
+
+            // Get the webhook payload
+            $webhookData = $request->all();
+
+            // Extract data from webhook payload
+            $paymentData = $webhookData['data'] ?? [];
+            $metadata = $paymentData['metadata'] ?? [];
+
+            // Prepare data for storage and notification
+            $paymentInfo = [
+                'paid_qr_code' => $paymentData['id'],
+                'full_name' => $metadata['name'] ?? null,
+                'phone' => $metadata['phone'] ?? null,
+                'branch' => $metadata['branch'] ?? null,
+                'plan' => $metadata['plan'] ?? null,
+                'price' => $metadata['price'] ?? 0,
+                'model' => $metadata['model'] ?? null,
+                'year' => $metadata['year'] ?? null,
+                'additionalServices' => $metadata['additionalServices'] ?? null,
+                'service' => $metadata['service'] ?? null,
+                'affiliate' => $metadata['affiliate'] ?? null,
+                'discountCode' => $metadata['dc'] ?? null,
+                'marketerShare' => $metadata['msh'] ?? null,
+                'full_year' => $metadata['fy'] ?? null,
+                'clientId' => $metadata['cd'] ?? null,
+                'redeemeAmoumntValue' => $metadata['rv'] ?? 0,
+                'date_of_visited' => null,
+                'address' => $metadata['ad'] ?? null,
+            ];
+
+            // Check if payment already exists to avoid duplicates
+            $existingPayment = PaidQrCode::where('paid_qr_code', $paymentInfo['paid_qr_code'])->first();
+
+
+            if ($existingPayment) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Payment already exists in database',
+                    'paid_qr_code' => $existingPayment->paid_qr_code,
+                    'database_id' => $existingPayment->id,
+                    'timestamp' => now()->toDateTimeString()
+                ], 200);
+            }
+
+            // Store payment data in database
+            $payment = PaidQrCode::create($paymentInfo);
+
+
+            // Make API request if redeemeAmoumntValue > 0 point (هذا api يخصم النقاط من حساب العميل في حال استخدامها)
+            if ($payment->redeemeAmoumntValue > 0 && !empty($payment->clientId)) {
+                try {
+                    $data = [
+                        'clientId' => (int) $payment->clientId,
+                        'points' => (int) $payment->redeemeAmoumntValue
+                    ];
+
+                    $apiResponse = Http::withHeaders([
+                        'Content-Type' => 'application/json-patch+json',
+                    ])->put('https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto', $data);
+
+                    if ($apiResponse->successful()) {
+                        Log::info('Client points update API request successful', [
+                            'clientId' => $payment->clientId,
+                            'points' => $payment->redeemeAmoumntValue,
+                            'response' => $apiResponse->json(),
+                        ]);
+                    } else {
+                        Log::error('Client points update API request failed', [
+                            'clientId' => $payment->clientId,
+                            'points' => $payment->redeemeAmoumntValue,
+                            'status' => $apiResponse->status(),
+                            'response' => $apiResponse->json(),
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error occurred while making client points update API request', [
+                        'clientId' => $payment->clientId,
+                        'points' => $payment->redeemeAmoumntValue,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+
+            // Send email notification to multiple recipients
+            $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            // $recipients = ['gp415400@gmail.com']; // For testing
+
+            $paymentMethod = "Moyasar";
+            // Prepare the data to pass to the notification
+            $notificationData = array_merge($payment->toArray(), [
+                // 'service' => $metadata['service'] ?? null,
+                'payment_method' => $paymentMethod,
+                // 'additionalServices' => $metadata['additionalServices'] ?? null,
+                // 'branch' => $metadata['branch'] ?? null,
+                // 'plan' => $metadata['plan'] ?? null,
+                // 'model' => $metadata['model'] ?? null,
+                // 'full_name' => $metadata['name'] ?? null, // Use name from metadata
+                // 'phone' => $metadata['phone'] ?? null, // Use phone from metadata
+                // 'discountCode' => $metadata['dc'] ?? null, // Use from metadata
+                // 'address' => $metadata['ad'] ?? null, // Use from metadata
+                // 'full_year' => $metadata['fy'] ?? null,
+            ]);
+
+            try {
+
+                Log::channel('daily')->info('Notification Data Prepared', [
+                    'notification_data' => $notificationData,
+                    'paid_qr_code' => $payment->paid_qr_code,
+                ]);
+
+                Notification::route('mail', $recipients)
+                    ->notify(new QrCodeStored($notificationData));
+
+                Log::channel('daily')->info('Payment email notification sent successfully', [
+                    'paid_qr_code' => $payment->paid_qr_code,
+                    'recipients' => $recipients,
+                    'sent_at' => now()->toDateTimeString()
+                ]);
+            } catch (\Exception $e) {
+                // Log email failure but don't stop the process
+                Log::channel('daily')->error('Payment email notification failed', [
+                    'error' => $e->getMessage(),
+                    'paid_qr_code' => $payment->paid_qr_code,
+                    'recipients' => $recipients,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+            }
+
+            // Log successful storage
+            Log::channel('daily')->info('Moyasar Payment stored successfully', [
+                'paid_qr_code' => $payment->paid_qr_code,
+                'stored_at' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment data stored and notification sent successfully',
+                'paid_qr_code' => $payment->paid_qr_code,
+                'database_id' => $payment->id,
+                'email_sent' => true,
+                'timestamp' => now()->toDateTimeString()
+            ], 200);
+        } catch (\Exception $e) {
+            // Log the error
+            Log::channel('daily')->error('Moyasar Payment Webhook Error', [
+                'error' => $e->getMessage(),
+                'payload' => $request->all(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Webhook processing failed',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Verify webhook signature for security
+     */
+    private function verifyWebhookSignature(Request $request)
+    {
+        $secretToken = env('MOYASAR_SECRET_TOKEN');
+
+        if (!$secretToken) {
+            throw new \Exception('Moyasar secret token not configured');
+        }
+
+        // Moyasar might send a signature header, verify it here
+        $signature = $request->header('X-Moyasar-Signature') ?? $request->header('Moyasar-Signature');
+
+        if ($signature) {
+            // Verify the signature using your secret token
+            $payload = $request->getContent();
+            $expectedSignature = hash_hmac('sha256', $payload, $secretToken);
+
+            if (!hash_equals($expectedSignature, $signature)) {
+                throw new \Exception('Invalid webhook signature');
+            }
+        }
+
+        // Additional security: Verify secret token from payload
+        $payloadToken = $request->input('secret_token');
+        if ($payloadToken && $payloadToken !== $secretToken) {
+            throw new \Exception('Invalid secret token in payload');
+        }
+
+        // Verify event type is payment_paid
+        $eventType = $request->input('type');
+        if ($eventType !== 'payment_paid') {
+            throw new \Exception('Invalid event type: ' . $eventType);
         }
     }
 }

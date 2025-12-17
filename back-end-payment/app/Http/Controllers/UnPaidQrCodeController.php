@@ -194,8 +194,68 @@ class UnPaidQrCodeController extends Controller
             ->concat($filteredTamaraPaidClients)
             ->concat($filteredTabbyPaidClients);
 
-        // Sort the combined collection by created_at date
-        $sortedQrCodes = $allQrCodes->sortByDesc('created_at');
+        // Filter out records where service equals "مرتاح" or "مرتاح+مخدوم"
+        $filteredQrCodes = $allQrCodes->filter(function ($item) {
+            return !in_array($item->service, ['مرتاح', 'مرتاح+مخدوم']);
+        });
+
+        // Sort the filtered collection by created_at date
+        $sortedQrCodes = $filteredQrCodes->sortByDesc('created_at');
+
+        // Return the sorted data as a JSON response
+        return response()->json($sortedQrCodes->values()->all(), 200);
+    }
+
+
+    /**
+     * Get all QR codes from both paid and unpaid tables with service = "مرتاح" or "مرتاح+مخدوم",
+     * ordered by created_at.
+     */
+    public function getAllQrCodesWithSpecialService()
+    {
+        // Retrieve all records from both tables and add table name
+        $paidQrCodes = PaidQrCode::all()->map(function ($item) {
+            $item->table_name = 'Moyasar';
+            return $item;
+        });
+
+        $unPaidQrCodes = UnPaidQrCode::all()->map(function ($item) {
+            $item->table_name = 'unPaid';
+            return $item;
+        });
+
+        $tamaraPaidClients = TamaraPaidClient::all()->map(function ($item) {
+            $item->table_name = 'Tamara';
+            return $item;
+        });
+
+        $tabbyPaidClients = TabbyPaidClient::all()->map(function ($item) {
+            $item->table_name = 'Tabby';
+            return $item;
+        });
+
+        // Filter out records where full_name, phone, and plan are null
+        $filteredTamaraPaidClients = $tamaraPaidClients->filter(function ($client) {
+            return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+        });
+
+        // Filter out records where full_name, phone, and plan are null
+        $filteredTabbyPaidClients = $tabbyPaidClients->filter(function ($client) {
+            return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+        });
+
+        // Combine the results into a single collection
+        $allQrCodes = $paidQrCodes->concat($unPaidQrCodes)
+            ->concat($filteredTamaraPaidClients)
+            ->concat($filteredTabbyPaidClients);
+
+        // Filter to keep only records where service equals "مرتاح" or "مرتاح+مخدوم"
+        $filteredQrCodes = $allQrCodes->filter(function ($item) {
+            return in_array($item->service, ['مرتاح', 'مرتاح+مخدوم']);
+        });
+
+        // Sort the filtered collection by created_at date
+        $sortedQrCodes = $filteredQrCodes->sortByDesc('created_at');
 
         // Return the sorted data as a JSON response
         return response()->json($sortedQrCodes->values()->all(), 200);
@@ -275,5 +335,113 @@ class UnPaidQrCodeController extends Controller
 
         // If the QR code was not found in any table
         return response()->json(['message' => 'QR Code not found in any table.'], 404);
+    }
+
+    /**
+     * Toggle the isShipped status for a QR code across all payment tables.
+     */
+    public function toggleShippedStatus($qrCode)
+    {
+        // Define the tables to search
+        $tables = [
+            'paid_qr_codes' => PaidQrCode::class,
+            'tabby_paid_clients' => TabbyPaidClient::class,
+            'tamara_paid_clients' => TamaraPaidClient::class,
+        ];
+
+        $foundRecord = null;
+        $tableName = null;
+        $modelClass = null;
+
+        // Search for the QR code in all tables
+        foreach ($tables as $table => $model) {
+            $record = $model::where('paid_qr_code', $qrCode)->first();
+
+            if ($record) {
+                $foundRecord = $record;
+                $tableName = $table;
+                $modelClass = $model;
+                break;
+            }
+        }
+
+        // If no record found, return error
+        if (!$foundRecord) {
+            return response()->json([
+                'message' => 'QR Code not found in any payment table.',
+            ], 404);
+        }
+
+        // Store the current isShipped value before updating
+        $currentIsShipped = $foundRecord->isShipped;
+
+        // Toggle the isShipped status
+        $foundRecord->isShipped = !$currentIsShipped;
+        $foundRecord->save();
+
+        // Also update the same QR code in all other tables if they exist
+        foreach ($tables as $table => $model) {
+            if ($model !== $modelClass) { // Skip the table where we already updated
+                $otherRecord = $model::where('paid_qr_code', $qrCode)->first();
+
+                if ($otherRecord) {
+                    $otherRecord->isShipped = $foundRecord->isShipped;
+                    $otherRecord->save();
+                }
+            }
+        }
+
+        return response()->json([
+            'message' => 'Shipping status updated successfully.',
+            'data' => [
+                'table' => $tableName,
+                'qr_code' => $qrCode,
+                'previous_status' => $currentIsShipped,
+                'new_status' => $foundRecord->isShipped,
+            ],
+        ], 200);
+    }
+
+
+    /**
+     * Find a record by QR code across all payment tables.
+     */
+    public function findRecordByQrCode($qrCode)
+    {
+        // Define the tables to search
+        $tables = [
+            'paid_qr_codes' => PaidQrCode::class,
+            'tabby_paid_clients' => TabbyPaidClient::class,
+            'tamara_paid_clients' => TamaraPaidClient::class,
+        ];
+
+        $foundRecord = null;
+        $tableName = null;
+
+        // Search for the QR code in all tables
+        foreach ($tables as $table => $model) {
+            $record = $model::where('paid_qr_code', $qrCode)->first();
+
+            if ($record) {
+                $foundRecord = $record;
+                $tableName = $table;
+                break;
+            }
+        }
+
+        // If no record found, return error
+        if (!$foundRecord) {
+            return response()->json([
+                'message' => 'QR Code not found in any payment table.',
+            ], 404);
+        }
+
+        // Add table name to the record for identification
+        $foundRecord->table_name = $tableName;
+
+        return response()->json([
+            'message' => 'Record found successfully.',
+            'data' => $foundRecord,
+        ], 200);
     }
 }

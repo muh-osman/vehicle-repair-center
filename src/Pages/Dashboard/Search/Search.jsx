@@ -69,14 +69,8 @@ export default function Search() {
               autoComplete: "off",
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => searchQuery && mutate(searchQuery)}
-                  >
-                    {isPending ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      <KeyboardIcon size={24} style={{ fill: "#757575" }} />
-                    )}
+                  <IconButton onClick={() => searchQuery && mutate(searchQuery)}>
+                    {isPending ? <CircularProgress size={24} color="inherit" /> : <KeyboardIcon size={24} style={{ fill: "#757575" }} />}
                   </IconButton>
                 </InputAdornment>
               ),

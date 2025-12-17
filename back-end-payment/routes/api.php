@@ -52,6 +52,7 @@ Route::middleware('guest')->group(function () {
 
 
     Route::post('/save-paid-qr-code', [PaidQrCodeController::class, 'store']);
+    Route::post('/purchase-check-moyasar-webhook', [PaidQrCodeController::class, 'purchaseCheckMoyasarWebhook']);
 
     Route::post('/save-unpaid-qr-code', [UnPaidQrCodeController::class, 'store']);
 
@@ -77,10 +78,20 @@ Route::middleware('guest')->group(function () {
     Route::delete('/delete-client/{qrCode}', [UnPaidQrCodeController::class, 'deleteClient']); // Delete the client
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
+    Route::get('/get-all-mertah-service-records', [UnPaidQrCodeController::class, 'getAllQrCodesWithSpecialService']); // مرتاح
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 
     // Shipping payments Webhook
     Route::post('/shipping-payment-paid-webhook', [MoyasarShippingPaymentController::class, 'ShippingPaymentPaidWebhook']);
     // Get all shipping payments
     Route::get('/shipping-payments', [MoyasarShippingPaymentController::class, 'getAllShippingPayments']);
+    Route::get('/get-shipping-payment/{id}', [MoyasarShippingPaymentController::class, 'show']);
+    Route::put('/shipping-payments/mark-as-shipped/{id}', [MoyasarShippingPaymentController::class, 'markAsShipped']);
+    Route::put('/shipping-payments/update_accounted_status/{id}', [MoyasarShippingPaymentController::class, 'markAsAccounted']);
+
+    // Mertah
+    // For the first method (only paid tables)
+    Route::put('/mertah-service/toggle-is-shipped/{qrCode}', [UnPaidQrCodeController::class, 'toggleShippedStatus']);
+    // Route for finding record in payment tables only
+    Route::get('/get-mertah-client/debends-on-qr-code/{qrCode}', [UnPaidQrCodeController::class, 'findRecordByQrCode']);
 });

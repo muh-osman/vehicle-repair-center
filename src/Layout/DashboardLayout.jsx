@@ -37,6 +37,7 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import CarRepairIcon from "@mui/icons-material/CarRepair";
+import ChairIcon from "@mui/icons-material/Chair";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -53,50 +54,10 @@ function ResponsiveDrawer(props) {
   // Cookie
   const [cookies, setCookie] = useCookies(["token", "verified", "role"]);
 
-  const pages = [
-    {
-      id: 1,
-      title: "Dashboard",
-      path: "/dashboard",
-      icon: <DashboardIcon sx={{ color: "#757575" }} />,
-    },
-    {
-      id: 2,
-      title: "Search",
-      path: "/dashboard/search",
-      icon: <SearchIcon sx={{ color: "#757575" }} />,
-    },
-    {
-      id: 3,
-      title: "Table",
-      path: "/dashboard/table",
-      icon: <TocIcon sx={{ color: "#757575" }} />,
-    },
-  ];
-
-  // Super Admin page
-  if (cookies.role === 255) {
-    pages.push(
-      {
-        id: 4,
-        title: "Add",
-        path: "/dashboard/add",
-        icon: <AddBoxIcon sx={{ color: "#757575" }} />,
-      },
-      {
-        id: 5,
-        title: "Edit",
-        path: "/dashboard/edit",
-        icon: <AutoFixHighIcon sx={{ color: "#757575" }} />,
-      },
-      {
-        id: 6,
-        title: "Delete",
-        path: "/dashboard/delete",
-        icon: <DeleteIcon sx={{ color: "#757575" }} />,
-      }
-    );
-  }
+  // 255 ==> Admin
+  // 3 ==> Branches Account
+  // 100 ==> Accountant
+  // 50 ==> Support
 
   const { pathname } = useLocation();
 
@@ -125,233 +86,378 @@ function ResponsiveDrawer(props) {
           </Stack>
         </Link>
       </Toolbar>
+
       <Divider />
 
       <List>
-        {pages.map((item) => {
-          return (
-            <ListItem
-              dir="ltr"
-              key={item.id}
-              disablePadding
-              button
-              component={Link}
-              to={item.path}
-              // selected={item.path === pathname}
-              selected={item.path !== "/dashboard" ? pathname.includes(item.path) : pathname === item.path}
-            >
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    {item.icon}
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary={item.title} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+        {/* Dashboard */}
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard" selected={pathname === "/dashboard"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <DashboardIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Dashboard" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
-        <Divider />
-        <ListItem dir="ltr" key={101} disablePadding button component={NavLink} to="/dashboard/scan" selected={pathname === "/dashboard/scan"}>
-          <ListItemButton sx={{ color: "#757575" }}>
-            <ListItemIcon>
-              <Avatar
-                alt="icon"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: "transparent",
-                }}
-              >
-                <QrCodeIcon sx={{ color: "#757575" }} />
-              </Avatar>
-            </ListItemIcon>
-            <ListItemText primary="Scan QR" />
-          </ListItemButton>
-        </ListItem>
+        {/* Search */}
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/search" selected={pathname === "/dashboard/search"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <SearchIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Search" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
+        {/* Table */}
+        {(cookies.role === 255 || cookies.role === 3) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/table" selected={pathname === "/dashboard/table"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <TocIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Table" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Add */}
         {cookies.role === 255 && (
-          <>
-            <ListItem dir="ltr" key={102} disablePadding button component={NavLink} to="/dashboard/requests" selected={pathname === "/dashboard/requests"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <LocalGroceryStoreIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Requests" />
-              </ListItemButton>
-            </ListItem>
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/add" selected={pathname === "/dashboard/add"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <AddBoxIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Add" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
-            <ListItem dir="ltr" key={1002} disablePadding button component={NavLink} to="/dashboard/shipping" selected={pathname === "/dashboard/shipping"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <CarRepairIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Shipping" />
-              </ListItemButton>
-            </ListItem>
+        {/* Edit */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/edit" selected={pathname === "/dashboard/edit"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <AutoFixHighIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Edit" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
-            <ListItem dir="ltr" key={103} disablePadding button component={NavLink} to="/dashboard/analytics" selected={pathname === "/dashboard/analytics"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <AssessmentIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Analytics" />
-              </ListItemButton>
-            </ListItem>
-
-            <Divider />
-
-            <ListItem dir="ltr" key={104} disablePadding button component={NavLink} to="/dashboard/phone-number" selected={pathname === "/dashboard/phone-number"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <DialpadIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Falak Phone" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem dir="ltr" key={105} disablePadding button component={NavLink} to="/dashboard/falak-media" selected={pathname === "/dashboard/falak-media"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <PostAddIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Falak Media" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem dir="ltr" key={106} disablePadding button component={NavLink} to="/dashboard/free-order" selected={pathname === "/dashboard/free-order"}>
-              <ListItemButton sx={{ color: "#757575" }}>
-                <ListItemIcon>
-                  <Avatar
-                    alt="icon"
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <LoyaltyIcon sx={{ color: "#757575" }} />
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary="Free Order" />
-              </ListItemButton>
-            </ListItem>
-          </>
+        {/* Delete */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/delete" selected={pathname === "/dashboard/delete"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <DeleteIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Delete" />
+            </ListItemButton>
+          </ListItem>
         )}
 
         <Divider />
 
-        <ListItem dir="ltr" key={107} disablePadding button component={NavLink} to="/dashboard/reports" selected={pathname === "/dashboard/reports"}>
-          <ListItemButton sx={{ color: "#757575" }}>
-            <ListItemIcon>
-              <Avatar
-                alt="icon"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: "transparent",
-                }}
-              >
-                <InsertDriveFileIcon sx={{ color: "#757575" }} />
-              </Avatar>
-            </ListItemIcon>
-            <ListItemText primary="Mojaz" />
-          </ListItemButton>
-        </ListItem>
+        {/* Scan QR */}
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/scan" selected={pathname === "/dashboard/scan"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <QrCodeIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Scan QR" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
-        <ListItem dir="ltr" key={108} disablePadding button component={NavLink} to="/dashboard/videos" selected={pathname === "/dashboard/videos"}>
-          <ListItemButton sx={{ color: "#757575" }}>
-            <ListItemIcon>
-              <Avatar
-                alt="icon"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: "transparent",
-                }}
-              >
-                <VideocamIcon sx={{ color: "#757575" }} />
-              </Avatar>
-            </ListItemIcon>
-            <ListItemText primary="Videos" />
-          </ListItemButton>
-        </ListItem>
+        {/* Requests */}
+        {(cookies.role === 255 || cookies.role === 100 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/requests" selected={pathname === "/dashboard/requests"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <LocalGroceryStoreIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Requests" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Shipping */}
+        {(cookies.role === 255 || cookies.role === 100 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/shipping" selected={pathname === "/dashboard/shipping"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <CarRepairIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Shipping" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Mertah */}
+        {(cookies.role === 255 || cookies.role === 100 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/mertah" selected={pathname === "/dashboard/mertah"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <ChairIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Mertah" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Analytics */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/analytics" selected={pathname === "/dashboard/analytics"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <AssessmentIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Analytics" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
         <Divider />
 
-        <ListItem dir="ltr" key={109} disablePadding button component={NavLink} to="/dashboard/disclaimer-form" selected={pathname === "/dashboard/disclaimer-form"}>
-          <ListItemButton sx={{ color: "#757575" }}>
-            <ListItemIcon>
-              <Avatar
-                alt="icon"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: "transparent",
-                }}
-              >
-                <SummarizeIcon sx={{ color: "#757575" }} />
-              </Avatar>
-            </ListItemIcon>
-            <ListItemText primary="Disclaimer Form" />
-          </ListItemButton>
-        </ListItem>
-
+        {/* Falak Phone */}
         {cookies.role === 255 && (
-          <ListItem dir="ltr" key={110} disablePadding button component={NavLink} to="/dashboard/refund-form" selected={pathname === "/dashboard/refund-form"}>
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/phone-number" selected={pathname === "/dashboard/phone-number"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <DialpadIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Falak Phone" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Falak Media */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/falak-media" selected={pathname === "/dashboard/falak-media"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <PostAddIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Falak Media" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Free Order */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/free-order" selected={pathname === "/dashboard/free-order"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <LoyaltyIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Free Order" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        <Divider />
+
+        {/* Mojaz */}
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/reports" selected={pathname === "/dashboard/reports"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <InsertDriveFileIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Mojaz" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Videos */}
+        {(cookies.role === 255 || cookies.role === 3) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/videos" selected={pathname === "/dashboard/videos"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <VideocamIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Videos" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        <Divider />
+
+        {/* Disclaimer Form */}
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/disclaimer-form" selected={pathname === "/dashboard/disclaimer-form"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <SummarizeIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Disclaimer Form" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Refund Form */}
+        {(cookies.role === 255 || cookies.role === 100) && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/refund-form" selected={pathname === "/dashboard/refund-form"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
                 <Avatar

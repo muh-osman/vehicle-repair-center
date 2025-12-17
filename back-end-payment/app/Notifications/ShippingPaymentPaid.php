@@ -34,23 +34,16 @@ class ShippingPaymentPaid extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('New Shipping Request Received')
-            ->greeting('New Shipping Request!')
-            ->line('A new shipping request has been successfully processed.')
-            ->line('**Details:**')
-            ->line('📋 Report Number: ' . ($this->paymentData['reportNumber'] ?? 'N/A'))
-            ->line('🚗 Model: ' . ($this->paymentData['model'] ?? 'N/A'))
-            ->line('📍 From: ' . ($this->paymentData['from'] ?? 'N/A'))
-            ->line('🎯 To: ' . ($this->paymentData['to'] ?? 'N/A'))
-            ->line('📦 Shipping Type: ' . ($this->paymentData['shippingType'] ?? 'N/A'))
-            ->line('💰 Price: SAR ' . number_format($this->paymentData['price'] ?? 0, 2))
-            ->line('📞 Phone: ' . ($this->paymentData['phoneNumber'] ?? 'N/A'))
-            ->action('View Request Details', url('https://cashif.online/dashboard/shipping'))
-            ->line('Thanks!');
+            ->subject('طلب خدمة شحن سيارة جديد')
+            ->view(
+                'emails.shipping-table',
+                ['data' => $this->paymentData]
+            );
     }
+
 
     /**
      * Get the array representation of the notification.

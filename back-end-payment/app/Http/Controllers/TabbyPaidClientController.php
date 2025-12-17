@@ -92,9 +92,13 @@ class TabbyPaidClientController extends Controller
                 $discountCode = $parsedDescription['dc'] ?? null; // Adjust based on actual structure
                 $marketerShare = $parsedDescription['msh'] ?? null; // Adjust based on actual structure
                 $fullYear = $parsedDescription['fy'] ?? null; // Adjust based on actual structure
+                $clientId = $parsedDescription['cd'] ?? null; // Adjust based on actual structure
+                $redeemeAmoumntValue = $parsedDescription['rv'] ?? 0; // Adjust based on actual structure
+
+                $address = $parsedDescription['ad'] ?? null;
 
                 // Store the data in the database
-                $this->storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear);
+                $this->storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear, $clientId, $redeemeAmoumntValue, $address);
             } else {
                 Log::error('Failed to fetch order details for ID: ' . $orderId);
             }
@@ -137,7 +141,7 @@ class TabbyPaidClientController extends Controller
         }
     }
 
-    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear)
+    private function storeClosedOrderData($orderId, $fullname, $phone, $branch, $plan, $price, $model, $yearId, $additionalServices, $service, $affiliate, $discountCode, $marketerShare, $fullYear, $clientId, $redeemeAmoumntValue, $address)
     {
         Log::info('Start store Tabby Payment orderId: ' . $orderId);
         // Check if the order already exists
@@ -160,26 +164,36 @@ class TabbyPaidClientController extends Controller
                 'discountCode' => $discountCode ?? null,
                 'marketerShare' => $marketerShare ?? null,
                 'full_year' => $fullYear ?? null,
+                'clientId' => $clientId ?? null,
+                'redeemeAmoumntValue' => $redeemeAmoumntValue ?? 0,
+                'address' => $address ?? null,
                 'date_of_visited' => null,
             ]);
 
+            // Make API request if redeemeAmoumntValue > 0
+            if ($redeemeAmoumntValue > 0 && !empty($clientId)) {
+                $this->updateClientPoints($clientId, $redeemeAmoumntValue);
+            }
 
             // Send notification to recipients
             $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            // $recipients = ['gp415400@gmail.com'];
 
             $paymentMethod = "Tabby";
 
             // Prepare the data to pass to the notification
             $notificationData = array_merge($newOrder->toArray(), [
+                // 'service' => $service ?? null,
                 'payment_method' => $paymentMethod,
-                'service' => $service ?? null,
-                'additionalServices' => $additionalServices ?? null,
-                'branch' => $branch ?? null,
-                'plan' => $plan ?? null,
-                'model' => $model ?? null,
-                'full_name' => $fullname ?? null,
-                'phone' => $phone ?? null,
-                'discountCode' => $discountCode ?? null,
+                // 'additionalServices' => $additionalServices ?? null,
+                // 'branch' => $branch ?? null,
+                // 'plan' => $plan ?? null,
+                // 'model' => $model ?? null,
+                // 'full_name' => $fullname ?? null,
+                // 'phone' => $phone ?? null,
+                // 'discountCode' => $discountCode ?? null,
+                // 'address' => $address ?? null,
+                // 'full_year' => $fullYear ?? null,
             ]);
             try {
                 Notification::route('mail', $recipients)
@@ -193,6 +207,42 @@ class TabbyPaidClientController extends Controller
         } else {
             // If it exists, log that the order already exists
             \Log::info("Tabby payment already exists for order: {$orderId}");
+        }
+    }
+
+
+    private function updateClientPoints($clientId, $redeemeAmoumntValue)
+    {
+        try {
+            $dataPayload = [
+                "clientId" => (int)$clientId,
+                "points" => (int)$redeemeAmoumntValue
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json-patch+json',
+            ])->put("https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto", $dataPayload);
+
+            if ($response->successful()) {
+                Log::info('Client points updated successfully', [
+                    'clientId' => $clientId,
+                    'points' => $redeemeAmoumntValue,
+                    'response' => $response->json(),
+                ]);
+            } else {
+                Log::error('Failed to update client points', [
+                    'clientId' => $clientId,
+                    'points' => $redeemeAmoumntValue,
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error occurred while updating client points', [
+                'clientId' => $clientId,
+                'points' => $redeemeAmoumntValue,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -291,6 +341,10 @@ class TabbyPaidClientController extends Controller
                 $marketerShare = $data['msh'] ?? null;
                 $fullYear = $data['fy'] ?? null;
 
+                $clientId = $data['cd'] ?? null;
+                $redeemeAmoumntValue = $data['rv'] ?? 0;
+                $address = $data['ad'] ?? null;
+
 
 
                 // Find the corresponding PaidQrCode entry
@@ -365,6 +419,9 @@ class TabbyPaidClientController extends Controller
                         'discountCode' => $discountCode,
                         'marketerShare' => $marketerShare,
                         'full_year' => $fullYear,
+                        'clientId' => $clientId,
+                        'redeemeAmoumntValue' => $redeemeAmoumntValue,
+                        'address' => $address,
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tabby' => $responseData

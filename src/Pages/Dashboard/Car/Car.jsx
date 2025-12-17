@@ -46,13 +46,7 @@ export default function Car() {
   const handleChangeYear = (clickedYearId) => {
     setVariant(clickedYearId);
     // Reset all sale
-    setIsSaleClicked([
-      { clicked: false },
-      { clicked: false },
-      { clicked: false },
-      { clicked: false },
-      { clicked: false },
-    ]);
+    setIsSaleClicked([{ clicked: false }, { clicked: false }, { clicked: false }, { clicked: false }, { clicked: false }]);
     // Reset expandedId to -1 to close all cards
     setExpandedId(-1);
   };
@@ -64,11 +58,7 @@ export default function Car() {
     yearId: variant,
   };
 
-  const {
-    data: carModelData,
-    fetchStatus,
-    refetch,
-  } = useGetCarPricesByIdAndYearApi(data);
+  const { data: carModelData, fetchStatus, refetch } = useGetCarPricesByIdAndYearApi(data);
 
   // Refetch data when variant changes (Years buttons clickes)
   useEffect(() => {
@@ -78,20 +68,12 @@ export default function Car() {
   }, [variant]);
 
   // Sale
-  const [isSaleClicked, setIsSaleClicked] = useState([
-    { clicked: false },
-    { clicked: false },
-    { clicked: false },
-    { clicked: false },
-    { clicked: false },
-  ]);
+  const [isSaleClicked, setIsSaleClicked] = useState([{ clicked: false }, { clicked: false }, { clicked: false }, { clicked: false }, { clicked: false }]);
 
   // Sale btn
   const handleClick = (clickedVariant, cardIndex) => {
     setIsSaleClicked((prevState) => {
-      return prevState.map((item, index) =>
-        index === cardIndex ? { clicked: clickedVariant } : item
-      );
+      return prevState.map((item, index) => (index === cardIndex ? { clicked: clickedVariant } : item));
     });
   };
 
@@ -131,23 +113,11 @@ export default function Car() {
     <div className={style.container}>
       {progress()}
       {/* Years buttons */}
-      <Stack
-        spacing={2}
-        direction="row"
-        justifyContent="center"
-        marginTop={4}
-        marginBottom={4}
-      >
-        <Button
-          onClick={() => handleChangeYear(2)}
-          variant={variant === 2 ? "contained" : "outlined"}
-        >
+      <Stack spacing={2} direction="row" justifyContent="center" marginTop={4} marginBottom={4}>
+        <Button onClick={() => handleChangeYear(2)} variant={variant === 2 ? "contained" : "outlined"}>
           سنة 2017 أو أعلى
         </Button>
-        <Button
-          onClick={() => handleChangeYear(1)}
-          variant={variant === 1 ? "contained" : "outlined"}
-        >
+        <Button onClick={() => handleChangeYear(1)} variant={variant === 1 ? "contained" : "outlined"}>
           سنة 2016 أو أدنى
         </Button>
       </Stack>
@@ -172,14 +142,9 @@ export default function Car() {
                 style={{
                   textAlign: "center",
                   color: "#757575 !important",
-                  fontSize:
-                    isSaleClicked[0].clicked || sale20 ? "22px" : "48px",
-                  textDecoration:
-                    isSaleClicked[0].clicked || sale20
-                      ? "line-through"
-                      : "none",
-                  fontWeight:
-                    isSaleClicked[0].clicked || sale20 ? "600" : "700",
+                  fontSize: isSaleClicked[0].clicked || sale20 ? "22px" : "48px",
+                  textDecoration: isSaleClicked[0].clicked || sale20 ? "line-through" : "none",
+                  fontWeight: isSaleClicked[0].clicked || sale20 ? "600" : "700",
                 }}
               >
                 {/* {(carModelData && isSaleClicked[0].clicked) ||
@@ -188,10 +153,7 @@ export default function Car() {
                       " ريال")} */}
 
                 {
-                  (carModelData && isSaleClicked[0].clicked) || sale20
-                    ? carModelData?.[0].prices?.[0].price * (1).toFixed(2) +
-                      " ريال"
-                    : null // or any fallback value you want to display when conditions are not met
+                  (carModelData && isSaleClicked[0].clicked) || sale20 ? carModelData?.[0].prices?.[0].price * (1).toFixed(2) + " ريال" : null // or any fallback value you want to display when conditions are not met
                 }
               </h3>
             </div>
@@ -206,10 +168,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {isSaleClicked[0].clicked &&
-                  carModelData &&
-                  Math.trunc(carModelData?.[0].prices?.[0].price * 0.9) +
-                    " ريال"}
+                {isSaleClicked[0].clicked && carModelData && Math.trunc(carModelData?.[0].prices?.[0].price * 0.9) + " ريال"}
               </Typography>
 
               {/* Sale Price 20%*/}
@@ -221,10 +180,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {sale20 &&
-                  carModelData &&
-                  carModelData?.[0].prices?.[0].price * (0.8).toFixed(2) +
-                    " ريال"}
+                {sale20 && carModelData && carModelData?.[0].prices?.[0].price * (0.8).toFixed(2) + " ريال"}
               </Typography>
 
               {/* Price Orginal */}
@@ -237,21 +193,12 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {carModelData &&
-                  !isSaleClicked[0].clicked &&
-                  !sale20 &&
-                  carModelData?.[0].prices?.[0].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && !isSaleClicked[0].clicked && !sale20 && carModelData?.[0].prices?.[0].price * (1).toFixed(2) + " ريال"}
               </Typography>
             </CardContent>
 
             <CardActions disableSpacing>
-              <ExpandMore
-                expand={expandedId === 0}
-                onClick={() => handleExpandClick(0)}
-                aria-expanded={expandedId === 0}
-                aria-label="show more"
-              >
+              <ExpandMore expand={expandedId === 0} onClick={() => handleExpandClick(0)} aria-expanded={expandedId === 0} aria-label="show more">
                 <ExpandMoreIcon />
               </ExpandMore>
 
@@ -268,11 +215,7 @@ export default function Car() {
 
               {/* Sale btn 10%*/}
               <Tooltip title="10%" arrow>
-                <IconButton
-                  className={style.sale10Btn}
-                  color={isSaleClicked[0].clicked ? "primary" : "#757575"}
-                  onClick={sale10BtnForFirstCard}
-                >
+                <IconButton className={style.sale10Btn} color={isSaleClicked[0].clicked ? "primary" : "#757575"} onClick={sale10BtnForFirstCard}>
                   <LoyaltyIcon />
                 </IconButton>
               </Tooltip>
@@ -288,33 +231,15 @@ export default function Car() {
                   <li style={{ marginBottom: "3px" }}>فحص المحرك</li>
                   <li style={{ marginBottom: "3px" }}>فحص ناقل الحركة</li>
                   <li style={{ marginBottom: "3px" }}>فحص الدفرنس</li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص ميكانيكا أسفل السيارة
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الكمبيوتر والحساسات
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الهيكل الداخلي (الشاص)
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الهيكل الخارجي (السمكرة والدهان)
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الوسائد الهوائية (الإيرباق)
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    تجربة السيارة على الطريق
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الديكورات الداخلية
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص المزايا المخصصة للسيارة
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الملحقات الخارجية للسيارة
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص ميكانيكا أسفل السيارة</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الكمبيوتر والحساسات</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الهيكل الداخلي (الشاص)</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الهيكل الخارجي (السمكرة والدهان)</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الوسائد الهوائية (الإيرباق)</li>
+                  <li style={{ marginBottom: "3px" }}>تجربة السيارة على الطريق</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الديكورات الداخلية</li>
+                  <li style={{ marginBottom: "3px" }}>فحص المزايا المخصصة للسيارة</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الملحقات الخارجية للسيارة</li>
                   <li style={{ marginBottom: "3px" }}>فحص الزجاج</li>
                   <li style={{ marginBottom: "3px" }}>فحص الكفرات والجنوط</li>
                   <li>فحص الشمعات والأسطبات</li>
@@ -333,16 +258,11 @@ export default function Car() {
                   textAlign: "center",
                   color: "#757575 !important",
                   fontSize: isSaleClicked[1].clicked ? "22px" : "48px",
-                  textDecoration: isSaleClicked[1].clicked
-                    ? "line-through"
-                    : "none",
+                  textDecoration: isSaleClicked[1].clicked ? "line-through" : "none",
                   fontWeight: isSaleClicked[1].clicked ? "600" : "700",
                 }}
               >
-                {carModelData &&
-                  isSaleClicked[1].clicked &&
-                  carModelData?.[0].prices?.[1].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && isSaleClicked[1].clicked && carModelData?.[0].prices?.[1].price * (1).toFixed(2) + " ريال"}
               </h3>
             </div>
 
@@ -356,10 +276,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {isSaleClicked[1].clicked &&
-                  carModelData &&
-                  Math.trunc(carModelData?.[0].prices?.[1].price * 0.95) +
-                    " ريال"}
+                {isSaleClicked[1].clicked && carModelData && Math.trunc(carModelData?.[0].prices?.[1].price * 0.95) + " ريال"}
               </Typography>
 
               {/* Price */}
@@ -372,30 +289,18 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {carModelData &&
-                  !isSaleClicked[1].clicked &&
-                  carModelData?.[0].prices?.[1].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && !isSaleClicked[1].clicked && carModelData?.[0].prices?.[1].price * (1).toFixed(2) + " ريال"}
               </Typography>
             </CardContent>
 
             <CardActions disableSpacing>
-              <ExpandMore
-                expand={expandedId === 1}
-                onClick={() => handleExpandClick(1)}
-                aria-expanded={expandedId === 1}
-                aria-label="show more"
-              >
+              <ExpandMore expand={expandedId === 1} onClick={() => handleExpandClick(1)} aria-expanded={expandedId === 1} aria-label="show more">
                 <ExpandMoreIcon />
               </ExpandMore>
 
               {/* Sale btn */}
               <Tooltip title="5%" arrow>
-                <IconButton
-                  className={style.sale5Btn}
-                  color={isSaleClicked[1].clicked ? "error" : "#757575"}
-                  onClick={() => handleClick(!isSaleClicked[1].clicked, 1)}
-                >
+                <IconButton className={style.sale5Btn} color={isSaleClicked[1].clicked ? "error" : "#757575"} onClick={() => handleClick(!isSaleClicked[1].clicked, 1)}>
                   <LoyaltyIcon />
                 </IconButton>
               </Tooltip>
@@ -411,21 +316,11 @@ export default function Car() {
                   <li style={{ marginBottom: "3px" }}>فحص المحرك</li>
                   <li style={{ marginBottom: "3px" }}>فحص ناقل الحركة</li>
                   <li style={{ marginBottom: "3px" }}>فحص الدفرنس</li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص ميكانيكا أسفل السيارة
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الكمبيوتر والحساسات
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الهيكل الداخلي (الشاص)
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الهيكل الخارجي (السمكرة والدهان)
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الوسائد الهوائية (الإيرباق)
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص ميكانيكا أسفل السيارة</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الكمبيوتر والحساسات</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الهيكل الداخلي (الشاص)</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الهيكل الخارجي (السمكرة والدهان)</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الوسائد الهوائية (الإيرباق)</li>
                   <li>تجربة السيارة على الطريق</li>
                 </ul>
               </CardContent>
@@ -442,16 +337,11 @@ export default function Car() {
                   textAlign: "center",
                   color: "#757575 !important",
                   fontSize: isSaleClicked[2].clicked ? "22px" : "48px",
-                  textDecoration: isSaleClicked[2].clicked
-                    ? "line-through"
-                    : "none",
+                  textDecoration: isSaleClicked[2].clicked ? "line-through" : "none",
                   fontWeight: isSaleClicked[2].clicked ? "600" : "700",
                 }}
               >
-                {carModelData &&
-                  isSaleClicked[2].clicked &&
-                  carModelData?.[0].prices?.[2].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && isSaleClicked[2].clicked && carModelData?.[0].prices?.[2].price * (1).toFixed(2) + " ريال"}
               </h3>
             </div>
 
@@ -465,10 +355,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {isSaleClicked[2].clicked &&
-                  carModelData &&
-                  Math.trunc(carModelData?.[0].prices?.[2].price * 0.95) +
-                    " ريال"}
+                {isSaleClicked[2].clicked && carModelData && Math.trunc(carModelData?.[0].prices?.[2].price * 0.95) + " ريال"}
               </Typography>
 
               {/* Price */}
@@ -481,30 +368,18 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {carModelData &&
-                  !isSaleClicked[2].clicked &&
-                  carModelData?.[0].prices?.[2].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && !isSaleClicked[2].clicked && carModelData?.[0].prices?.[2].price * (1).toFixed(2) + " ريال"}
               </Typography>
             </CardContent>
 
             <CardActions disableSpacing>
-              <ExpandMore
-                expand={expandedId === 2}
-                onClick={() => handleExpandClick(2)}
-                aria-expanded={expandedId === 2}
-                aria-label="show more"
-              >
+              <ExpandMore expand={expandedId === 2} onClick={() => handleExpandClick(2)} aria-expanded={expandedId === 2} aria-label="show more">
                 <ExpandMoreIcon />
               </ExpandMore>
 
               {/* Sale btn */}
               <Tooltip title="5%" arrow>
-                <IconButton
-                  className={style.sale5Btn}
-                  color={isSaleClicked[2].clicked ? "error" : "#757575"}
-                  onClick={() => handleClick(!isSaleClicked[2].clicked, 2)}
-                >
+                <IconButton className={style.sale5Btn} color={isSaleClicked[2].clicked ? "error" : "#757575"} onClick={() => handleClick(!isSaleClicked[2].clicked, 2)}>
                   <LoyaltyIcon />
                 </IconButton>
               </Tooltip>
@@ -520,15 +395,9 @@ export default function Car() {
                   <li style={{ marginBottom: "3px" }}>فحص المحرك</li>
                   <li style={{ marginBottom: "3px" }}>فحص ناقل الحركة</li>
                   <li style={{ marginBottom: "3px" }}>فحص الدفرنس</li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص ميكانيكا أسفل السيارة
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الكمبيوتر والحساسات
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص الهيكل الداخلي (الشاص)
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص ميكانيكا أسفل السيارة</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الكمبيوتر والحساسات</li>
+                  <li style={{ marginBottom: "3px" }}>فحص الهيكل الداخلي (الشاص)</li>
                   <li>تجربة السيارة على الطريق</li>
                 </ul>
               </CardContent>
@@ -545,16 +414,11 @@ export default function Car() {
                   textAlign: "center",
                   color: "#757575 !important",
                   fontSize: isSaleClicked[3].clicked ? "22px" : "48px",
-                  textDecoration: isSaleClicked[3].clicked
-                    ? "line-through"
-                    : "none",
+                  textDecoration: isSaleClicked[3].clicked ? "line-through" : "none",
                   fontWeight: isSaleClicked[3].clicked ? "600" : "700",
                 }}
               >
-                {carModelData &&
-                  isSaleClicked[3].clicked &&
-                  carModelData?.[0].prices?.[3].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && isSaleClicked[3].clicked && carModelData?.[0].prices?.[3].price * (1).toFixed(2) + " ريال"}
               </h3>
             </div>
 
@@ -568,10 +432,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {isSaleClicked[3].clicked &&
-                  carModelData &&
-                  carModelData?.[0].prices?.[3].price * (0.9).toFixed(2) +
-                    " ريال"}
+                {isSaleClicked[3].clicked && carModelData && carModelData?.[0].prices?.[3].price * (0.9).toFixed(2) + " ريال"}
               </Typography>
 
               {/* Price */}
@@ -584,20 +445,12 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {carModelData &&
-                  !isSaleClicked[3].clicked &&
-                  carModelData?.[0].prices?.[3].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && !isSaleClicked[3].clicked && carModelData?.[0].prices?.[3].price * (1).toFixed(2) + " ريال"}
               </Typography>
             </CardContent>
 
             <CardActions disableSpacing>
-              <ExpandMore
-                expand={expandedId === 3}
-                onClick={() => handleExpandClick(3)}
-                aria-expanded={expandedId === 3}
-                aria-label="show more"
-              >
+              <ExpandMore expand={expandedId === 3} onClick={() => handleExpandClick(3)} aria-expanded={expandedId === 3} aria-label="show more">
                 <ExpandMoreIcon />
               </ExpandMore>
 
@@ -620,25 +473,13 @@ export default function Car() {
                 </Typography>
 
                 <ul style={{ listStylePosition: "inside", color: "#757575" }}>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص البودي بجهاز كشف سماكة الطلاء
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص البودي بجهاز كشف سماكة الطلاء</li>
                   <li style={{ marginBottom: "3px" }}>فحص البودي بالنظر</li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص خشونة الطلاء باليد
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    اكتشاف أماكن السمكرة والمعجون
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    حصر اضرار زخات البرد على الهيكل
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص سماكة الطلاء وأماكن الرش
-                  </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    تحديد الأماكن المحمية بعوازل خارجية
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص خشونة الطلاء باليد</li>
+                  <li style={{ marginBottom: "3px" }}>اكتشاف أماكن السمكرة والمعجون</li>
+                  <li style={{ marginBottom: "3px" }}>حصر اضرار زخات البرد على الهيكل</li>
+                  <li style={{ marginBottom: "3px" }}>فحص سماكة الطلاء وأماكن الرش</li>
+                  <li style={{ marginBottom: "3px" }}>تحديد الأماكن المحمية بعوازل خارجية</li>
                   <li>تحديد أماكن التبهيت الناتجة عن اشعة الشمس</li>
                 </ul>
               </CardContent>
@@ -655,16 +496,11 @@ export default function Car() {
                   textAlign: "center",
                   color: "#757575 !important",
                   fontSize: isSaleClicked[4].clicked ? "22px" : "48px",
-                  textDecoration: isSaleClicked[4].clicked
-                    ? "line-through"
-                    : "none",
+                  textDecoration: isSaleClicked[4].clicked ? "line-through" : "none",
                   fontWeight: isSaleClicked[4].clicked ? "600" : "700",
                 }}
               >
-                {carModelData &&
-                  isSaleClicked[4].clicked &&
-                  carModelData?.[0].prices?.[4].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && isSaleClicked[4].clicked && carModelData?.[0].prices?.[4].price * (1).toFixed(2) + " ريال"}
               </h3>
             </div>
 
@@ -678,10 +514,7 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {isSaleClicked[4].clicked &&
-                  carModelData &&
-                  carModelData?.[0].prices?.[4].price * (0.9).toFixed(2) +
-                    " ريال"}
+                {isSaleClicked[4].clicked && carModelData && carModelData?.[0].prices?.[4].price * (0.9).toFixed(2) + " ريال"}
               </Typography>
 
               {/* Price */}
@@ -694,20 +527,12 @@ export default function Car() {
                   fontWeight: "700",
                 }}
               >
-                {carModelData &&
-                  !isSaleClicked[4].clicked &&
-                  carModelData?.[0].prices?.[4].price * (1).toFixed(2) +
-                    " ريال"}
+                {carModelData && !isSaleClicked[4].clicked && carModelData?.[0].prices?.[4].price * (1).toFixed(2) + " ريال"}
               </Typography>
             </CardContent>
 
             <CardActions disableSpacing>
-              <ExpandMore
-                expand={expandedId === 4}
-                onClick={() => handleExpandClick(4)}
-                aria-expanded={expandedId === 4}
-                aria-label="show more"
-              >
+              <ExpandMore expand={expandedId === 4} onClick={() => handleExpandClick(4)} aria-expanded={expandedId === 4} aria-label="show more">
                 <ExpandMoreIcon />
               </ExpandMore>
 
@@ -731,13 +556,9 @@ export default function Car() {
 
                 <ul style={{ listStylePosition: "inside", color: "#757575" }}>
                   <li style={{ marginBottom: "3px" }}>فحص حساسات المحرك </li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص إضاءة ومؤشرات الطبلون
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص إضاءة ومؤشرات الطبلون</li>
                   <li style={{ marginBottom: "3px" }}>فحص حساسات الجير</li>
-                  <li style={{ marginBottom: "3px" }}>
-                    فحص حساسات المكابح (ABS)
-                  </li>
+                  <li style={{ marginBottom: "3px" }}>فحص حساسات المكابح (ABS)</li>
                   <li>فحص حساسات الوسائد الهوائية</li>
                 </ul>
               </CardContent>

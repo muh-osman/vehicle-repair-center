@@ -7,5 +7,5 @@ export default function SuperAuth() {
 
   // console.log(cookies.token);
 
-  return cookies.role === 255 ? <Outlet /> : <Navigate to="/login" />;
+  return cookies.role ? <Outlet /> : <Navigate to="/login" />;
 }

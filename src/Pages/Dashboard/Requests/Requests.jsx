@@ -9,12 +9,7 @@ import { DataGrid } from "@mui/x-data-grid";
 //
 import DownloadIcon from "@mui/icons-material/Download";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 // Axios
 import axios from "axios";
 // Cookies
@@ -83,11 +78,7 @@ export default function Requests() {
       align: "center",
       disableColumnMenu: true,
       renderHeader: () => (
-        <DownloadTableExcel
-          filename="orders table"
-          sheet="orders"
-          currentTableRef={tableRef.current}
-        >
+        <DownloadTableExcel filename="orders table" sheet="orders" currentTableRef={tableRef.current}>
           <IconButton
             size="small"
             color="primary"
@@ -157,15 +148,7 @@ export default function Requests() {
         }
 
         return (
-          <div style={{ width: "100%", textAlign: "center" }}>
-            {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt={params.value}
-                style={{ maxWidth: "100%", maxHeight: "50px" }}
-              />
-            ) : null}
-          </div>
+          <div style={{ width: "100%", textAlign: "center" }}>{imageSrc ? <img src={imageSrc} alt={params.value} style={{ maxWidth: "100%", maxHeight: "50px" }} /> : null}</div>
         );
       },
     },
@@ -218,9 +201,7 @@ export default function Requests() {
       headerAlign: "center",
       align: "center",
       filterable: true,
-      renderCell: (params) => (
-        <div dir="rtl">{Math.trunc(params.value)} ريال</div>
-      ),
+      renderCell: (params) => <div dir="rtl">{Math.trunc(params.value)} ريال</div>,
     },
     {
       field: "discountCode",
@@ -245,13 +226,37 @@ export default function Requests() {
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value ? (
-          <div dir="rtl">{Math.trunc(params.value)} ريال</div>
-        ) : (
-          <div>N/A</div>
-        );
+        return params.value ? <div dir="rtl">{Math.trunc(params.value)} ريال</div> : <div>N/A</div>;
       },
     },
+
+    {
+      field: "redeemeAmoumntValue",
+      headerName: "Redeemed points",
+      flex: 1,
+      minWidth: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? <div dir="rtl">{Math.trunc(params.value)} نقطة</div> : <div>N/A</div>;
+      },
+    },
+    {
+      field: "clientId",
+      headerName: "Client Id",
+      flex: 1,
+      minWidth: 125,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? <div dir="rtl">{params.value}</div> : <div>N/A</div>;
+      },
+    },
+
     {
       field: "model",
       headerName: "Model",
@@ -274,17 +279,7 @@ export default function Requests() {
       renderCell: (params) => {
         // Use fullYear if available, otherwise use year
         const value = params.row.fullYear || params.row.year;
-        return value ? (
-          value === "2" ? (
-            <div dir="rtl">2017 أو أعلى</div>
-          ) : value === "1" ? (
-            <div dir="rtl">2016 أو أدنى</div>
-          ) : (
-            value
-          )
-        ) : (
-          <div>N/A</div>
-        );
+        return value ? value === "2" ? <div dir="rtl">2017 أو أعلى</div> : value === "1" ? <div dir="rtl">2016 أو أدنى</div> : value : <div>N/A</div>;
       },
     },
     {
@@ -310,11 +305,7 @@ export default function Requests() {
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value ? (
-          params.value
-        ) : (
-          <div style={{ color: "#757575" }}>N/A</div>
-        );
+        return params.value ? params.value : <div style={{ color: "#757575" }}>N/A</div>;
       },
     },
     {
@@ -378,12 +369,7 @@ export default function Requests() {
               <div style={{ pointerEvents: "auto" }}>
                 {" "}
                 {/* Add this wrapper */}
-                <IconButton
-                  variant="contained"
-                  sx={{ backgroundColor: "#c5ebff" }}
-                  color="error"
-                  onClick={() => handleDelete(params.row.id)}
-                >
+                <IconButton variant="contained" sx={{ backgroundColor: "#c5ebff" }} color="error" onClick={() => handleDelete(params.row.id)}>
                   <DeleteIcon />
                 </IconButton>
               </div>
@@ -401,9 +387,7 @@ export default function Requests() {
     try {
       setLoadding(true);
 
-      const response = await axios.get(
-        `${apiUrl}api/get-all-clients-paid-and-unpaid`
-      );
+      const response = await axios.get(`${apiUrl}api/get-all-clients-paid-and-unpaid`);
 
       // Transform the data to unify the QR code keys
       const transformedData = response.data.map((client) => ({
@@ -422,6 +406,8 @@ export default function Requests() {
         date_of_visited: client.date_of_visited,
         discountCode: client.discountCode,
         marketerShare: client.marketerShare,
+        redeemeAmoumntValue: client.redeemeAmoumntValue,
+        clientId: client.clientId,
         created_at: client.created_at,
         gateway: client.table_name,
         visited: client.date_of_visited,
@@ -501,6 +487,8 @@ export default function Requests() {
       date_of_visited: client.date_of_visited,
       discountCode: client.discountCode,
       marketerShare: client.marketerShare,
+      redeemeAmoumntValue: client.redeemeAmoumntValue,
+      clientId: client.clientId,
     }))
     .filter((client) => {
       // Apply active button filter
@@ -522,9 +510,7 @@ export default function Requests() {
     });
 
   // Responsive table
-  const [containerWidth, setContainerWidth] = useState(
-    window.innerWidth < 600 ? window.innerWidth - 48 : "100%"
-  );
+  const [containerWidth, setContainerWidth] = useState(window.innerWidth < 600 ? window.innerWidth - 48 : "100%");
 
   const updateContainerWidth = () => {
     if (window.innerWidth < 600) {
@@ -564,9 +550,7 @@ export default function Requests() {
 
       <Dialog open={open} onClose={cancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this item?
-        </DialogContent>
+        <DialogContent>Are you sure you want to delete this item?</DialogContent>
         <DialogActions>
           <Button onClick={cancelDelete} color="primary">
             No
@@ -577,13 +561,7 @@ export default function Requests() {
         </DialogActions>
       </Dialog>
 
-      <Stack
-        sx={{ pb: 3, maxWidth: "617px", margin: "auto" }}
-        spacing={2}
-        justifyContent="center"
-        direction={{ xs: "row", sm: "row" }}
-        alignItems="stretch"
-      >
+      <Stack sx={{ pb: 3, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
         <Button
           sx={{
             width: "100%",
@@ -700,6 +678,9 @@ export default function Requests() {
               <td>{row.date_of_visited || "N/A"}</td>
               <td>{row.discountCode || "N/A"}</td>
               <td>{row.marketerShare || "N/A"}</td>
+
+              <td>{row.redeemeAmoumntValue || "N/A"}</td>
+              <td>{row.clientId || "N/A"}</td>
             </tr>
           ))}
         </tbody>
@@ -707,10 +688,7 @@ export default function Requests() {
 
       {/*  */}
       <div style={{ textAlign: "center", marginBottom: "16px" }}>
-        <RangePicker
-          onChange={handleDateRangeChange}
-          disabledDate={disabledDate}
-        />
+        <RangePicker onChange={handleDateRangeChange} disabledDate={disabledDate} />
       </div>
 
       {/*  */}

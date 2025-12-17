@@ -22,5 +22,7 @@ class MoyasarShippingPayment extends Model
         'price',
         'phoneNumber',
         'status',
+        'isShipped',
+        'accountant_status',
     ];
 }

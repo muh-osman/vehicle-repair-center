@@ -25,5 +25,9 @@ class TamaraPaidClient extends Model
         'discountCode',
         'marketerShare',
         'full_year',
+        'clientId',
+        'redeemeAmoumntValue',
+        'isShipped',
+        'address',
     ];
 }

@@ -23,9 +23,7 @@ export default function TamaraClient() {
     try {
       setLoadding(true);
 
-      const response = await axios.get(
-        `${apiUrl}api/get-tamara-paid-client/${id}`
-      );
+      const response = await axios.get(`${apiUrl}api/get-tamara-paid-client/${id}`);
 
       setData(response.data);
       //   console.log(response.data);
@@ -73,14 +71,8 @@ export default function TamaraClient() {
       ) : null}
 
       {data?.data?.date_of_visited && (
-        <Stack
-          sx={{ width: "100%", direction: "rtl", textAlign: "right" }}
-          spacing={2}
-          dir="rtl"
-        >
-          <Alert severity="warning">
-            تم مسح الباركود سابقا بتاريخ: {data?.data?.date_of_visited}
-          </Alert>
+        <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
+          <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.data?.date_of_visited}</Alert>
         </Stack>
       )}
 
@@ -90,9 +82,7 @@ export default function TamaraClient() {
             <tbody>
               <tr>
                 <td>اسم العميل:</td>
-                <td>
-                  {data?.data?.full_name ? data?.data?.full_name : "غير متوفر"}
-                </td>
+                <td>{data?.data?.full_name ? data?.data?.full_name : "غير متوفر"}</td>
               </tr>
 
               <tr>
@@ -116,6 +106,16 @@ export default function TamaraClient() {
               </tr>
 
               <tr>
+                <td>Client ID:</td>
+                <td>{data?.data?.clientId || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>النقاط المستبدلة:</td>
+                <td>{data?.data?.redeemeAmoumntValue ? `${data.data.redeemeAmoumntValue} نقطة` : "-"}</td>
+              </tr>
+
+              <tr>
                 <td>وسيلة الدفع:</td>
                 <td>تمارا</td>
               </tr>
@@ -124,14 +124,8 @@ export default function TamaraClient() {
                 <td>الحالة:</td>
                 <td
                   style={{
-                    backgroundColor:
-                      data?.tamara?.status === "fully_captured"
-                        ? "green"
-                        : "red",
-                    color:
-                      data?.tamara?.status === "fully_captured"
-                        ? "#fff"
-                        : "#000000DE",
+                    backgroundColor: data?.tamara?.status === "fully_captured" ? "green" : "red",
+                    color: data?.tamara?.status === "fully_captured" ? "#fff" : "#000000DE",
                   }}
                 >
                   {data?.tamara?.status}
@@ -150,11 +144,7 @@ export default function TamaraClient() {
 
               <tr>
                 <td>الخدمات الاضافية:</td>
-                <td>
-                  {data?.data?.additionalServices
-                    ? data?.data?.additionalServices
-                    : "لا يوجد"}
-                </td>
+                <td>{data?.data?.additionalServices ? data?.data?.additionalServices : "لا يوجد"}</td>
               </tr>
 
               <tr>
@@ -164,22 +154,12 @@ export default function TamaraClient() {
 
               <tr>
                 <td>تاريخ الصنع:</td>
-                <td>
-                  {data?.data?.full_year
-                    ? data.data.full_year
-                    : data?.data?.year === "2"
-                    ? "2017 أو أعلى"
-                    : "2016 أو أدنى"}
-                </td>
+                <td>{data?.data?.full_year ? data.data.full_year : data?.data?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
               </tr>
 
               <tr>
                 <td>تاريخ الدفع:</td>
-                <td dir="ltr">
-                  {data?.tamara?.created_at
-                    ? formatDate(data.tamara.created_at)
-                    : "غير متوفر"}
-                </td>
+                <td dir="ltr">{data?.tamara?.created_at ? formatDate(data.tamara.created_at) : "غير متوفر"}</td>
               </tr>
 
               <tr>
@@ -190,9 +170,7 @@ export default function TamaraClient() {
               {data?.data?.affiliate && (
                 <tr>
                   <td>الإحالة:</td>
-                  <td>
-                    {data?.data?.affiliate ? data?.data?.affiliate : "N/A"}
-                  </td>
+                  <td>{data?.data?.affiliate ? data?.data?.affiliate : "N/A"}</td>
                 </tr>
               )}
             </tbody>

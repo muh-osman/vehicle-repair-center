@@ -34,7 +34,7 @@ class UserController extends Controller
 
             // Define the maximum number of users allowed
             // Set your desired maximum number of users here
-            $maxUsers = 2;
+            $maxUsers = 4;
 
             if ($totalUsers >= $maxUsers) {
                 return response()->json(['message' => 'Maximum number of users reached. Registration is not allowed.'], 403);

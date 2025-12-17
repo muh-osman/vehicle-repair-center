@@ -172,7 +172,7 @@ class TamaraPaidClientController extends Controller
 
         if ($eventType == 'order_captured') {
             try {
-                // Get order status using Tamara API to get the "description"
+                // Get order status using Tamara API
                 $statusResponse = Http::withHeaders([
                     'Authorization' => 'Bearer ' . env('TAMARA_API_TOKEN'),
                     'Content-Type' => 'application/json',
@@ -183,23 +183,84 @@ class TamaraPaidClientController extends Controller
                 }
 
                 $orderStatus = $statusResponse->json();
-                $description = $orderStatus['description'];
-                parse_str($description, $data); // Parse the query string into an array
+                \Log::info('Tamara api data:', $orderStatus);
+
+                // Helper function to safely extract values
+                $safeValue = function ($value, $default = null) {
+                    if (is_null($value) || $value === '') {
+                        return $default;
+                    }
+                    return $value;
+                };
+
+                // Helper function for numeric values
+                $safeNumeric = function ($value, $default = 0) {
+                    if (is_null($value) || $value === '' || !is_numeric($value)) {
+                        return $default;
+                    }
+                    return (float) $value;
+                };
+
+                // $description = $orderStatus['description'];
+                // parse_str($description, $data); // Parse the query string into an array
 
                 // Assign variables
-                $fullname = $data['fullname'] ?? null;
-                $phone = $data['phone'] ?? null;
-                $branch = $data['branch'] ?? null;
-                $plan = $data['plan'] ?? null;
-                $price = $data['price'] ?? 0;
-                $model = $data['model'] ?? null;
-                $yearId = $data['yearId'] ?? null;
-                $additionalServices = $data['additionalServices'] ?? null;
-                $service = $data['service'] ?? null;
-                $affiliate = $data['affiliate'] ?? null;
-                $discountCode = $data['dc'] ?? null;
-                $marketerShare = $data['msh'] ?? null;
-                $fullYear = $data['fy'] ?? null;
+                // $fullname = $data['fullname'] ?? null;
+                // $phone = $data['phone'] ?? null;
+                // $branch = $data['branch'] ?? null;
+                // $plan = $data['plan'] ?? null;
+                // $price = $data['price'] ?? 0;
+                // $model = $data['model'] ?? null;
+                // $yearId = $data['yearId'] ?? null;
+                // $additionalServices = $data['additionalServices'] ?? null;
+                // $service = $data['service'] ?? null;
+                // $affiliate = $data['affiliate'] ?? null;
+                // $discountCode = $data['dc'] ?? null;
+                // $marketerShare = $data['msh'] ?? null;
+                // $fullYear = $data['fy'] ?? null;
+
+                // $clientId = $data['cd'] ?? null;
+                // $redeemeAmoumntValue = $data['rv'] ?? 0;
+                // $address = $data['ad'] ?? null;
+
+                // Extract data directly from $orderStatus response
+                $fullname = $safeValue($orderStatus['additional_data']['delivery_method'] ?? null);
+                $phone = $safeValue($orderStatus['shipping_address']['line1'] ?? null);
+                $branch = $safeValue($orderStatus['shipping_address']['city'] ?? null);
+                // Extract items data (assuming first item in array)
+                $item = $orderStatus['items'][0] ?? [];
+                $plan = $safeValue($item['name'] ?? null);
+                $price = $safeNumeric($item['total_amount']['amount'] ?? 0);
+                $model = $safeValue($item['type'] ?? null);
+                $yearId = $safeValue($item['sku'] ?? null);
+                $additionalServices = $safeValue($orderStatus['additional_data']['vendor_reference_code'] ?? null);
+                $service = $safeValue($orderStatus['shipping_address']['line2'] ?? null);
+                $affiliate = $safeValue($orderStatus['additional_data']['store_code'] ?? null);
+                $discountCode = $safeValue($orderStatus['additional_data']['pickup_store'] ?? null);
+                // Extract marketerShare from platform and convert string to number if not null
+                $marketerShare = $safeValue($orderStatus['billing_address']['region'] ?? null);
+                // Convert to number if not null/empty
+                if (!is_null($marketerShare) && $marketerShare !== '') {
+                    // Try to convert to integer first, then float if needed
+                    if (is_numeric($marketerShare)) {
+                        // Check if it's a whole number
+                        if (ctype_digit((string) $marketerShare) || (is_string($marketerShare) && preg_match('/^\d+$/', $marketerShare))) {
+                            $marketerShare = (int) $marketerShare;
+                        } else {
+                            $marketerShare = (float) $marketerShare;
+                        }
+                    } else {
+                        // If not numeric, keep as is or set to null based on your needs
+                        $marketerShare = null;
+                    }
+                }
+                // Full year is now directly from description field
+                $fullYear = $safeValue($orderStatus['description'] ?? null);
+                // Client ID from item URL (assuming it's the first item)
+                $clientId = $safeValue($orderStatus['additional_data']['vendor_amount'] ?? null);
+                // Redeem amount value from image URL
+                $redeemeAmoumntValue = $safeNumeric($orderStatus['additional_data']['merchant_settlement_amount'] ?? 0);
+                $address = $safeValue($orderStatus['shipping_address']['region'] ?? null);
 
                 // Check if the QR code already exists
                 $qrCode = TamaraPaidClient::where('paid_qr_code', $orderId)->first();
@@ -208,38 +269,83 @@ class TamaraPaidClientController extends Controller
                     // Create a new TamaraPaidClient entry
                     $qrCode = TamaraPaidClient::create([
                         'paid_qr_code' => $orderId,
-                        'full_name' => $fullname ?? null,
-                        'phone' => $phone ?? null,
-                        'branch' => $branch ?? null,
-                        'plan' => $plan ?? null,
-                        'price' => $price ?? 0,
-                        'model' => $model ?? null,
-                        'year' => $yearId ?? null,
-                        'additionalServices' => $additionalServices ?? null,
-                        'service' => $service ?? null,
-                        'affiliate' => $affiliate ?? null,
-                        'discountCode' => $discountCode ?? null,
-                        'marketerShare' => $marketerShare ?? null,
-                        'full_year' => $fullYear ?? null,
+                        'full_name' => $fullname,
+                        'phone' => $phone,
+                        'branch' => $branch,
+                        'plan' => $plan,
+                        'price' => $price,
+                        'model' => $model,
+                        'year' => $yearId,
+                        'additionalServices' => $additionalServices,
+                        'service' => $service,
+                        'affiliate' => $affiliate,
+                        'discountCode' => $discountCode,
+                        'marketerShare' => $marketerShare,
+                        'full_year' => $fullYear,
+                        'clientId' => $clientId,
+                        'redeemeAmoumntValue' => $redeemeAmoumntValue,
+                        'address' => $address,
+
                         'date_of_visited' => null,
                     ]);
 
+
+
+                    // Make API request if redeemeAmoumntValue > 0
+                    if ($redeemeAmoumntValue > 0 && !empty($clientId)) {
+                        try {
+                            $apiPayload = [
+                                'clientId' => (int) $clientId,
+                                'points' => (int) $redeemeAmoumntValue
+                            ];
+
+                            $apiResponse = Http::withHeaders([
+                                'Content-Type' => 'application/json-patch+json',
+                            ])->put('https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto', $apiPayload);
+
+                            if ($apiResponse->successful()) {
+                                Log::info('Client points update API request successful', [
+                                    'clientId' => $clientId,
+                                    'points' => $redeemeAmoumntValue,
+                                    'response' => $apiResponse->json(),
+                                ]);
+                            } else {
+                                Log::error('Client points update API request failed', [
+                                    'clientId' => $clientId,
+                                    'points' => $redeemeAmoumntValue,
+                                    'status' => $apiResponse->status(),
+                                    'response' => $apiResponse->body(),
+                                ]);
+                            }
+                        } catch (\Exception $apiException) {
+                            Log::error('Error occurred while making client points update API request', [
+                                'message' => $apiException->getMessage(),
+                                'clientId' => $clientId,
+                                'points' => $redeemeAmoumntValue,
+                            ]);
+                        }
+                    }
+
+
                     // Send notification to recipients
                     $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+                    // $recipients = ['gp415400@gmail.com'];
 
                     $paymentMethod = "Tamara";
 
                     // Prepare the data to pass to the notification
                     $notificationData = array_merge($qrCode->toArray(), [
+                        // 'service' => $service ?? null,
                         'payment_method' => $paymentMethod,
-                        'service' => $service ?? null,
-                        'additionalServices' => $additionalServices ?? null,
-                        'branch' => $branch ?? null,
-                        'plan' => $plan ?? null,
-                        'model' => $model ?? null,
-                        'full_name' => $fullname ?? null,
-                        'phone' => $phone ?? null,
-                        'discountCode' => $discountCode ?? null,
+                        // 'additionalServices' => $additionalServices ?? null,
+                        // 'branch' => $branch ?? null,
+                        // 'plan' => $plan ?? null,
+                        // 'model' => $model ?? null,
+                        // 'full_name' => $fullname ?? null,
+                        // 'phone' => $phone ?? null,
+                        // 'discountCode' => $discountCode ?? null,
+                        // 'address' => $address ?? null,
+                        // 'full_year' => $fullYear ?? null,
                     ]);
 
                     try {
@@ -279,8 +385,6 @@ class TamaraPaidClientController extends Controller
         return response()->json(['status' => 'ignored'], 200);
     }
 
-
-
     /**
      * this method for (cashif.online) dashboard
      * Display the specified resource.
@@ -315,24 +419,85 @@ class TamaraPaidClientController extends Controller
 
                 $responseData = $response->json();
 
-                // Extract description and convert to variables
-                $description = $responseData['description'];
-                parse_str($description, $data); // Parse the query string into an array
+                // Helper function to safely extract values
+                $safeValue = function ($value, $default = null) {
+                    if (is_null($value) || $value === '') {
+                        return $default;
+                    }
+                    return $value;
+                };
 
-                // Assign variables
-                $fullname = $data['fullname'] ?? null;
-                $phone = $data['phone'] ?? null;
-                $branch = $data['branch'] ?? null;
-                $plan = $data['plan'] ?? null;
-                $price = $data['price'] ?? 0;
-                $model = $data['model'] ?? null;
-                $yearId = $data['yearId'] ?? null;
-                $additionalServices = $data['additionalServices'] ?? null;
-                $service = $data['service'] ?? null;
-                $affiliate = $data['affiliate'] ?? null;
-                $discountCode = $data['dc'] ?? null;
-                $marketerShare = $data['msh'] ?? null;
-                $fullYear = $data['fy'] ?? null;
+                // Helper function for numeric values
+                $safeNumeric = function ($value, $default = 0) {
+                    if (is_null($value) || $value === '' || !is_numeric($value)) {
+                        return $default;
+                    }
+                    return (float) $value;
+                };
+
+                // // Extract description and convert to variables
+                // $description = $responseData['description'];
+                // parse_str($description, $data); // Parse the query string into an array
+
+                // // Assign variables
+                // $fullname = $data['fullname'] ?? null;
+                // $phone = $data['phone'] ?? null;
+                // $branch = $data['branch'] ?? null;
+                // $plan = $data['plan'] ?? null;
+                // $price = $data['price'] ?? 0;
+                // $model = $data['model'] ?? null;
+                // $yearId = $data['yearId'] ?? null;
+                // $additionalServices = $data['additionalServices'] ?? null;
+                // $service = $data['service'] ?? null;
+                // $affiliate = $data['affiliate'] ?? null;
+                // $discountCode = $data['dc'] ?? null;
+                // $marketerShare = $data['msh'] ?? null;
+                // $fullYear = $data['fy'] ?? null;
+
+                // $clientId = $data['cd'] ?? null;
+                // $redeemeAmoumntValue = $data['rv'] ?? 0;
+
+                // $address = $data['ad'] ?? null;
+
+
+                // Extract data directly from $responseData response
+                $fullname = $safeValue($responseData['additional_data']['delivery_method'] ?? null);
+                $phone = $safeValue($responseData['shipping_address']['line1'] ?? null);
+                $branch = $safeValue($responseData['shipping_address']['city'] ?? null);
+                // Extract items data (assuming first item in array)
+                $item = $responseData['items'][0] ?? [];
+                $plan = $safeValue($item['name'] ?? null);
+                $price = $safeNumeric($item['total_amount']['amount'] ?? 0);
+                $model = $safeValue($item['type'] ?? null);
+                $yearId = $safeValue($item['sku'] ?? null);
+                $additionalServices = $safeValue($responseData['additional_data']['vendor_reference_code'] ?? null);
+                $service = $safeValue($responseData['shipping_address']['line2'] ?? null);
+                $affiliate = $safeValue($responseData['additional_data']['store_code'] ?? null);
+                $discountCode = $safeValue($responseData['additional_data']['pickup_store'] ?? null);
+                // Extract marketerShare from platform and convert string to number if not null
+                $marketerShare = $safeValue($responseData['billing_address']['region'] ?? null);
+                // Convert to number if not null/empty
+                if (!is_null($marketerShare) && $marketerShare !== '') {
+                    // Try to convert to integer first, then float if needed
+                    if (is_numeric($marketerShare)) {
+                        // Check if it's a whole number
+                        if (ctype_digit((string) $marketerShare) || (is_string($marketerShare) && preg_match('/^\d+$/', $marketerShare))) {
+                            $marketerShare = (int) $marketerShare;
+                        } else {
+                            $marketerShare = (float) $marketerShare;
+                        }
+                    } else {
+                        // If not numeric, keep as is or set to null based on your needs
+                        $marketerShare = null;
+                    }
+                }
+                // Full year is now directly from description field
+                $fullYear = $safeValue($responseData['description'] ?? null);
+                // Client ID from item URL (assuming it's the first item)
+                $clientId = $safeValue($responseData['additional_data']['vendor_amount'] ?? null);
+                // Redeem amount value from image URL
+                $redeemeAmoumntValue = $safeNumeric($responseData['additional_data']['merchant_settlement_amount'] ?? 0);
+                $address = $safeValue($responseData['shipping_address']['region'] ?? null);
 
 
 
@@ -409,6 +574,12 @@ class TamaraPaidClientController extends Controller
                         'discountCode' => $discountCode,
                         'marketerShare' => $marketerShare,
                         'full_year' => $fullYear,
+
+                        'clientId' => $clientId,
+                        'redeemeAmoumntValue' => $redeemeAmoumntValue,
+
+                        'address' => $address,
+
                         'date_of_visited' => $responseData['date_of_visited'],
                     ],
                     'tamara' => $responseData

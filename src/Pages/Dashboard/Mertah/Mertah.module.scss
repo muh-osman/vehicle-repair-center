@@ -29,10 +29,10 @@
 
 // Responsive table
 .datagrid_container {
-  height: calc(100vh - 112px);
+  height: calc(100vh - 160px);
 
   @media (max-width: 600px) {
-    height: calc(100vh - 104px);
+    height: calc(100vh - 152px);
   }
 }
 

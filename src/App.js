@@ -17,7 +17,7 @@ import Dashboard from "./Pages/Dashboard/Dashboard";
 import Search from "./Pages/Dashboard/Search/Search";
 import Car from "./Pages/Dashboard/Car/Car";
 import Table from "./Pages/Dashboard/Table/Table";
-import Post from "./Pages/Dashboard/Post/Post";
+// import Post from "./Pages/Dashboard/Post/Post";
 
 import Add from "./Pages/Dashboard/Add/Add";
 import AddIndex from "./Pages/Dashboard/AddIndex/AddIndex";
@@ -54,6 +54,9 @@ import RefundForm from "./Pages/Dashboard/RefundForm/RefundForm";
 import RefundTable from "./Pages/Dashboard/RefundTable/RefundTable";
 import RefundClientForm from "./Pages/RefundClientForm/RefundClientForm";
 import Shipping from "./Pages/Dashboard/Shipping/Shipping";
+import ShippingClient from "./Pages/Dashboard/ShippingClient/ShippingClient";
+import Mertah from "./Pages/Dashboard/Mertah/Mertah";
+import MertahClient from "./Pages/Dashboard/MertahClient/MertahClient";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -65,6 +68,9 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
         </Route>
+
+        <Route path="shipping-client/:id" element={<ShippingClient />} />
+        <Route path="mertah-client/:qrCode" element={<MertahClient />} />
 
         <Route element={<NotAuth />}>
           {/* Start Check if login */}
@@ -101,6 +107,7 @@ export default function App() {
             <Route element={<SuperAuth />}>
               <Route path="requests" element={<Requests />} />
               <Route path="shipping" element={<Shipping />} />
+              <Route path="mertah" element={<Mertah />} />
               <Route path="phone-number" element={<PhoneNumber />} />
               <Route path="falak-media" element={<FalakMedia />} />
               <Route path="falak-post" element={<FalakPost />} />

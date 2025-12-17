@@ -373,7 +373,7 @@ class VideosController extends Controller
         // Validate the request contains a card_ids array
         $validator = Validator::make($request->all(), [
             'card_ids' => 'required|array',
-            'card_ids.*' => 'integer' // Ensure each ID is an integer
+            'card_ids.*' => 'nullable|integer' // Allow null values
         ]);
 
         if ($validator->fails()) {
@@ -386,14 +386,35 @@ class VideosController extends Controller
 
         $cardIds = $request->input('card_ids');
 
-        // Get all video report numbers that match the card IDs
-        $existingVideos = Video::whereIn('report_number', $cardIds)
+        // Filter out null values and ensure we only have integers
+        $filteredCardIds = array_filter($cardIds, function ($value) {
+            return $value !== null && is_int($value);
+        });
+
+        // Reindex the array to maintain consecutive keys
+        $filteredCardIds = array_values($filteredCardIds);
+
+        // If no valid card IDs remain after filtering
+        if (empty($filteredCardIds)) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'message' => 'No valid card IDs provided'
+            ]);
+        }
+
+        // Get all video report numbers that match the filtered card IDs
+        $existingVideos = Video::whereIn('report_number', $filteredCardIds)
             ->pluck('report_number')
             ->toArray();
 
         // Create a response showing which cards have videos
         $response = [];
         foreach ($cardIds as $cardId) {
+            // Skip null values in the response
+            if ($cardId === null) {
+                continue;
+            }
             $response[$cardId] = in_array($cardId, $existingVideos);
         }
 

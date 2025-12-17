@@ -41,12 +41,7 @@ const MenuProps = {
 
 export default function Dashboard() {
   // Countries logic
-  const {
-    data: countries,
-    isSuccess: isGetCountriesSuccess,
-    isPending: isGetCountriesPending,
-    fetchStatus: countriesFetchStatus,
-  } = useGetCountriesApi();
+  const { data: countries, isSuccess: isGetCountriesSuccess, isPending: isGetCountriesPending, fetchStatus: countriesFetchStatus } = useGetCountriesApi();
 
   const [selectedCountryId, setSelectedCountryId] = useState("");
 
@@ -117,13 +112,7 @@ export default function Dashboard() {
 
   // Years logic
   const [selectedYearId, setSelectedYearId] = useState("");
-  const {
-    refetch: fetchYears,
-    data: years,
-    isPending: isGetYearsPending,
-    isSuccess: isGetYearsSuccess,
-    fetchStatus: yearsFetchStatus,
-  } = useGetYearsApi(selectedModelId);
+  const { refetch: fetchYears, data: years, isPending: isGetYearsPending, isSuccess: isGetYearsSuccess, fetchStatus: yearsFetchStatus } = useGetYearsApi(selectedModelId);
 
   useEffect(() => {
     if (selectedModelId) {
@@ -333,11 +322,7 @@ export default function Dashboard() {
                   {manufactures !== undefined &&
                     manufactures?.length !== 0 &&
                     manufactures?.map((manufacturer) => (
-                      <MenuItem
-                        dir="rtl"
-                        key={manufacturer.id}
-                        value={manufacturer.id}
-                      >
+                      <MenuItem dir="rtl" key={manufacturer.id} value={manufacturer.id}>
                         {manufacturer.manufacture_name}
                       </MenuItem>
                     ))}
@@ -511,13 +496,7 @@ export default function Dashboard() {
           {/* Start Price */}
           <div className={style.price_box}>
             {priceData && (
-              <h1
-                dir="rtl"
-                style={{ color: "#757575" }}
-                className={
-                  isSaleClicked || isSale5Clicked ? "originalPrice" : ""
-                }
-              >
+              <h1 dir="rtl" style={{ color: "#757575" }} className={isSaleClicked || isSale5Clicked ? "originalPrice" : ""}>
                 {priceData} <span>ريال</span>
               </h1>
             )}
@@ -533,15 +512,13 @@ export default function Dashboard() {
           )}
 
           {/* Price after sale 5% */}
-          {isSale5Clicked &&
-            priceData &&
-            (selectedServicesId === 2 || selectedServicesId === 3) && (
-              <div className={style.price_box}>
-                <h1 dir="rtl" style={{ color: "#d32f2f" }}>
-                  {Math.trunc(discounted5Price)} <span>ريال</span>
-                </h1>
-              </div>
-            )}
+          {isSale5Clicked && priceData && (selectedServicesId === 2 || selectedServicesId === 3) && (
+            <div className={style.price_box}>
+              <h1 dir="rtl" style={{ color: "#d32f2f" }}>
+                {Math.trunc(discounted5Price)} <span>ريال</span>
+              </h1>
+            </div>
+          )}
 
           {/* Sale btn 10% */}
           {/* باقة الشامل فقط */}
@@ -557,16 +534,15 @@ export default function Dashboard() {
 
           {/* Sale btn 5% */}
           {/* باقة الأساسي والمحركات فقط */}
-          {priceData &&
-            (selectedServicesId === 2 || selectedServicesId === 3) && (
-              <div className={style.saleBtn_5}>
-                <Tooltip title="5%" arrow>
-                  <IconButton color="error" onClick={sale5}>
-                    <LoyaltyIcon />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )}
+          {priceData && (selectedServicesId === 2 || selectedServicesId === 3) && (
+            <div className={style.saleBtn_5}>
+              <Tooltip title="5%" arrow>
+                <IconButton color="error" onClick={sale5}>
+                  <LoyaltyIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+          )}
 
           {/* End Price */}
         </Box>

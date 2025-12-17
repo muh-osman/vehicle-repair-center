@@ -71,14 +71,8 @@ export default function PaidClient() {
       ) : null}
 
       {data?.date_of_visited && (
-        <Stack
-          sx={{ width: "100%", direction: "rtl", textAlign: "right" }}
-          spacing={2}
-          dir="rtl"
-        >
-          <Alert severity="warning">
-            تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}
-          </Alert>
+        <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
+          <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}</Alert>
         </Stack>
       )}
 
@@ -88,25 +82,17 @@ export default function PaidClient() {
             <tbody>
               <tr>
                 <td>اسم العميل:</td>
-                <td>
-                  {data?.metadata?.name ? data?.metadata?.name : "غير متوفر"}
-                </td>
+                <td>{data?.metadata?.name ? data?.metadata?.name : "غير متوفر"}</td>
               </tr>
 
               <tr>
                 <td>رقم الهاتف:</td>
-                <td>
-                  {data?.metadata?.phone ? data?.metadata?.phone : "غير متوفر"}
-                </td>
+                <td>{data?.metadata?.phone ? data?.metadata?.phone : "غير متوفر"}</td>
               </tr>
 
               <tr>
                 <td>الفرع:</td>
-                <td>
-                  {data?.metadata?.branch
-                    ? data?.metadata?.branch
-                    : "غير متوفر"}
-                </td>
+                <td>{data?.metadata?.branch ? data?.metadata?.branch : "غير متوفر"}</td>
               </tr>
 
               <tr>
@@ -117,6 +103,16 @@ export default function PaidClient() {
               <tr>
                 <td>كود الخصم:</td>
                 <td>{data?.metadata?.dc || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>Client ID:</td>
+                <td>{data?.metadata?.cd || "-"}</td>
+              </tr>
+
+              <tr>
+                <td>النقاط المستبدلة:</td>
+                <td>{data?.metadata?.rv ? `${data.metadata.rv} نقطة` : "-"}</td>
               </tr>
 
               <tr>
@@ -138,11 +134,7 @@ export default function PaidClient() {
 
               <tr>
                 <td>الخدمة:</td>
-                <td>
-                  {data?.metadata?.service
-                    ? data?.metadata?.service
-                    : "العادية"}
-                </td>
+                <td>{data?.metadata?.service ? data?.metadata?.service : "العادية"}</td>
               </tr>
 
               <tr>
@@ -152,11 +144,7 @@ export default function PaidClient() {
 
               <tr>
                 <td>الخدمات الاضافية:</td>
-                <td>
-                  {data?.metadata?.additionalServices
-                    ? data?.metadata?.additionalServices
-                    : "لا يوجد"}
-                </td>
+                <td>{data?.metadata?.additionalServices ? data?.metadata?.additionalServices : "لا يوجد"}</td>
               </tr>
 
               <tr>
@@ -166,20 +154,12 @@ export default function PaidClient() {
 
               <tr>
                 <td>تاريخ الصنع:</td>
-                <td>
-                  {data?.metadata?.fy
-                    ? data.metadata.fy
-                    : data?.metadata?.year === "2"
-                    ? "2017 أو أعلى"
-                    : "2016 أو أدنى"}
-                </td>
+                <td>{data?.metadata?.fy ? data.metadata.fy : data?.metadata?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
               </tr>
 
               <tr>
                 <td>تاريخ:</td>
-                <td dir="ltr">
-                  {data?.created_at ? formatDate(data.created_at) : "غير متوفر"}
-                </td>
+                <td dir="ltr">{data?.created_at ? formatDate(data.created_at) : "غير متوفر"}</td>
               </tr>
 
               <tr>
@@ -190,11 +170,7 @@ export default function PaidClient() {
               {data?.metadata?.affiliate && (
                 <tr>
                   <td>الإحالة:</td>
-                  <td>
-                    {data?.metadata?.affiliate
-                      ? data?.metadata?.affiliate
-                      : "N/A"}
-                  </td>
+                  <td>{data?.metadata?.affiliate ? data?.metadata?.affiliate : "N/A"}</td>
                 </tr>
               )}
             </tbody>

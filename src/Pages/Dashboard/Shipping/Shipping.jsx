@@ -1,18 +1,41 @@
 import style from "./Shipping.module.scss";
 import { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
 // API
 import useGetAllShippingPaymensApi from "../../../API/useGetAllShippingPaymensApi";
+import useEditIsShippedApi from "../../../API/useEditIsShippedApi"; // Add this
+import useEditAccountantStatusApi from "../../../API/useEditAccountantStatusApi"; // Add this import
+// Cookies
+import { useCookies } from "react-cookie";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
+import Button from "@mui/material/Button";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+
+// import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import Tooltip from "@mui/material/Tooltip"; // Add for tooltips
+import Checkbox from "@mui/material/Checkbox";
+import Switch from "@mui/material/Switch"; // Add Switch import
+import FormControlLabel from "@mui/material/FormControlLabel"; // Add FormCon
+// import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+// import Snackbar from "@mui/material/Snackbar"; // For notifications
+// import Alert from "@mui/material/Alert"; // For notifications
 
 export default function Shipping() {
+  // Cookies
+  const [cookies, setCookie, removeCookie] = useCookies(["role"]);
+  // const navigate = useNavigate(); // Initialize navigate
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   //
-  const { data, isPending: isGetAllShippingPaymensPending, isSuccess } = useGetAllShippingPaymensApi();
+  const { data, isPending: isGetAllShippingPaymensPending, isSuccess, fetchStatus: fetchAllShippingPaymensStatus } = useGetAllShippingPaymensApi();
+  const markAsAccountedMutation = useEditAccountantStatusApi(); // Add this mutation
 
+  //
+  const markAsShippedMutation = useEditIsShippedApi();
   // Transform API data to match DataGrid rows
   const rows =
     data?.data?.map((item, index, array) => ({
@@ -32,20 +55,108 @@ export default function Shipping() {
       status: item.status,
       phoneNumber: item.phoneNumber,
       payment_id: item.payment_id,
+      isShipped: item.isShipped || false,
+      accountant_status: item.accountant_status || false, // Add this
     })) || [];
+
+  // Handle mark as shipped
+  // Handle checkbox change for shipped status
+  const handleShippedChange = async (id, currentIsShipped) => {
+    // Get the new state (opposite of current)
+    const newShippedState = !currentIsShipped;
+
+    // Show confirmation dialog
+    const action = newShippedState ? "mark as shipped" : "mark as not shipped";
+    const isConfirmed = window.confirm(`Are you sure you want to ${action}?`);
+
+    if (!isConfirmed) {
+      return; // User cancelled
+    }
+
+    try {
+      // Only need to call the API if we're marking as shipped
+      // If your API handles both shipped/unshipped, you might need to adjust this
+      if (newShippedState) {
+        await markAsShippedMutation.mutateAsync(id);
+      } else {
+        // If you have an API for unshipping, call it here
+        // For now, we'll just call the same API - adjust based on your backend
+        await markAsShippedMutation.mutateAsync(id);
+      }
+    } catch (error) {
+      console.log(error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  // Handle mark as accounted
+  const handleAccountedChange = async (id, currentAccountantStatus) => {
+    const newAccountedState = !currentAccountantStatus;
+    const action = newAccountedState ? "mark as accounted" : "mark as not accounted";
+    const isConfirmed = window.confirm(`Are you sure you want to ${action}?`);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await markAsAccountedMutation.mutateAsync(id);
+    } catch (error) {
+      console.log("Error updating accountant status:", error);
+    }
+  };
+
+  //  handle navigation
+  const handleViewDetails = (paymentId) => {
+    // navigate(`/dashboard/shipping-client/${paymentId}`);
+    // Determine base URL
+    const url = window.location.hostname === "localhost" ? "http://localhost:3000" : "https://cashif.online";
+    window.open(`${url}/shipping-client/${paymentId}`, "_blank");
+  };
 
   //
   const columns = [
     {
       field: "index",
       headerName: "#",
-      width: 70,
+      width: 50,
       sortable: false,
       headerAlign: "center",
       align: "center",
       disableColumnMenu: true,
       renderCell: (params) => params.value, // Keep showing the row numbers
     },
+    {
+      field: "isShipped",
+      headerName: "Shipped",
+      flex: 1,
+      minWidth: 75,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Checkbox
+          checked={!!params.row.isShipped}
+          onChange={(event) => handleShippedChange(params.row.id, params.row.isShipped)}
+          disabled={markAsShippedMutation.isPending || fetchAllShippingPaymensStatus === "fetching"}
+          sx={{
+            color: "#ff9800",
+            "&.Mui-checked": {
+              color: "#2e7d32", // Green when checked/shipped
+            },
+            "&.Mui-disabled": {
+              color: "#ccc",
+            },
+            pointerEvents: "auto", // Override the row's pointer-events: none
+          }}
+          inputProps={{
+            "aria-label": params.row.isShipped ? "Mark as not shipped" : "Mark as shipped",
+          }}
+        />
+      ),
+    },
+
     {
       field: "date", // This will be the date part only
       headerName: "Date",
@@ -74,7 +185,7 @@ export default function Shipping() {
     },
     {
       field: "reportNumber",
-      headerName: "Report Number",
+      headerName: "Card Number",
       flex: 1,
       minWidth: 175,
       sortable: false,
@@ -134,7 +245,9 @@ export default function Shipping() {
       headerAlign: "center",
       align: "center",
       filterable: true,
+      renderCell: (params) => <div>{params.value}</div>,
     },
+
     {
       field: "to",
       headerName: "To",
@@ -144,6 +257,7 @@ export default function Shipping() {
       headerAlign: "center",
       align: "center",
       filterable: true,
+      renderCell: (params) => <div>{params.value}</div>,
     },
     {
       field: "price",
@@ -183,25 +297,95 @@ export default function Shipping() {
       field: "plateNumber",
       headerName: "Plate Number",
       flex: 1,
-      minWidth: 125,
+      minWidth: 150,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
+
       renderCell: (params) => {
-        return params.value ? params.value : <div>N/A</div>;
+        return params.value ? <div dir="rtl">{params.value}</div> : <div>N/A</div>;
       },
     },
     {
       field: "payment_id",
       headerName: "Payment Id",
       flex: 1,
-      minWidth: 150,
+      minWidth: 350,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
     },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      minWidth: 100,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      disableColumnMenu: true,
+      cellClassName: style.actionsColumn,
+      renderCell: (params) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          {/* View Button */}
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<VisibilityIcon />}
+            onClick={() => handleViewDetails(params.row.payment_id)}
+            sx={{
+              pointerEvents: "auto",
+              backgroundColor: "#1976d2",
+              "&:hover": { backgroundColor: "#1565c0" },
+            }}
+          >
+            View
+          </Button>
+        </div>
+      ),
+    },
+
+    // Conditionally add the column based on the user's role
+    ...(cookies.role === 100 || cookies.role === 255 // Accountent
+      ? [
+          {
+            field: "accountant_status",
+            headerName: "Accounted",
+            flex: 1,
+            minWidth: 100,
+            sortable: false,
+            headerAlign: "center",
+            align: "center",
+            disableColumnMenu: true,
+            renderCell: (params) => (
+              <Tooltip title={params.row.accountant_status ? "Mark as not accounted" : "Mark as accounted"}>
+                <Switch
+                  checked={!!params.row.accountant_status}
+                  onChange={(event) => handleAccountedChange(params.row.id, params.row.accountant_status)}
+                  disabled={markAsAccountedMutation.isPending || fetchAllShippingPaymensStatus === "fetching"}
+                  color="primary"
+                  sx={{
+                    "& .MuiSwitch-switchBase": {
+                      "&.Mui-checked": {
+                        color: "#1976d2",
+                        "& + .MuiSwitch-track": {
+                          backgroundColor: "#1976d2",
+                        },
+                      },
+                    },
+                    pointerEvents: "auto",
+                  }}
+                  inputProps={{
+                    "aria-label": params.row.accountant_status ? "Accounted" : "Not accounted",
+                  }}
+                />
+              </Tooltip>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const formatDate = (dateString) => {
@@ -264,6 +448,7 @@ export default function Shipping() {
         }}
       >
         <DataGrid
+          getRowClassName={(params) => (params.row.isShipped ? style.shippedRow : style.NotshippedRow)}
           rows={rows}
           columns={columns}
           initialState={{

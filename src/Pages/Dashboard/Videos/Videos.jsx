@@ -44,8 +44,7 @@ export default function Videos() {
   }, []);
 
   const { mutate, isPending: isAddVideoPending } = useAddVideoApi();
-  const { mutate: mutateDeleteVideo, isPending: isDeleteVideoPending } =
-    useDeleteVideoApi();
+  const { mutate: mutateDeleteVideo, isPending: isDeleteVideoPending } = useDeleteVideoApi();
   const { data, isPending: isGetAllVideosPending } = useGetAllVideosApi();
 
   const [formData, setFormData] = useState({
@@ -161,8 +160,7 @@ export default function Videos() {
   const [uploadingVideoId, setUploadingVideoId] = useState(null); // Track which video is being uploaded
   const fileInputRef = useRef(null); // Ref for the hidden file input
 
-  const { mutate: mutateEditVideo, isPending: isEditVideoPending } =
-    useEditVideoApi();
+  const { mutate: mutateEditVideo, isPending: isEditVideoPending } = useEditVideoApi();
 
   // Handle file input change for AddCircleIcon
   const handleAddVideoClick = (reportId) => {
@@ -337,14 +335,7 @@ export default function Videos() {
         {/* End video file input */}
 
         {/* Start loading button for form 1 */}
-        <LoadingButton
-          type="submit"
-          fullWidth
-          variant="contained"
-          disableRipple
-          loading={isAddVideoPending}
-          sx={{ mt: 3, mb: 2, transition: "0.1s" }}
-        >
+        <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddVideoPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
           Add
         </LoadingButton>
         {/* End loading button for form 1 */}
@@ -352,12 +343,7 @@ export default function Videos() {
       {/* End Form one */}
 
       {/* Hidden file input for AddCircleIcon */}
-      <VisuallyHiddenInput
-        type="file"
-        accept="video/*"
-        ref={fileInputRef}
-        onChange={handleSingleFileChange}
-      />
+      <VisuallyHiddenInput type="file" accept="video/*" ref={fileInputRef} onChange={handleSingleFileChange} />
 
       <p
         style={{
@@ -376,7 +362,7 @@ export default function Videos() {
           <table>
             <thead>
               <tr>
-                <th>Report Number</th>
+                <th>Card Number</th>
                 <th>Date</th>
                 <th>Video</th>
                 <th>Action</th>
@@ -387,33 +373,19 @@ export default function Videos() {
                 <tr key={report.id}>
                   <td>{report.report_number}</td>
 
-                  <td>
-                    {new Date(report.created_at).toLocaleDateString("en-GB")}
-                  </td>
+                  <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
 
                   <td style={{ whiteSpace: "nowrap" }}>
-                    <a
-                      href={report.video_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={report.video_url} target="_blank" rel="noopener noreferrer">
                       1
                     </a>{" "}
                     {report?.video_url_2 && (
-                      <a
-                        href={report.video_url_2}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                      <a href={report.video_url_2} target="_blank" rel="noopener noreferrer">
                         2
                       </a>
                     )}{" "}
                     {report?.video_url_3 && (
-                      <a
-                        href={report.video_url_3}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                      <a href={report.video_url_3} target="_blank" rel="noopener noreferrer">
                         3
                       </a>
                     )}
@@ -443,36 +415,17 @@ export default function Videos() {
                       <IconButton
                         color="primary"
                         onClick={() => handleAddVideoClick(report.id)}
-                        disabled={
-                          isDeleteVideoPending ||
-                          isEditVideoPending ||
-                          report.video_file_path_3 ||
-                          isAddVideoPending
-                        }
+                        disabled={isDeleteVideoPending || isEditVideoPending || Boolean(report.video_file_path_3) || isAddVideoPending}
                       >
-                        {uploadingVideoId === report.id &&
-                        isEditVideoPending ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          <AddCircleIcon />
-                        )}
+                        {uploadingVideoId === report.id && isEditVideoPending ? <CircularProgress size={24} /> : <AddCircleIcon />}
                       </IconButton>
 
                       <IconButton
                         color="error"
                         onClick={() => handleDeleteReport(report.id)}
-                        disabled={
-                          (deletingId !== null && deletingId !== report.id) ||
-                          isDeleteVideoPending ||
-                          isEditVideoPending ||
-                          isAddVideoPending
-                        }
+                        disabled={(deletingId !== null && deletingId !== report.id) || isDeleteVideoPending || isEditVideoPending || isAddVideoPending}
                       >
-                        {deletingId === report.id ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          <DeleteIcon />
-                        )}
+                        {deletingId === report.id ? <CircularProgress size={24} /> : <DeleteIcon />}
                       </IconButton>
                     </div>
                   </td>

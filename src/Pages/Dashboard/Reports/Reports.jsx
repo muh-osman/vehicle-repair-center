@@ -201,7 +201,7 @@ export default function Reports() {
           <table>
             <thead>
               <tr>
-                <th>Report Number</th>
+                <th>Card Number</th>
                 <th>Date</th>
                 <th>File</th>
                 <th>Action</th>
