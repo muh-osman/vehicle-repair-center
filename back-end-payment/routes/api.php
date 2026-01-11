@@ -82,12 +82,14 @@ Route::middleware('guest')->group(function () {
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 
     // Shipping payments Webhook
-    Route::post('/shipping-payment-paid-webhook', [MoyasarShippingPaymentController::class, 'ShippingPaymentPaidWebhook']);
+    // Route::post('/shipping-payment-paid-webhook', [MoyasarShippingPaymentController::class, 'ShippingPaymentPaidWebhook']);
+    Route::post('/store-shipping-car-order', [MoyasarShippingPaymentController::class, 'storeShippingCarOrder']);
     // Get all shipping payments
     Route::get('/shipping-payments', [MoyasarShippingPaymentController::class, 'getAllShippingPayments']);
     Route::get('/get-shipping-payment/{id}', [MoyasarShippingPaymentController::class, 'show']);
     Route::put('/shipping-payments/mark-as-shipped/{id}', [MoyasarShippingPaymentController::class, 'markAsShipped']);
     Route::put('/shipping-payments/update_accounted_status/{id}', [MoyasarShippingPaymentController::class, 'markAsAccounted']);
+    Route::put('/shipping-payments/update_note/{id}', [MoyasarShippingPaymentController::class, 'updateNote']);
 
     // Mertah
     // For the first method (only paid tables)

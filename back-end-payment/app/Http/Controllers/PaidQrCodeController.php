@@ -17,154 +17,154 @@ class PaidQrCodeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
+    // public function store(Request $request)
+    // {
 
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'paid_qr_code' => 'required|string|unique:paid_qr_codes,paid_qr_code',
-            'full_name' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'branch' => 'nullable|string|max:255',
-            'plan' => 'nullable|string|max:255',
-            'price' => 'nullable|numeric|min:0', // Ensure price is a number and >= 0
-            'model' => 'nullable|string|max:255',
-            'year' => 'nullable|string|max:255',
-            'additionalServices' => 'nullable|string|max:255',
-            'service' => 'nullable|string|max:255',
-            'affiliate' => 'nullable|string|max:255',
-            'discountCode' => 'nullable|string|max:255',
-            'marketerShare' => 'nullable|numeric|min:0',
-            'full_year' => 'nullable|string|max:255',
+    //     // Validate the incoming request data
+    //     $validatedData = $request->validate([
+    //         'paid_qr_code' => 'required|string|unique:paid_qr_codes,paid_qr_code',
+    //         'full_name' => 'nullable|string|max:255',
+    //         'phone' => 'nullable|string|max:20',
+    //         'branch' => 'nullable|string|max:255',
+    //         'plan' => 'nullable|string|max:255',
+    //         'price' => 'nullable|numeric|min:0', // Ensure price is a number and >= 0
+    //         'model' => 'nullable|string|max:255',
+    //         'year' => 'nullable|string|max:255',
+    //         'additionalServices' => 'nullable|string|max:255',
+    //         'service' => 'nullable|string|max:255',
+    //         'affiliate' => 'nullable|string|max:255',
+    //         'discountCode' => 'nullable|string|max:255',
+    //         'marketerShare' => 'nullable|numeric|min:0',
+    //         'full_year' => 'nullable|string|max:255',
 
-            'clientId' => 'nullable|string|max:255',
-            'redeemeAmoumntValue' => 'nullable|numeric|min:0',
+    //         'clientId' => 'nullable|string|max:255',
+    //         'redeemeAmoumntValue' => 'nullable|numeric|min:0',
 
-            // 'isShipped' => 'nullable|boolean', no need herer
-            'address' => 'nullable|string|max:1000',
-        ]);
+    //         // 'isShipped' => 'nullable|boolean', no need herer
+    //         'address' => 'nullable|string|max:1000',
+    //     ]);
 
-        // Secret Key
-        $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY');
+    //     // Secret Key
+    //     $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY');
 
-        $response = Http::withBasicAuth($apiKey, '')
-            ->get("https://api.moyasar.com/v1/payments/{$validatedData['paid_qr_code']}");
+    //     $response = Http::withBasicAuth($apiKey, '')
+    //         ->get("https://api.moyasar.com/v1/payments/{$validatedData['paid_qr_code']}");
 
-        if ($response->successful()) {
-            $responseData = $response->json();
-            $metadata = $responseData['metadata'] ?? [];
+    //     if ($response->successful()) {
+    //         $responseData = $response->json();
+    //         $metadata = $responseData['metadata'] ?? [];
 
-            // Check if the QR code already exists
-            $qrCode = PaidQrCode::where('paid_qr_code', $validatedData['paid_qr_code'])->first();
+    //         // Check if the QR code already exists
+    //         $qrCode = PaidQrCode::where('paid_qr_code', $validatedData['paid_qr_code'])->first();
 
-            if (!$qrCode) {
-                // Create a new PaidQrCode entry
-                $qrCode = PaidQrCode::create([
-                    'paid_qr_code' => $validatedData['paid_qr_code'],
-                    'full_name' => $metadata['name'] ?? null,
-                    'phone' => $metadata['phone'] ?? null,
-                    'branch' => $metadata['branch'] ?? null,
-                    'plan' => $metadata['plan'] ?? null,
-                    'price' => $metadata['price'] ?? 0, // Default to 0 if not present
-                    'model' => $metadata['model'] ?? null,
-                    'year' => $metadata['year'] ?? null,
-                    'additionalServices' => $metadata['additionalServices'] ?? null,
-                    'service' => $metadata['service'] ?? null,
-                    'affiliate' => $metadata['affiliate'] ?? null,
-                    'discountCode' => $metadata['dc'] ?? null,
-                    'marketerShare' => $metadata['msh'] ?? null,
-                    'full_year' => $metadata['fy'] ?? null,
-                    'clientId' => $metadata['cd'] ?? null,
-                    'redeemeAmoumntValue' => $metadata['rv'] ?? 0,
-                    'date_of_visited' => null, // Set date_of_visited to null
-                    'address' => $metadata['ad'] ?? null,
-                ]);
-
-
-                // Make API request if redeemeAmoumntValue > 0
-                if ($qrCode->redeemeAmoumntValue > 0 && !empty($qrCode->clientId)) {
-                    try {
-                        $data = [
-                            'clientId' => (int) $qrCode->clientId,
-                            'points' => (int) $qrCode->redeemeAmoumntValue
-                        ];
-
-                        $apiResponse = Http::withHeaders([
-                            'Content-Type' => 'application/json-patch+json',
-                        ])->put('https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto', $data);
-
-                        if ($apiResponse->successful()) {
-                            Log::info('Client points update API request successful', [
-                                'clientId' => $qrCode->clientId,
-                                'points' => $qrCode->redeemeAmoumntValue,
-                                'response' => $apiResponse->json(),
-                            ]);
-                        } else {
-                            Log::error('Client points update API request failed', [
-                                'clientId' => $qrCode->clientId,
-                                'points' => $qrCode->redeemeAmoumntValue,
-                                'status' => $apiResponse->status(),
-                                'response' => $apiResponse->json(),
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Error occurred while making client points update API request', [
-                            'clientId' => $qrCode->clientId,
-                            'points' => $qrCode->redeemeAmoumntValue,
-                            'message' => $e->getMessage(),
-                        ]);
-                    }
-                }
+    //         if (!$qrCode) {
+    //             // Create a new PaidQrCode entry
+    //             $qrCode = PaidQrCode::create([
+    //                 'paid_qr_code' => $validatedData['paid_qr_code'],
+    //                 'full_name' => $metadata['name'] ?? null,
+    //                 'phone' => $metadata['phone'] ?? null,
+    //                 'branch' => $metadata['branch'] ?? null,
+    //                 'plan' => $metadata['plan'] ?? null,
+    //                 'price' => $metadata['price'] ?? 0, // Default to 0 if not present
+    //                 'model' => $metadata['model'] ?? null,
+    //                 'year' => $metadata['year'] ?? null,
+    //                 'additionalServices' => $metadata['additionalServices'] ?? null,
+    //                 'service' => $metadata['service'] ?? null,
+    //                 'affiliate' => $metadata['affiliate'] ?? null,
+    //                 'discountCode' => $metadata['dc'] ?? null,
+    //                 'marketerShare' => $metadata['msh'] ?? null,
+    //                 'full_year' => $metadata['fy'] ?? null,
+    //                 'clientId' => $metadata['cd'] ?? null,
+    //                 'redeemeAmoumntValue' => $metadata['rv'] ?? 0,
+    //                 'date_of_visited' => null, // Set date_of_visited to null
+    //                 'address' => $metadata['ad'] ?? null,
+    //             ]);
 
 
-                // Send notification to multiple recipients
-                $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
-                // $recipients = ['song415400@gmail.com',]; // Replace with actual email addresses
+    //             // Make API request if redeemeAmoumntValue > 0
+    //             if ($qrCode->redeemeAmoumntValue > 0 && !empty($qrCode->clientId)) {
+    //                 try {
+    //                     $data = [
+    //                         'clientId' => (int) $qrCode->clientId,
+    //                         'points' => (int) $qrCode->redeemeAmoumntValue
+    //                     ];
 
-                $paymentMethod = "Moyasar";
+    //                     $apiResponse = Http::withHeaders([
+    //                         'Content-Type' => 'application/json-patch+json',
+    //                     ])->put('https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto', $data);
 
-                // Prepare the data to pass to the notification
-                $notificationData = array_merge($qrCode->toArray(), [
-                    'service' => $metadata['service'] ?? null,
-                    'payment_method' => $paymentMethod,
-                    'additionalServices' => $metadata['additionalServices'] ?? null,
-                    'branch' => $metadata['branch'] ?? null,
-                    'plan' => $metadata['plan'] ?? null,
-                    'model' => $metadata['model'] ?? null,
-                    'full_name' => $metadata['name'] ?? null, // Use name from metadata
-                    'phone' => $metadata['phone'] ?? null, // Use phone from metadata
-                    'discountCode' => $metadata['dc'] ?? null, // Use from metadata
-                    'address' => $metadata['ad'] ?? null, // Use from metadata
-                    'full_year' => $metadata['fy'] ?? null,
-                ]);
+    //                     if ($apiResponse->successful()) {
+    //                         Log::info('Client points update API request successful', [
+    //                             'clientId' => $qrCode->clientId,
+    //                             'points' => $qrCode->redeemeAmoumntValue,
+    //                             'response' => $apiResponse->json(),
+    //                         ]);
+    //                     } else {
+    //                         Log::error('Client points update API request failed', [
+    //                             'clientId' => $qrCode->clientId,
+    //                             'points' => $qrCode->redeemeAmoumntValue,
+    //                             'status' => $apiResponse->status(),
+    //                             'response' => $apiResponse->json(),
+    //                         ]);
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                     Log::error('Error occurred while making client points update API request', [
+    //                         'clientId' => $qrCode->clientId,
+    //                         'points' => $qrCode->redeemeAmoumntValue,
+    //                         'message' => $e->getMessage(),
+    //                     ]);
+    //                 }
+    //             }
 
-                try {
-                    Notification::route('mail', $recipients)
-                        ->notify(new QrCodeStored($notificationData));
-                } catch (\Exception $e) {
-                    // Log the error or handle it as needed
-                    Log::error('Email notification failed: ' . $e->getMessage());
-                    // You can also choose to notify the user about the failure if needed
-                }
 
-                return response()->json([
-                    'message' => 'QR code stored successfully',
-                    'exists' => false,
-                    'data' => $qrCode
-                ], 201); // Return 201 Created status
-            } else {
-                // If it exists, return a message indicating so along with the created_at date
-                return response()->json([
-                    'message' => 'QR code already exists',
-                    'exists' => true,
-                    'created_at' => $qrCode->created_at,
-                    'data' => $qrCode
-                ]);
-            }
-        } else {
-            return response()->json(['error' => 'Payment not found'], 404);
-        }
-    }
+    //             // Send notification to multiple recipients
+    //             $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+    //             // $recipients = ['song415400@gmail.com',]; // Replace with actual email addresses
+
+    //             $paymentMethod = "Moyasar";
+
+    //             // Prepare the data to pass to the notification
+    //             $notificationData = array_merge($qrCode->toArray(), [
+    //                 'service' => $metadata['service'] ?? null,
+    //                 'payment_method' => $paymentMethod,
+    //                 'additionalServices' => $metadata['additionalServices'] ?? null,
+    //                 'branch' => $metadata['branch'] ?? null,
+    //                 'plan' => $metadata['plan'] ?? null,
+    //                 'model' => $metadata['model'] ?? null,
+    //                 'full_name' => $metadata['name'] ?? null, // Use name from metadata
+    //                 'phone' => $metadata['phone'] ?? null, // Use phone from metadata
+    //                 'discountCode' => $metadata['dc'] ?? null, // Use from metadata
+    //                 'address' => $metadata['ad'] ?? null, // Use from metadata
+    //                 'full_year' => $metadata['fy'] ?? null,
+    //             ]);
+
+    //             try {
+    //                 Notification::route('mail', $recipients)
+    //                     ->notify(new QrCodeStored($notificationData));
+    //             } catch (\Exception $e) {
+    //                 // Log the error or handle it as needed
+    //                 Log::error('Email notification failed: ' . $e->getMessage());
+    //                 // You can also choose to notify the user about the failure if needed
+    //             }
+
+    //             return response()->json([
+    //                 'message' => 'QR code stored successfully',
+    //                 'exists' => false,
+    //                 'data' => $qrCode
+    //             ], 201); // Return 201 Created status
+    //         } else {
+    //             // If it exists, return a message indicating so along with the created_at date
+    //             return response()->json([
+    //                 'message' => 'QR code already exists',
+    //                 'exists' => true,
+    //                 'created_at' => $qrCode->created_at,
+    //                 'data' => $qrCode
+    //             ]);
+    //         }
+    //     } else {
+    //         return response()->json(['error' => 'Payment not found'], 404);
+    //     }
+    // }
 
 
     /**

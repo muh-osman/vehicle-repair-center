@@ -44,68 +44,48 @@ class MoyasarShippingPaymentController extends Controller
         }
     }
 
-
-    /**
-     * Handle shipping payment paid webhook
-     */
-    public function ShippingPaymentPaidWebhook(Request $request)
+    // Store shipping car order
+    public function storeShippingCarOrder(Request $request)
     {
         try {
-            // Verify the webhook signature
-            $this->verifyWebhookSignature($request);
-
-            // Get the webhook payload
-            $webhookData = $request->all();
-
-            // Extract data from webhook payload
-            $paymentData = $webhookData['data'] ?? [];
-            $metadata = $paymentData['metadata'] ?? [];
-
-            // Prepare data for storage and notification
-            $paymentInfo = [
-                'payment_id' => $paymentData['id'] ?? null,
-                'name' => $metadata['name'] ?? null,
-                'reportNumber' => $metadata['reportNumber'] ?? null,
-                'model' => $metadata['model'] ?? null,
-                'modelCategory' => $metadata['modelCategory'] ?? null,
-                'plateNumber' => $metadata['plateNumber'] ?? null,
-                'from' => $metadata['from'] ?? null,
-                'to' => $metadata['to'] ?? null,
-                'shippingType' => $metadata['shippingType'] ?? null,
-                'price' => $metadata['price'] ?? 0,
-                'phoneNumber' => $metadata['phoneNumber'] ?? null,
-                'status' => $paymentData['status'] ?? null,
-                'isShipped' => false, // Default to false for new payments
-                'accountant_status' => false, // Default to false for new payments
-            ];
-
-            // Check if payment already exists to avoid duplicates
-            $existingPayment = MoyasarShippingPayment::where('payment_id', $paymentInfo['payment_id'])->first();
-
-
-            if ($existingPayment) {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Payment already exists in database',
-                    'payment_id' => $existingPayment->payment_id,
-                    'database_id' => $existingPayment->id,
-                    'timestamp' => now()->toDateTimeString()
-                ], 200);
-            }
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'payment_id' => 'required|string|max:255',
+                'name' => 'required|string|max:255',
+                'reportNumber' => 'required|max:255',
+                'model' => 'required|string|max:255',
+                'modelCategory' => 'required|string|max:255',
+                'plateNumber' => 'required|string|max:255',
+                'from' => 'required|string|max:255',
+                'to' => 'required|string|max:255',
+                'shippingType' => 'required|string|max:255',
+                'price' => 'required|numeric|min:0',
+                'phoneNumber' => 'required|string|max:255',
+                'status' => 'required|string|max:255',
+                // Boolean validation - accepts true/false, 1/0, "1"/"0"
+                'isShipped' => 'sometimes|boolean',
+                'accountant_status' => 'sometimes|boolean',
+            ]);
 
             // Store payment data in database
-            $payment = MoyasarShippingPayment::create($paymentInfo);
+            $payment = MoyasarShippingPayment::create($validatedData);
+
+            // Add the database ID to the data array
+            $emailData = array_merge($validatedData, [
+                'database_id' => $payment->id
+            ]);
 
             // Send email notification to multiple recipients
-            $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
-            // $recipients = ['gp415400@gmail.com']; // For testing
+            // $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            $recipients = ['gp415400@gmail.com']; // For testing
 
             try {
                 Notification::route('mail', $recipients)
-                    ->notify(new ShippingPaymentPaid($paymentInfo));
+                    ->notify(new ShippingPaymentPaid($emailData));
 
                 Log::channel('daily')->info('Shipping payment email notification sent successfully', [
                     'payment_id' => $payment->payment_id,
+                    'database_id' => $payment->id,
                     'recipients' => $recipients,
                     'sent_at' => now()->toDateTimeString()
                 ]);
@@ -114,6 +94,7 @@ class MoyasarShippingPaymentController extends Controller
                 Log::channel('daily')->error('Shipping payment email notification failed', [
                     'error' => $e->getMessage(),
                     'payment_id' => $payment->payment_id,
+                    'database_id' => $payment->id,
                     'recipients' => $recipients,
                     'timestamp' => now()->toDateTimeString()
                 ]);
@@ -122,6 +103,7 @@ class MoyasarShippingPaymentController extends Controller
             // Log successful storage
             Log::channel('daily')->info('Moyasar Shipping Payment stored successfully', [
                 'payment_id' => $payment->payment_id,
+                'database_id' => $payment->id,
                 'report_number' => $payment->reportNumber,
                 'stored_at' => now()->toDateTimeString()
             ]);
@@ -150,42 +132,148 @@ class MoyasarShippingPaymentController extends Controller
         }
     }
 
+
+    /**
+     * Handle shipping payment paid webhook
+     */
+    // public function ShippingPaymentPaidWebhook(Request $request)
+    // {
+    //     try {
+    //         // Verify the webhook signature
+    //         $this->verifyWebhookSignature($request);
+
+    //         // Get the webhook payload
+    //         $webhookData = $request->all();
+
+    //         // Extract data from webhook payload
+    //         $paymentData = $webhookData['data'] ?? [];
+    //         $metadata = $paymentData['metadata'] ?? [];
+
+    //         // Prepare data for storage and notification
+    //         $paymentInfo = [
+    //             'payment_id' => $paymentData['id'] ?? null,
+    //             'name' => $metadata['name'] ?? null,
+    //             'reportNumber' => $metadata['reportNumber'] ?? null,
+    //             'model' => $metadata['model'] ?? null,
+    //             'modelCategory' => $metadata['modelCategory'] ?? null,
+    //             'plateNumber' => $metadata['plateNumber'] ?? null,
+    //             'from' => $metadata['from'] ?? null,
+    //             'to' => $metadata['to'] ?? null,
+    //             'shippingType' => $metadata['shippingType'] ?? null,
+    //             'price' => $metadata['price'] ?? 0,
+    //             'phoneNumber' => $metadata['phoneNumber'] ?? null,
+    //             'status' => $paymentData['status'] ?? null,
+    //             'isShipped' => false, // Default to false for new payments
+    //             'accountant_status' => false, // Default to false for new payments
+    //         ];
+
+    //         // Check if payment already exists to avoid duplicates
+    //         $existingPayment = MoyasarShippingPayment::where('payment_id', $paymentInfo['payment_id'])->first();
+
+
+    //         if ($existingPayment) {
+    //             return response()->json([
+    //                 'status' => 'success',
+    //                 'message' => 'Payment already exists in database',
+    //                 'payment_id' => $existingPayment->payment_id,
+    //                 'database_id' => $existingPayment->id,
+    //                 'timestamp' => now()->toDateTimeString()
+    //             ], 200);
+    //         }
+
+    //         // Store payment data in database
+    //         $payment = MoyasarShippingPayment::create($paymentInfo);
+
+    //         // Send email notification to multiple recipients
+    //         $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+    //         // $recipients = ['gp415400@gmail.com']; // For testing
+
+    //         try {
+    //             Notification::route('mail', $recipients)
+    //                 ->notify(new ShippingPaymentPaid($paymentInfo));
+
+    //             Log::channel('daily')->info('Shipping payment email notification sent successfully', [
+    //                 'payment_id' => $payment->payment_id,
+    //                 'recipients' => $recipients,
+    //                 'sent_at' => now()->toDateTimeString()
+    //             ]);
+    //         } catch (\Exception $e) {
+    //             // Log email failure but don't stop the process
+    //             Log::channel('daily')->error('Shipping payment email notification failed', [
+    //                 'error' => $e->getMessage(),
+    //                 'payment_id' => $payment->payment_id,
+    //                 'recipients' => $recipients,
+    //                 'timestamp' => now()->toDateTimeString()
+    //             ]);
+    //         }
+
+    //         // Log successful storage
+    //         Log::channel('daily')->info('Moyasar Shipping Payment stored successfully', [
+    //             'payment_id' => $payment->payment_id,
+    //             'report_number' => $payment->reportNumber,
+    //             'stored_at' => now()->toDateTimeString()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Payment data stored and notification sent successfully',
+    //             'payment_id' => $payment->payment_id,
+    //             'database_id' => $payment->id,
+    //             'email_sent' => true,
+    //             'timestamp' => now()->toDateTimeString()
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         // Log the error
+    //         Log::channel('daily')->error('Moyasar Shipping Payment Webhook Error', [
+    //             'error' => $e->getMessage(),
+    //             'payload' => $request->all(),
+    //             'timestamp' => now()->toDateTimeString()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Webhook processing failed',
+    //             'error' => $e->getMessage()
+    //         ], 400);
+    //     }
+    // }
+
     /**
      * Verify webhook signature for security
      */
-    private function verifyWebhookSignature(Request $request)
-    {
-        $secretToken = env('MOYASAR_SECRET_TOKEN');
+    // private function verifyWebhookSignature(Request $request)
+    // {
+    //     $secretToken = env('MOYASAR_SECRET_TOKEN');
 
-        if (!$secretToken) {
-            throw new \Exception('Moyasar secret token not configured');
-        }
+    //     if (!$secretToken) {
+    //         throw new \Exception('Moyasar secret token not configured');
+    //     }
 
-        // Moyasar might send a signature header, verify it here
-        $signature = $request->header('X-Moyasar-Signature') ?? $request->header('Moyasar-Signature');
+    //     // Moyasar might send a signature header, verify it here
+    //     $signature = $request->header('X-Moyasar-Signature') ?? $request->header('Moyasar-Signature');
 
-        if ($signature) {
-            // Verify the signature using your secret token
-            $payload = $request->getContent();
-            $expectedSignature = hash_hmac('sha256', $payload, $secretToken);
+    //     if ($signature) {
+    //         // Verify the signature using your secret token
+    //         $payload = $request->getContent();
+    //         $expectedSignature = hash_hmac('sha256', $payload, $secretToken);
 
-            if (!hash_equals($expectedSignature, $signature)) {
-                throw new \Exception('Invalid webhook signature');
-            }
-        }
+    //         if (!hash_equals($expectedSignature, $signature)) {
+    //             throw new \Exception('Invalid webhook signature');
+    //         }
+    //     }
 
-        // Additional security: Verify secret token from payload
-        $payloadToken = $request->input('secret_token');
-        if ($payloadToken && $payloadToken !== $secretToken) {
-            throw new \Exception('Invalid secret token in payload');
-        }
+    //     // Additional security: Verify secret token from payload
+    //     $payloadToken = $request->input('secret_token');
+    //     if ($payloadToken && $payloadToken !== $secretToken) {
+    //         throw new \Exception('Invalid secret token in payload');
+    //     }
 
-        // Verify event type is payment_paid
-        $eventType = $request->input('type');
-        if ($eventType !== 'payment_paid') {
-            throw new \Exception('Invalid event type: ' . $eventType);
-        }
-    }
+    //     // Verify event type is payment_paid
+    //     $eventType = $request->input('type');
+    //     if ($eventType !== 'payment_paid') {
+    //         throw new \Exception('Invalid event type: ' . $eventType);
+    //     }
+    // }
 
 
 
@@ -193,82 +281,140 @@ class MoyasarShippingPaymentController extends Controller
     /**
      * Display the specified payment by ID
      */
+    // public function show($id)
+    // {
+    //     // Validate the ID
+    //     if (empty($id) || !is_string($id)) {
+    //         return response()->json(['error' => 'Invalid ID provided'], 400);
+    //     }
+
+    //     // Check if exists in the database
+    //     $paymentIdExist = MoyasarShippingPayment::where('payment_id', $id)->first();
+
+    //     if (!$paymentIdExist) {
+    //         return response()->json(['error' => 'Not found in the database'], 404);
+    //     }
+
+    //     // Secret Key
+    //     $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY_FOR_SHIPPING_GETWAY');
+
+    //     // Validate API key
+    //     if (empty($apiKey)) {
+    //         Log::channel('daily')->error('Moyasar API key not configured', [
+    //             'payment_id' => $id,
+    //             'timestamp' => now()->toDateTimeString()
+    //         ]);
+
+    //         return response()->json([
+    //             'error' => 'Payment gateway configuration error'
+    //         ], 500);
+    //     }
+
+    //     try {
+    //         $response = Http::withBasicAuth($apiKey, '')
+    //             ->timeout(30)
+    //             ->retry(3, 100)
+    //             ->get("https://api.moyasar.com/v1/payments/{$id}");
+
+    //         if ($response->successful()) {
+    //             $responseData = $response->json();
+
+    //             // Log successful retrieval
+    //             Log::channel('daily')->info('Payment data retrieved successfully from Moyasar', [
+    //                 'payment_id' => $id,
+    //                 'status' => $responseData['status'] ?? 'unknown',
+    //                 'retrieved_at' => now()->toDateTimeString()
+    //             ]);
+
+    //             return response()->json($responseData);
+    //         } elseif ($response->status() == 404) {
+    //             Log::channel('daily')->warning('Payment not found in Moyasar API', [
+    //                 'payment_id' => $id,
+    //                 'timestamp' => now()->toDateTimeString()
+    //             ]);
+
+    //             return response()->json(['error' => 'Payment not found in payment gateway'], 404);
+    //         } else {
+    //             $errorMessage = 'An error occurred while retrieving payment data from payment gateway';
+    //             $statusCode = $response->status();
+
+    //             Log::channel('daily')->error('Moyasar API error response', [
+    //                 'payment_id' => $id,
+    //                 'status_code' => $statusCode,
+    //                 'response_body' => $response->body(),
+    //                 'timestamp' => now()->toDateTimeString()
+    //             ]);
+
+    //             return response()->json(['error' => $errorMessage], $statusCode);
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::channel('daily')->error('Unexpected error retrieving payment data', [
+    //             'payment_id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //             'timestamp' => now()->toDateTimeString()
+    //         ]);
+
+    //         return response()->json([
+    //             'error' => 'An unexpected error occurred: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * Display the specified payment by database ID
+     */
     public function show($id)
     {
-        // Validate the ID
-        if (empty($id) || !is_string($id)) {
-            return response()->json(['error' => 'Invalid ID provided'], 400);
-        }
-
-        // Check if exists in the database
-        $paymentIdExist = MoyasarShippingPayment::where('payment_id', $id)->first();
-
-        if (!$paymentIdExist) {
-            return response()->json(['error' => 'Not found in the database'], 404);
-        }
-
-        // Secret Key
-        $apiKey = env('PAYMENT_GETWAY_SECRET_LIVE_KEY_FOR_SHIPPING_GETWAY');
-
-        // Validate API key
-        if (empty($apiKey)) {
-            Log::channel('daily')->error('Moyasar API key not configured', [
-                'payment_id' => $id,
-                'timestamp' => now()->toDateTimeString()
-            ]);
-
-            return response()->json([
-                'error' => 'Payment gateway configuration error'
-            ], 500);
-        }
-
         try {
-            $response = Http::withBasicAuth($apiKey, '')
-                ->timeout(30)
-                ->retry(3, 100)
-                ->get("https://api.moyasar.com/v1/payments/{$id}");
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-
-                // Log successful retrieval
-                Log::channel('daily')->info('Payment data retrieved successfully from Moyasar', [
-                    'payment_id' => $id,
-                    'status' => $responseData['status'] ?? 'unknown',
-                    'retrieved_at' => now()->toDateTimeString()
-                ]);
-
-                return response()->json($responseData);
-            } elseif ($response->status() == 404) {
-                Log::channel('daily')->warning('Payment not found in Moyasar API', [
-                    'payment_id' => $id,
-                    'timestamp' => now()->toDateTimeString()
-                ]);
-
-                return response()->json(['error' => 'Payment not found in payment gateway'], 404);
-            } else {
-                $errorMessage = 'An error occurred while retrieving payment data from payment gateway';
-                $statusCode = $response->status();
-
-                Log::channel('daily')->error('Moyasar API error response', [
-                    'payment_id' => $id,
-                    'status_code' => $statusCode,
-                    'response_body' => $response->body(),
-                    'timestamp' => now()->toDateTimeString()
-                ]);
-
-                return response()->json(['error' => $errorMessage], $statusCode);
+            // Validate the ID - should be numeric since it's a database ID
+            if (empty($id) || !is_numeric($id)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid ID provided. ID must be a number.'
+                ], 400);
             }
+
+            // Find payment in the database by id only
+            $payment = MoyasarShippingPayment::find($id);
+
+            if (!$payment) {
+                Log::channel('daily')->warning('Payment not found in database', [
+                    'database_id' => $id,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Payment not found'
+                ], 404);
+            }
+
+            // Log successful retrieval
+            Log::channel('daily')->info('Payment data retrieved successfully from database', [
+                'database_id' => $payment->id,
+                'payment_id' => $payment->payment_id,
+                'status' => $payment->status,
+                'retrieved_at' => now()->toDateTimeString()
+            ]);
+
+            // Return the database record directly
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment data retrieved successfully',
+                'data' => $payment
+            ], 200);
         } catch (\Exception $e) {
-            Log::channel('daily')->error('Unexpected error retrieving payment data', [
-                'payment_id' => $id,
+            Log::channel('daily')->error('Error retrieving payment data', [
+                'id' => $id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'timestamp' => now()->toDateTimeString()
             ]);
 
             return response()->json([
-                'error' => 'An unexpected error occurred: ' . $e->getMessage()
+                'status' => 'error',
+                'message' => 'Failed to retrieve payment data',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -406,6 +552,87 @@ class MoyasarShippingPaymentController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to update accountant status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update note for a shipping payment
+     */
+    public function updateNote(Request $request, $id)
+    {
+        try {
+            // Validate ID
+            if (empty($id) || !is_numeric($id)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid ID provided'
+                ], 400);
+            }
+
+            // Validate request data
+            $request->validate([
+                'note' => 'nullable|string|max:1000', // Adjust max length as needed
+            ]);
+
+            // Find the payment by database ID
+            $payment = MoyasarShippingPayment::find($id);
+
+            if (!$payment) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Payment not found'
+                ], 404);
+            }
+
+            // Get the current note value
+            $currentNote = $payment->note;
+            $newNote = $request->input('note');
+
+            // Update the note
+            $payment->update([
+                'note' => $newNote,
+            ]);
+
+            // Log the update
+            Log::channel('daily')->info('Payment note updated', [
+                'payment_id' => $payment->payment_id,
+                'database_id' => $payment->id,
+                'previous_note' => $currentNote,
+                'new_note' => $newNote,
+                'updated_at' => now()->toDateTimeString(),
+                'report_number' => $payment->reportNumber
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment note updated successfully',
+                'data' => $payment->fresh(),
+                'note' => $newNote
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::channel('daily')->error('Validation failed for updating note', [
+                'id' => $id,
+                'errors' => $e->errors(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::channel('daily')->error('Failed to update payment note', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update note',
                 'error' => $e->getMessage()
             ], 500);
         }

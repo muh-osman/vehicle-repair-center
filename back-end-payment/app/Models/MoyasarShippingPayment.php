@@ -24,5 +24,6 @@ class MoyasarShippingPayment extends Model
         'status',
         'isShipped',
         'accountant_status',
+        'note',
     ];
 }

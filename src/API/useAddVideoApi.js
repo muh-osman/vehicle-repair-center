@@ -8,8 +8,16 @@ export const useAddVideoApi = () => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data) => {
-      const res = await API.post("api/post-video", data);
+    mutationFn: async ({ data, onUploadProgress }) => {
+      const res = await API.post("api/post-video", data, {
+        onUploadProgress: (progressEvent) => {
+          if (onUploadProgress) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onUploadProgress(percentCompleted);
+          }
+        },
+      });
+
       return res.data;
     },
 
@@ -22,11 +30,7 @@ export const useAddVideoApi = () => {
     onError: (err) => {
       console.error(err);
       const errorMessage =
-        err?.response?.data?.errors?.report_number[0] ||
-        err?.response?.data?.errors?.video_file[0] ||
-        err?.response?.data?.message ||
-        err?.message ||
-        "An error occurred";
+        err?.response?.data?.errors?.report_number[0] || err?.response?.data?.errors?.video_file[0] || err?.response?.data?.message || err?.message || "An error occurred";
       // Toastify
       toast.error(errorMessage);
     },

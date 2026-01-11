@@ -148,9 +148,13 @@ Route::middleware('guest')->group(function () {
     // Getting prices by car model ID and year ID
     Route::get('get-prices-by-model-and-year', [PriceController::class, 'getPricesByModelAndYear']);
 
-    // Getting discounted prices by car model ID and year ID
+    // Getting discounted prices by car model ID and year ID (فحص الشراء API)
     Route::get('get-discounted-prices-by-model-and-year', [PriceController::class, 'getDiscountedPricesByModelAndYear']);
     Route::get('get-discounted-prices-by-model-and-year-for-mertah-service', [PriceController::class, 'getDiscountedPricesByModelAndYearForMertahService']);
+
+    // Getting discounted prices by car model ID and year ID (فحص مخدوم API)
+    Route::get('get-makdom-discounted-prices-by-model-and-year', [PriceController::class, 'getMakdomDiscountedPricesByModelAndYear']);
+    Route::get('get-makdom-discounted-prices-by-model-and-year-for-mertah-service', [PriceController::class, 'getMakdomDiscountedPricesByModelAndYearForMertahService']);
 
     // Getting discounted prices by car model ID and year ID (discounte 50%)
     Route::get('get-fifty-precent-discounted-prices-by-model-and-year', [PriceController::class, 'getAllPlansWith50PercentDiscount']);
@@ -183,6 +187,8 @@ Route::middleware('guest')->group(function () {
     Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
     Route::post('check-if-cards-have-videos', [VideosController::class, 'checkIfCardsHaveVideos']);
     Route::get('download-video/by/{report_number}/and/{fileNumber}', [VideosController::class, 'downloadVideo']);
+    Route::get('show-videos-links/{report_number}', [VideosController::class, 'show']);
+
 
     // Falak Videos
     Route::get('get-all-falak-videos', [FalakVideoController::class, 'index']);

@@ -200,9 +200,9 @@ class VideosController extends Controller
     /**
      * Display the specified video.
      */
-    public function show($id)
+    public function show($reportNumber)
     {
-        $video = Video::find($id);
+        $video = Video::where('report_number', $reportNumber)->first();
 
         if (!$video) {
             return response()->json([

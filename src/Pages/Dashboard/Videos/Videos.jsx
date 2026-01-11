@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 // import EditIcon from "@mui/icons-material/Edit";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -52,6 +53,10 @@ export default function Videos() {
     video_files: [],
   });
 
+  // Add upload progress state
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
 
   // Handle form input changes
@@ -66,6 +71,10 @@ export default function Videos() {
   // Handle file input change
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+
+    // Reset upload progress when new files are selected
+    setUploadProgress(0);
+    setIsUploading(false);
 
     // Limit to 3 files
     if (files.length > 3) {
@@ -125,20 +134,41 @@ export default function Videos() {
       }
     });
 
-    mutate(submitData, {
-      onSuccess: () => {
-        toast.success("Videos submitted successfully!");
-        // Reset form after successful submission
-        setFormData({
-          report_number: "",
-          video_file: [],
-        });
-        // Clear file input
-        if (modelFormRef.current) {
-          modelFormRef.current.reset();
-        }
+    // Reset progress before starting upload
+    setUploadProgress(0);
+    setIsUploading(true);
+
+    mutate(
+      {
+        data: submitData,
+        onUploadProgress: (progress) => {
+          setUploadProgress(progress);
+        },
       },
-    });
+      {
+        onSuccess: () => {
+          toast.success("Videos submitted successfully!");
+          // Reset form after successful submission
+          setFormData({
+            report_number: "",
+            video_file: [],
+          });
+
+          setUploadProgress(0);
+          setIsUploading(false);
+
+          // Clear file input
+          if (modelFormRef.current) {
+            modelFormRef.current.reset();
+          }
+        },
+
+        onError: () => {
+          setUploadProgress(0);
+          setIsUploading(false);
+        },
+      }
+    );
   };
 
   // Handle delete report
@@ -328,6 +358,31 @@ export default function Videos() {
               >
                 Maximum of 3 videos selected
               </p>
+            )}
+
+            {/* Upload Progress Bar */}
+            {isUploading && (
+              <Box sx={{ width: "100%", mt: 2 }}>
+                <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+                  Uploading: {uploadProgress}%
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={uploadProgress}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#e0e0e0",
+                    "& .MuiLinearProgress-bar": {
+                      borderRadius: 4,
+                      backgroundColor: "#1976d2",
+                    },
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" align="center" display="block" sx={{ mt: 1 }}>
+                  Please wait while your files are being uploaded...
+                </Typography>
+              </Box>
             )}
           </Grid>
         </Grid>

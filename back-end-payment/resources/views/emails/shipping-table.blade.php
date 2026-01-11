@@ -139,7 +139,7 @@
 
     <br>
 
-    <a href="https://cashif.online/shipping-client/{{ $data['payment_id'] }}" style="display:block;text-align:center;background:#7431fa;color:white;
+    <a href="https://cashif.online/shipping-client/{{ $data['database_id'] }}" style="display:block;text-align:center;background:#7431fa;color:white;
           padding:12px;border-radius:6px;text-decoration:none;">
         عرض تفاصيل الطلب
     </a>
@@ -149,8 +149,8 @@
         إذا لم يعمل زر <strong>عرض تفاصيل الطلب</strong>،
         يمكنك فتح الرابط مباشرة:
         <br>
-        <a dir="ltr" href="https://cashif.online/shipping-client/{{ $data['payment_id'] }}" style="color:#007bff;word-break:break-all;">
-            https://cashif.online/shipping-client/{{ $data['payment_id'] }}
+        <a dir="ltr" href="https://cashif.online/shipping-client/{{ $data['database_id'] }}" style="color:#007bff;word-break:break-all;">
+            https://cashif.online/shipping-client/{{ $data['database_id'] }}
         </a>
     </p>
 

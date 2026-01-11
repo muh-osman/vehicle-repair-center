@@ -7,10 +7,13 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 // MUI
 import CircularProgress from "@mui/material/CircularProgress";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 // html2canvas
 import html2canvas from "html2canvas";
 // jsPDF
 import { jsPDF } from "jspdf";
+// Image logo
+import logo from "../../../Assets/Images/logo.png";
 // Api
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
@@ -27,7 +30,9 @@ export default function ShippingClient() {
 
       const response = await axios.get(`${apiUrl}api/get-shipping-payment/${id}`);
       // console.log(response.data);
-      setData(response.data);
+      setData(response.data.data);
+
+      // console.log(response.data.data);
       // console.log(data);
 
       setLoadding(false);
@@ -139,6 +144,37 @@ export default function ShippingClient() {
     }
   };
 
+  // Albasami branches
+  const albasamiBranches = [
+    {
+      nameAr: "القادسية",
+      address: "الرياض - القادسية",
+      link: "https://maps.app.goo.gl/P4b9rnktgWAAGen4A",
+    },
+    {
+      nameAr: "الشفا",
+      address: "الرياض - الشفا",
+      link: "https://maps.app.goo.gl/PRmnNYrGhBCXgvxV8",
+    },
+    {
+      nameAr: "جدة",
+      address: "جدة - الجوهرة",
+      link: "https://maps.app.goo.gl/eHeFLRxzLAf4TBQJ8",
+    },
+    {
+      nameAr: "الدمام",
+      address: "الدمام - ضاحية الملك فهد",
+      link: "https://maps.app.goo.gl/mkjAu3KRDBWnLFgz6",
+    },
+    {
+      nameAr: "القصيم",
+      address: "بريدة - شارع قرطبة",
+      link: "https://maps.app.goo.gl/ooynnSB14yZQjUvaA",
+    },
+  ];
+  // Find the matching Albasami branch
+  const matchedBranch = albasamiBranches.find((branch) => branch.nameAr === data?.from);
+
   return (
     <div className={style.container}>
       {error ? (
@@ -159,6 +195,48 @@ export default function ShippingClient() {
       {data && (
         <>
           <div ref={tableRef} style={{ padding: "16px", direction: "rtl", wordWrap: "normal", letterSpacing: "normal" }}>
+            {/* Header */}
+            <div style={{ width: "100%", padding: "16px 0", textAlign: "center" }}>
+              <div style={{ width: "100px", margin: "auto" }}>
+                <img style={{ width: "100%" }} src={logo} alt="cashif logo" />
+              </div>
+
+              <h4 dir="rtl" style={{ fontSize: "18px", marginTop: "16px" }}>
+                فضلا التوجه الى قسم{" "}
+                <span
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  "الشركات - البسامي"
+                </span>
+              </h4>
+
+              {data?.modelCategory === "ذهاب صاحب السيارة إلى شركة الشحن" && (
+                <>
+                  <h4 style={{ fontSize: "18px", marginTop: "16px" }}>حمل الصورة وارسلها لصاحب السيارة، واطلب منه التوجه الى الفرع المحدد</h4>
+                  <a
+                    dir="rtl"
+                    style={{ color: "#1976d2", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    href={matchedBranch?.link || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>{matchedBranch?.address || ""}</span> <LocationOnIcon />
+                  </a>
+                </>
+              )}
+
+              {data?.modelCategory === "سطحة من مركز الفحص إلى شركة الشحن" && (
+                <>
+                  <h4 style={{ fontSize: "18px", marginTop: "16px" }}>سوف نقوم بالتنسيق مع شركة البسامي للنقل ﻻستلام السيارة عبر سطحة</h4>
+                  <h4 style={{ fontSize: "18px", marginTop: "16px" }}>
+                    يرجى تحميل الصورة والاحتفاظ بها إلى حين وصول السيارة إلى مدينتك، ثم إبرازها لقسم الشركات في البسامي عند استلام السيارة.
+                  </h4>
+                </>
+              )}
+            </div>
+            {/* Table */}
             <div className={style.table_container} style={{ direction: "rtl" }}>
               <div className={style.table_title}>طلب خدمة "شحن سيارة"</div>
               <table>
@@ -170,13 +248,13 @@ export default function ShippingClient() {
 
                   <tr>
                     <td>نوع الشحن :</td>
-                    <td>{data?.metadata?.shippingType ? data?.metadata?.shippingType : "غير متوفر"}</td>
+                    <td>{data?.shippingType ? data?.shippingType : "غير متوفر"}</td>
                   </tr>
 
-                  {/* <tr>
+                  <tr>
                     <td>المبلغ:</td>
-                    <td>{data?.amount_format}</td>
-                  </tr> */}
+                    <td>{data?.price}</td>
+                  </tr>
 
                   <tr>
                     <td>الحالة:</td>
@@ -192,37 +270,37 @@ export default function ShippingClient() {
 
                   <tr>
                     <td>موديل:</td>
-                    <td>{data?.metadata?.model}</td>
+                    <td>{data?.model}</td>
                   </tr>
 
                   <tr>
                     <td>رقم اللوحة:</td>
-                    <td dir="rtl">{data?.metadata?.plateNumber}</td>
+                    <td dir="rtl">{data?.plateNumber}</td>
                   </tr>
 
                   <tr>
                     <td>من فرع:</td>
-                    <td style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{data?.metadata?.from ? data?.metadata?.from : "غير متوفر"}</td>
+                    <td style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{data?.from ? data?.from : "غير متوفر"}</td>
                   </tr>
 
                   <tr>
                     <td>الى مدينة:</td>
-                    <td style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{data?.metadata?.to ? data?.metadata?.to : "غير متوفر"}</td>
+                    <td style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{data?.to ? data?.to : "غير متوفر"}</td>
                   </tr>
 
                   <tr>
                     <td>اسم العميل:</td>
-                    <td>{data?.metadata?.name ? data?.metadata?.name : "غير متوفر"}</td>
+                    <td>{data?.name ? data?.name : "غير متوفر"}</td>
                   </tr>
 
                   <tr>
                     <td>رقم الجوال:</td>
-                    <td>{data?.metadata?.phoneNumber ? <a href={`tel:${data.metadata.phoneNumber}`}>{data.metadata.phoneNumber}</a> : "غير متوفر"}</td>
+                    <td>{data?.phoneNumber ? <a href={`tel:${data.phoneNumber}`}>{data.phoneNumber}</a> : "غير متوفر"}</td>
                   </tr>
 
                   {/* <tr>
                     <td>رقم الكرت:</td>
-                    <td>{data?.metadata?.reportNumber ? data?.metadata?.reportNumber : "غير متوفر"}</td>
+                    <td>{data?.reportNumber ? data?.reportNumber : "غير متوفر"}</td>
                   </tr> */}
 
                   <tr>
@@ -240,7 +318,7 @@ export default function ShippingClient() {
           </div>
 
           {/* Download buttons section */}
-          <div dir="rtl" style={{ textAlign: "center", marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+          <div dir="rtl" style={{ textAlign: "center", marginTop: "20px", marginBottom: "36px", display: "flex", justifyContent: "center", gap: "10px" }}>
             {/* Option 1: Two separate buttons */}
             <button
               onClick={() => downloadImage("png")}

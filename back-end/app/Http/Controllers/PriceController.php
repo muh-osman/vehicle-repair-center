@@ -287,6 +287,7 @@ class PriceController extends Controller
         return response()->json($prices->values());
     }
 
+    // فحص الشراء
     public function getDiscountedPricesByModelAndYear(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -353,7 +354,7 @@ class PriceController extends Controller
         return response()->json($prices->values());
     }
 
-    // خدمة مرتاح
+    // فحص الشراء/خدمة مرتاح
     public function getDiscountedPricesByModelAndYearForMertahService(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -383,6 +384,144 @@ class PriceController extends Controller
                     'prices' => $groupedPrices->map(function ($price) {
 
                         $originalPrice = $price->price;
+                        $serviceName = $price->service->service_name;
+
+                        // Apply different discounts based on service type
+                        if ($serviceName === "شامل") {
+                            $discountedPrice = $originalPrice + 200; // 10% discount
+                            $discountPercent = 100;
+                            $discountUnit = "ريال";
+                        } elseif ($serviceName === "أساسي") {
+                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountPercent = 100;
+                            $discountUnit = "ريال";
+                        } elseif ($serviceName === "محركات") {
+                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountPercent = 100;
+                            $discountUnit = "ريال";
+                        } else {
+                            $discountedPrice = $originalPrice; // No discount
+                            $discountPercent = 0;
+                            $discountUnit = "ريال";
+                        }
+
+
+                        return [
+                            'service_name' => $serviceName,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
+                            'original_price' => number_format($originalPrice + 300, 2, '.', ''), // Price before dicount (if exist)
+                            'discount_percent' => $discountPercent,
+                            'discount_unit' => $discountUnit,
+                            'you_save' => number_format(100, 2, '.', ''),
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($prices->values());
+    }
+
+    // فحص مخدوم
+    public function getMakdomDiscountedPricesByModelAndYear(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $carModelId = $request->query('car_model_id');
+        $yearId = $request->query('year_id');
+
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $carModelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                return [
+                    'model_name' => $carModel->model_name,
+                    'manufacturer_name' => $manufacturer->manufacture_name,
+                    'prices' => $groupedPrices->map(function ($price) {
+
+                        $basePrice = $price->price;
+                        // Add 150 to the original price from database
+                        $originalPrice = $basePrice + 150; // makdom service
+                        $serviceName = $price->service->service_name;
+
+                        // Apply different discounts based on service type
+                        if ($serviceName === "شامل") {
+                            $discountedPrice = $originalPrice * 0.90; // 10% discount
+                            $discountPercent = 10;
+                            $discountUnit = "%";
+                        } elseif ($serviceName === "أساسي") {
+                            $discountedPrice = $originalPrice * 1; // 0% discount
+                            $discountPercent = 0;
+                            $discountUnit = "%";
+                        } elseif ($serviceName === "محركات") {
+                            $discountedPrice = $originalPrice * 1; // 0% discount
+                            $discountPercent = 0;
+                            $discountUnit = "%";
+                        } else {
+                            $discountedPrice = $originalPrice; // No discount
+                            $discountPercent = 0;
+                            $discountUnit = "%";
+                        }
+
+
+                        return [
+                            'service_name' => $serviceName,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
+                            'original_price' => number_format($originalPrice, 2, '.', ''), // Price before dicount (if exist)
+                            'discount_percent' => $discountPercent,
+                            'discount_unit' => $discountUnit,
+                            'you_save' => number_format($originalPrice - $discountedPrice, 2, '.', ''),
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($prices->values());
+    }
+
+    // فحص مخدوم/خدمة مرتاح
+    public function getMakdomDiscountedPricesByModelAndYearForMertahService(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $carModelId = $request->query('car_model_id');
+        $yearId = $request->query('year_id');
+
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $carModelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                return [
+                    'model_name' => $carModel->model_name,
+                    'manufacturer_name' => $manufacturer->manufacture_name,
+                    'prices' => $groupedPrices->map(function ($price) {
+
+                        // Add 150 to the original price from database
+                        $basePrice = $price->price;
+                        $originalPrice = $basePrice + 150; // makdom service
                         $serviceName = $price->service->service_name;
 
                         // Apply different discounts based on service type

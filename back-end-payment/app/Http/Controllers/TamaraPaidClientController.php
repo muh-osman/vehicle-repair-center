@@ -26,6 +26,13 @@ class TamaraPaidClientController extends Controller
                 ->post(env('TAMARA_API_URL') . '/checkout', $orderData);
 
             if ($response->failed()) {
+
+                Log::error('Tamara API request failed', [
+                    // 'status_code' => $response->status(),
+                    // 'response_body' => $response->body(),
+                    'error_details' => $response->json()['message'] ?? 'Unknown error',
+                ]);
+
                 return response()->json(['error' => 'Payment processing failed'], 500);
             }
 

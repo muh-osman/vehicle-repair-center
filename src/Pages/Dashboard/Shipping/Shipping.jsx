@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 // import { useNavigate } from "react-router-dom";
 // API
 import useGetAllShippingPaymensApi from "../../../API/useGetAllShippingPaymensApi";
-import useEditIsShippedApi from "../../../API/useEditIsShippedApi"; // Add this
-import useEditAccountantStatusApi from "../../../API/useEditAccountantStatusApi"; // Add this import
+import useEditIsShippedApi from "../../../API/useEditIsShippedApi";
+import useEditAccountantStatusApi from "../../../API/useEditAccountantStatusApi";
+import useEditNoteApi from "../../../API/useEditNoteApi"; // Add this import
 // Cookies
 import { useCookies } from "react-cookie";
 // Mui
@@ -12,28 +13,45 @@ import LinearProgress from "@mui/material/LinearProgress";
 import { DataGrid } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-
+import EditIcon from "@mui/icons-material/Edit"; // Add Edit icon
+import NoteIcon from "@mui/icons-material/Note"; // Add Note icon
 // import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Tooltip from "@mui/material/Tooltip"; // Add for tooltips
 import Checkbox from "@mui/material/Checkbox";
 import Switch from "@mui/material/Switch"; // Add Switch import
-import FormControlLabel from "@mui/material/FormControlLabel"; // Add FormCon
+// import FormControlLabel from "@mui/material/FormControlLabel";
 // import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 // import Snackbar from "@mui/material/Snackbar"; // For notifications
 // import Alert from "@mui/material/Alert"; // For notifications
+// Add these MUI components for the modal
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function Shipping() {
   // Cookies
   const [cookies, setCookie, removeCookie] = useCookies(["role"]);
   // const navigate = useNavigate(); // Initialize navigate
 
+  // Add state for note modal
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState("");
+  const [selectedPaymentId, setSelectedPaymentId] = useState(null);
+  const [noteField, setNoteField] = useState("");
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   //
   const { data, isPending: isGetAllShippingPaymensPending, isSuccess, fetchStatus: fetchAllShippingPaymensStatus } = useGetAllShippingPaymensApi();
-  const markAsAccountedMutation = useEditAccountantStatusApi(); // Add this mutation
-
+  const markAsAccountedMutation = useEditAccountantStatusApi();
+  const updateNoteMutation = useEditNoteApi();
   //
   const markAsShippedMutation = useEditIsShippedApi();
   // Transform API data to match DataGrid rows
@@ -56,7 +74,8 @@ export default function Shipping() {
       phoneNumber: item.phoneNumber,
       payment_id: item.payment_id,
       isShipped: item.isShipped || false,
-      accountant_status: item.accountant_status || false, // Add this
+      accountant_status: item.accountant_status || false,
+      note: item.note || "",
     })) || [];
 
   // Handle mark as shipped
@@ -105,6 +124,42 @@ export default function Shipping() {
       console.log("Error updating accountant status:", error);
     }
   };
+
+  //
+  // Handle open note modal
+  const handleOpenNoteModal = (id, note) => {
+    setSelectedPaymentId(id);
+    setSelectedNote(note || "");
+    setNoteField(note || "");
+    setNoteModalOpen(true);
+  };
+
+  // Handle close note modal
+  const handleCloseNoteModal = () => {
+    setNoteModalOpen(false);
+    setSelectedPaymentId(null);
+    setSelectedNote("");
+    setNoteField("");
+  };
+
+  // Handle save note
+  const handleSaveNote = async () => {
+    if (!selectedPaymentId) return;
+
+    try {
+      await updateNoteMutation.mutateAsync({
+        id: selectedPaymentId,
+        note: noteField,
+      });
+
+      // Close modal after successful save
+      handleCloseNoteModal();
+    } catch (error) {
+      console.log("Error saving note:", error);
+      // You might want to show an error message here
+    }
+  };
+  //
 
   //  handle navigation
   const handleViewDetails = (paymentId) => {
@@ -318,6 +373,57 @@ export default function Shipping() {
       filterable: true,
     },
     {
+      field: "note",
+      headerName: "Note",
+      flex: 1,
+      minWidth: 300,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      disableColumnMenu: true,
+      cellClassName: style.actionsColumn,
+      renderCell: (params) => (
+        <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+          <Button
+            dir="rtl"
+            variant="outlined"
+            size="small"
+            onClick={() => handleOpenNoteModal(params.row.id, params.row.note)}
+            sx={{
+              pointerEvents: "auto",
+              minWidth: "100px",
+              // maxWidth: "200px",
+              width: "100%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              // backgroundColor: params.row.note ? "#e3f2fd" : "transparent",
+              // borderColor: params.row.note ? "#1976d2" : "#ccc",
+              color: params.row.note ? "#1976d2" : "#666",
+              backgroundColor: params.row.note ? "#bbdefb" : "#f5f5f5",
+              "&:hover": {
+                // borderColor: params.row.note ? "#1565c0" : "#999",
+              },
+            }}
+          >
+            {params.row.note ? (
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  // maxWidth: "150px",
+                }}
+              >
+                {params.row.note.length > 40 ? `${params.row.note.substring(0, 40)}...` : params.row.note}
+              </span>
+            ) : (
+              "Add Note"
+            )}
+          </Button>
+        </div>
+      ),
+    },
+    {
       field: "actions",
       headerName: "Actions",
       flex: 1,
@@ -334,7 +440,7 @@ export default function Shipping() {
             variant="contained"
             size="small"
             startIcon={<VisibilityIcon />}
-            onClick={() => handleViewDetails(params.row.payment_id)}
+            onClick={() => handleViewDetails(params.row.id)}
             sx={{
               pointerEvents: "auto",
               backgroundColor: "#1976d2",
@@ -440,7 +546,7 @@ export default function Shipping() {
         </div>
       )}
 
-      {/*  */}
+      {/* Table */}
       <div
         className={style.datagrid_container}
         style={{
@@ -473,6 +579,43 @@ export default function Shipping() {
           disableVirtualization // Sometimes helps with styling issues
         />
       </div>
+
+      {/* Edit Note Modal */}
+      <Dialog open={noteModalOpen} onClose={handleCloseNoteModal} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ padding: "24px", paddingBottom: "16px" }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">{selectedNote ? "Edit Note" : "Add Note"}</Typography>
+            <IconButton onClick={handleCloseNoteModal} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dir="rtl">
+          <TextField
+            dir="rtl"
+            autoFocus
+            margin="dense"
+            label="Note"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            value={noteField}
+            onChange={(e) => setNoteField(e.target.value)}
+            variant="outlined"
+            disabled={updateNoteMutation.isPending}
+            className={style.modal_text_eria}
+          />
+        </DialogContent>
+        <DialogActions sx={{ padding: "24px", paddingTop: "0px" }}>
+          {/* <Button onClick={handleCloseNoteModal} disabled={updateNoteMutation.isPending}>
+            Cancel
+          </Button> */}
+          <Button sx={{ margin: "auto" }} onClick={handleSaveNote} variant="contained" disabled={updateNoteMutation.isPending}>
+            {updateNoteMutation.isPending ? "Saving..." : "Save Note"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
