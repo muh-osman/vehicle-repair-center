@@ -173,6 +173,11 @@ export default function MertahClient() {
                     <td>{data?.model}</td>
                   </tr>
 
+                  {/* <tr>
+                    <td>رقم اللوحة:</td>
+                    <td>{data?.}</td>
+                  </tr> */}
+
                   <tr>
                     <td>سنة الصنع:</td>
                     <td>{data?.full_year}</td>
