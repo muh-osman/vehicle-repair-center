@@ -38,6 +38,7 @@ import SummarizeIcon from "@mui/icons-material/Summarize";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import CarRepairIcon from "@mui/icons-material/CarRepair";
 import ChairIcon from "@mui/icons-material/Chair";
+import RedeemIcon from "@mui/icons-material/Redeem";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -384,6 +385,27 @@ function ResponsiveDrawer(props) {
                 </Avatar>
               </ListItemIcon>
               <ListItemText primary="Free Order" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Lottery Result */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/lottery-table" selected={pathname === "/dashboard/lottery-table"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <RedeemIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Lottery" />
             </ListItemButton>
           </ListItem>
         )}

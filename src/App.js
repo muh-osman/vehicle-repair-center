@@ -57,6 +57,10 @@ import Shipping from "./Pages/Dashboard/Shipping/Shipping";
 import ShippingClient from "./Pages/Dashboard/ShippingClient/ShippingClient";
 import Mertah from "./Pages/Dashboard/Mertah/Mertah";
 import MertahClient from "./Pages/Dashboard/MertahClient/MertahClient";
+import VideosAnalytics from "./Pages/Dashboard/VideosAnalytics/VideosAnalytics";
+import LotteryResult from "./Pages/Dashboard/LotteryResult/LotteryResult";
+import LotteryTable from "./Pages/Dashboard/LotteryTable/LotteryTable";
+import OrdersAnalytics from "./Pages/Dashboard/OrdersAnalytics/OrdersAnalytics";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -97,11 +101,14 @@ export default function App() {
             {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="videos" element={<Videos />} />
+            <Route path="videos-analytics" element={<VideosAnalytics />} />
             <Route path="disclaimer-form" element={<DisclaimerForm />} />
             <Route path="disclaimer-table" element={<DisclaimerTable />} />
             <Route path="refund-form" element={<RefundForm />} />
             <Route path="refund-table" element={<RefundTable />} />
             <Route path="free-order-result/:phoneNumber" element={<FreeOrderResult />} />
+            <Route path="lottery-result/:phoneNumber" element={<LotteryResult />} />
+            <Route path="lottery-table" element={<LotteryTable />} />
 
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>
@@ -114,6 +121,7 @@ export default function App() {
               <Route path="falak-video" element={<FalakVideo />} />
               <Route path="free-order" element={<FreeOrder />} />
               <Route path="analytics" element={<Analytics />} />
+              <Route path="orders-analytics" element={<OrdersAnalytics />} />
 
               <Route path="add" element={<Add />}>
                 <Route index element={<AddIndex />} />

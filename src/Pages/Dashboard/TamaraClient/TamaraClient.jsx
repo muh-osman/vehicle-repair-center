@@ -70,113 +70,148 @@ export default function TamaraClient() {
         </div>
       ) : null}
 
-      {data?.data?.date_of_visited && (
-        <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
-          <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.data?.date_of_visited}</Alert>
-        </Stack>
-      )}
-
       {data && (
-        <div className={style.table_container} dir="rtl">
-          <table>
-            <tbody>
-              <tr>
-                <td>اسم العميل:</td>
-                <td>{data?.data?.full_name ? data?.data?.full_name : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>رقم الهاتف:</td>
-                <td>{data?.data?.phone ? data?.data?.phone : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>الفرع:</td>
-                <td>{data?.data?.branch ? data?.data?.branch : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>المبلغ:</td>
-                <td dir="rtl">{Math.trunc(data?.data?.price)} ريال</td>
-              </tr>
-
-              <tr>
-                <td>كود الخصم:</td>
-                <td>{data?.data?.discountCode || "-"}</td>
-              </tr>
-
-              <tr>
-                <td>Client ID:</td>
-                <td>{data?.data?.clientId || "-"}</td>
-              </tr>
-
-              <tr>
-                <td>النقاط المستبدلة:</td>
-                <td>{data?.data?.redeemeAmoumntValue ? `${data.data.redeemeAmoumntValue} نقطة` : "-"}</td>
-              </tr>
-
-              <tr>
-                <td>وسيلة الدفع:</td>
-                <td>تمارا</td>
-              </tr>
-
-              <tr>
-                <td>الحالة:</td>
-                <td
-                  style={{
-                    backgroundColor: data?.tamara?.status === "fully_captured" ? "green" : "red",
-                    color: data?.tamara?.status === "fully_captured" ? "#fff" : "#000000DE",
-                  }}
-                >
-                  {data?.tamara?.status}
-                </td>
-              </tr>
-
-              <tr>
-                <td>الخدمة:</td>
-                <td>{data?.data?.service ? data?.data?.service : "العادية"}</td>
-              </tr>
-
-              <tr>
-                <td>الباقة:</td>
-                <td>{data?.data?.plan}</td>
-              </tr>
-
-              <tr>
-                <td>الخدمات الاضافية:</td>
-                <td>{data?.data?.additionalServices ? data?.data?.additionalServices : "لا يوجد"}</td>
-              </tr>
-
-              <tr>
-                <td>موديل:</td>
-                <td>{data?.data?.model}</td>
-              </tr>
-
-              <tr>
-                <td>تاريخ الصنع:</td>
-                <td>{data?.data?.full_year ? data.data.full_year : data?.data?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
-              </tr>
-
-              <tr>
-                <td>تاريخ الدفع:</td>
-                <td dir="ltr">{data?.tamara?.created_at ? formatDate(data.tamara.created_at) : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>Order ID:</td>
-                <td>{data?.data?.paid_qr_code}</td>
-              </tr>
-
-              {data?.data?.affiliate && (
-                <tr>
-                  <td>الإحالة:</td>
-                  <td>{data?.data?.affiliate ? data?.data?.affiliate : "N/A"}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <h1
+          style={{
+            backgroundColor: data?.data?.service ? "#d33030" : "#7431fa",
+            color: "#fff",
+            textAlign: "center",
+            padding: "16px",
+            margin: "0",
+            borderTopLeftRadius: "9px",
+            borderTopRightRadius: "9px",
+          }}
+        >
+          الخدمة: {data?.data?.service ? data?.data?.service : "فحص الشراء"}
+        </h1>
       )}
+
+      <div
+        style={{
+          border: `1px solid ${data?.data?.service ? "#d33030" : "#7431fa"}`,
+        }}
+      >
+        {data?.data?.date_of_visited && (
+          <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
+            <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.data?.date_of_visited}</Alert>
+          </Stack>
+        )}
+
+        {data && (
+          <div className={style.table_container} dir="rtl">
+            <table>
+              <tbody>
+                <tr>
+                  <td>اسم العميل:</td>
+                  <td>{data?.data?.full_name ? data?.data?.full_name : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>رقم الهاتف:</td>
+                  <td>{data?.data?.phone ? data?.data?.phone : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>الفرع:</td>
+                  <td>{data?.data?.branch ? data?.data?.branch : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>المبلغ:</td>
+                  <td dir="rtl">{Math.trunc(data?.data?.price)} ريال</td>
+                </tr>
+
+                {/* {data?.data?.discountCode && (
+                  <tr>
+                    <td>كود الخصم:</td>
+                    <td>{data?.data?.discountCode || "-"}</td>
+                  </tr>
+                )}
+
+                {data?.data?.clientId && (
+                  <tr>
+                    <td>Client ID:</td>
+                    <td>{data?.data?.clientId || "-"}</td>
+                  </tr>
+                )}
+
+                {data?.data?.redeemeAmoumntValue !== 0 && (
+                  <tr>
+                    <td>النقاط المستبدلة:</td>
+                    <td>{data?.data?.redeemeAmoumntValue ? `${data.data.redeemeAmoumntValue} نقطة` : "-"}</td>
+                  </tr>
+                )} */}
+
+                <tr>
+                  <td>وسيلة الدفع:</td>
+                  <td>تمارا</td>
+                </tr>
+
+                <tr>
+                  <td>الحالة:</td>
+                  <td
+                    style={{
+                      backgroundColor: data?.tamara?.status === "fully_captured" ? "" : "red",
+                      color: data?.tamara?.status === "fully_captured" ? "" : "#000000DE",
+                    }}
+                  >
+                    {data?.tamara?.status}
+                  </td>
+                </tr>
+
+                {/* <tr>
+                  <td>الخدمة:</td>
+                  <td>{data?.data?.service ? data?.data?.service : "فحص الشراء"}</td>
+                </tr> */}
+
+                <tr>
+                  <td>الباقة:</td>
+                  <td>{data?.data?.plan}</td>
+                </tr>
+
+                <tr>
+                  <td>الخدمات الاضافية:</td>
+                  <td
+                    style={{
+                      backgroundColor: data?.data?.additionalServices !== "لايوجد" ? "green" : "",
+                      color: data?.data?.additionalServices !== "لايوجد" ? "#fff" : "",
+                    }}
+                  >
+                    {data?.data?.additionalServices ? data?.data?.additionalServices : "لا يوجد"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>موديل:</td>
+                  <td>{data?.data?.model}</td>
+                </tr>
+
+                <tr>
+                  <td>تاريخ الصنع:</td>
+                  <td>{data?.data?.full_year ? data.data.full_year : data?.data?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
+                </tr>
+
+                <tr>
+                  <td>تاريخ الدفع:</td>
+                  <td dir="ltr">{data?.tamara?.created_at ? formatDate(data.tamara.created_at) : "غير متوفر"}</td>
+                </tr>
+
+                {/* <tr>
+                  <td>Order ID:</td>
+                  <td>{data?.data?.paid_qr_code}</td>
+                </tr> */}
+
+                {data?.data?.affiliate && (
+                  <tr>
+                    <td>الإحالة:</td>
+                    <td>{data?.data?.affiliate ? data?.data?.affiliate : "N/A"}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

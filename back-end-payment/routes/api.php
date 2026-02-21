@@ -81,6 +81,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/get-all-mertah-service-records', [UnPaidQrCodeController::class, 'getAllQrCodesWithSpecialService']); // مرتاح
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 
+    Route::get('/orders/monthly-count-last-12-months', [UnPaidQrCodeController::class, 'getOrdersCountLast12Months']);
+
+
     // Shipping payments Webhook
     // Route::post('/shipping-payment-paid-webhook', [MoyasarShippingPaymentController::class, 'ShippingPaymentPaidWebhook']);
     Route::post('/store-shipping-car-order', [MoyasarShippingPaymentController::class, 'storeShippingCarOrder']);

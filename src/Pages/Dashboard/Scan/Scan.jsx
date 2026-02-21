@@ -33,6 +33,10 @@ export default function Scan() {
         // Free Order
         const trimmedFreeOrderScanResult = scanResult.replace(/^free-/, "");
         navigate(`/dashboard/free-order-result/${trimmedFreeOrderScanResult}`);
+      } else if (scanResult.startsWith("lottery-")) {
+        // Free Order
+        const trimmedLotteryScanResult = scanResult.replace(/^lottery-/, "");
+        navigate(`/dashboard/lottery-result/${trimmedLotteryScanResult}`);
       } else if (scanResult.length === 14) {
         // UnPaid user
         navigate(`/dashboard/unpaid-client/${scanResult}`);
@@ -165,15 +169,7 @@ export default function Scan() {
           }}
         />
 
-        <LoadingButton
-          variant="contained"
-          onClick={handleSubmit}
-          loading={isLoading}
-          disabled={inputValue.length < 10}
-          fullWidth
-          size="large"
-          sx={{ marginTop: "16px" }}
-        >
+        <LoadingButton variant="contained" onClick={handleSubmit} loading={isLoading} disabled={inputValue.length < 10} fullWidth size="large" sx={{ marginTop: "16px" }}>
           Search
         </LoadingButton>
 

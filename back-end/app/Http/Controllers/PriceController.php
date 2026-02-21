@@ -451,8 +451,8 @@ class PriceController extends Controller
                     'prices' => $groupedPrices->map(function ($price) {
 
                         $basePrice = $price->price;
-                        // Add 150 to the original price from database
-                        $originalPrice = $basePrice + 150; // makdom service
+                        // Add 0 to the original price from database
+                        $originalPrice = $basePrice; // makdom service
                         $serviceName = $price->service->service_name;
 
                         // Apply different discounts based on service type
@@ -519,9 +519,9 @@ class PriceController extends Controller
                     'manufacturer_name' => $manufacturer->manufacture_name,
                     'prices' => $groupedPrices->map(function ($price) {
 
-                        // Add 150 to the original price from database
+                        // Add 0 to the original price from database
                         $basePrice = $price->price;
-                        $originalPrice = $basePrice + 150; // makdom service
+                        $originalPrice = $basePrice; // makdom service
                         $serviceName = $price->service->service_name;
 
                         // Apply different discounts based on service type
@@ -558,6 +558,75 @@ class PriceController extends Controller
 
         return response()->json($prices->values());
     }
+
+    ///////////////////////////////////////////////
+    // مخدوم/فحص الشراء (خصم Lottery) 20%
+    public function getLotteryDiscountedPricesByModelAndYear(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'car_model_id' => 'required|exists:car_models,id',
+            'year_id' => 'required|exists:year_of_manufactures,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $carModelId = $request->query('car_model_id');
+        $yearId = $request->query('year_id');
+
+        $prices = Price::with(['service', 'carModel.manufacturer'])
+            ->where('car_model_id', $carModelId)
+            ->where('year_id', $yearId)
+            ->get()
+            ->groupBy('car_model_id')
+            ->map(function ($groupedPrices) {
+                $carModel = $groupedPrices->first()->carModel;
+                $manufacturer = $carModel->manufacturer;
+
+                return [
+                    'model_name' => $carModel->model_name,
+                    'manufacturer_name' => $manufacturer->manufacture_name,
+                    'prices' => $groupedPrices->map(function ($price) {
+
+                        $originalPrice = $price->price;
+                        $serviceName = $price->service->service_name;
+
+                        // Apply different discounts based on service type
+                        if ($serviceName === "شامل") {
+                            $discountedPrice = $originalPrice * 0.80; // 20% discount
+                            $discountPercent = 20;
+                            $discountUnit = "%";
+                        } elseif ($serviceName === "أساسي") {
+                            $discountedPrice = $originalPrice * 0.80; // 20% discount
+                            $discountPercent = 20;
+                            $discountUnit = "%";
+                        } elseif ($serviceName === "محركات") {
+                            $discountedPrice = $originalPrice * 0.80; // 20% discount
+                            $discountPercent = 20;
+                            $discountUnit = "%";
+                        } else {
+                            $discountedPrice = $originalPrice; // No discount
+                            $discountPercent = 0;
+                            $discountUnit = "%";
+                        }
+
+
+                        return [
+                            'service_name' => $serviceName,
+                            'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
+                            'original_price' => number_format($originalPrice, 2, '.', ''), // Price before dicount (if exist)
+                            'discount_percent' => $discountPercent,
+                            'discount_unit' => $discountUnit,
+                            'you_save' => number_format($originalPrice - $discountedPrice, 2, '.', ''),
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($prices->values());
+    }
+    //////////////////////////////////////////////
 
 
     /**
@@ -601,15 +670,19 @@ class PriceController extends Controller
                         if ($serviceName === "شامل") {
                             $discountedPrice = $originalPrice * 0.5; // 50% discount
                             $discountPercent = 50;
+                            $discountUnit = "%";
                         } elseif ($serviceName === "أساسي") {
                             $discountedPrice = $originalPrice * 0.5; // 50% discount
                             $discountPercent = 50;
+                            $discountUnit = "%";
                         } elseif ($serviceName === "محركات") {
                             $discountedPrice = $originalPrice * 0.5; // 50% discount
                             $discountPercent = 50;
+                            $discountUnit = "%";
                         } else {
                             $discountedPrice = $originalPrice * 0.5; // 50% discount
                             $discountPercent = 50;
+                            $discountUnit = "%";
                         }
 
 
@@ -618,6 +691,7 @@ class PriceController extends Controller
                             'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
                             'original_price' => number_format($originalPrice, 2, '.', ''), // Price before dicount (if exist)
                             'discount_percent' => $discountPercent,
+                            'discount_unit' => $discountUnit,
                             'you_save' => number_format($originalPrice - $discountedPrice, 2, '.', ''),
                         ];
                     }),

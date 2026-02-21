@@ -19,8 +19,11 @@ use App\Http\Controllers\PhoneNumberController;
 use App\Http\Controllers\RefundClineController;
 use App\Http\Controllers\VisitorInfoController;
 use App\Http\Controllers\ManufacturerController;
+use App\Http\Controllers\VideosReportController;
 use App\Http\Controllers\MarketingPostController;
 use App\Http\Controllers\YearOfManufactureController;
+use App\Http\Controllers\SendWithdrawNotificationController;
+use App\Http\Controllers\LotteryEntryController;
 
 
 // Group for protected routes
@@ -82,10 +85,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('delete-report/{id}', [ReportController::class, 'destroy']);
 
     // Videos of Reports
-    Route::post('post-video', [VideosController::class, 'store']);
-    Route::get('get-all-videos', [VideosController::class, 'index']);
-    Route::delete('delete-video/{id}', [VideosController::class, 'destroy']);
-    Route::post('edit-video', [VideosController::class, 'update']);
+    // Route::post('post-video', [VideosController::class, 'store']);
+    // Route::get('get-all-videos', [VideosController::class, 'index']);
+    // Route::delete('delete-video/{id}', [VideosController::class, 'destroy']);
+    // Route::post('edit-video', [VideosController::class, 'update']);
+
+    // Videos of Reports
+    Route::post('new-post-video', [VideosReportController::class, 'store']);
+    Route::get('new-get-all-videos', [VideosReportController::class, 'index']);
+    Route::post('new-edit-video/{id}', [VideosReportController::class, 'update']);
+    Route::delete('new-delete-video/{id}', [VideosReportController::class, 'destroy']);
+    Route::get('videos-reports-analytics', [VideosReportController::class, 'analytics']);
 
     // Falak Videos
     Route::post('post-falak-video', [FalakVideoController::class, 'store']);
@@ -156,6 +166,12 @@ Route::middleware('guest')->group(function () {
     Route::get('get-makdom-discounted-prices-by-model-and-year', [PriceController::class, 'getMakdomDiscountedPricesByModelAndYear']);
     Route::get('get-makdom-discounted-prices-by-model-and-year-for-mertah-service', [PriceController::class, 'getMakdomDiscountedPricesByModelAndYearForMertahService']);
 
+    // Getting Lottery discounted (20%) prices by car model ID and year ID (مخدوم/فحص الشراء API)
+    Route::get('get-lottery-discounted-prices-by-model-and-year', [PriceController::class, 'getLotteryDiscountedPricesByModelAndYear']);
+
+
+
+
     // Getting discounted prices by car model ID and year ID (discounte 50%)
     Route::get('get-fifty-precent-discounted-prices-by-model-and-year', [PriceController::class, 'getAllPlansWith50PercentDiscount']);
 
@@ -184,10 +200,14 @@ Route::middleware('guest')->group(function () {
     Route::get('download-summary-report/{report_number}', [ReportController::class, 'downloadSummaryReport']);
 
     // Videos of Reports
-    Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
-    Route::post('check-if-cards-have-videos', [VideosController::class, 'checkIfCardsHaveVideos']);
-    Route::get('download-video/by/{report_number}/and/{fileNumber}', [VideosController::class, 'downloadVideo']);
-    Route::get('show-videos-links/{report_number}', [VideosController::class, 'show']);
+    // Route::get('get-all-videos-numbers', [VideosController::class, 'showArrayOfVideoReportNumbers']);
+    // Route::post('check-if-cards-have-videos', [VideosController::class, 'checkIfCardsHaveVideos']);
+    // Route::get('download-video/by/{report_number}/and/{fileNumber}', [VideosController::class, 'downloadVideo']);
+    // Route::get('show-videos-links/{report_number}', [VideosController::class, 'show']);
+
+    // Videos of Reports
+    Route::post('new-check-if-cards-have-videos', [VideosReportController::class, 'checkIfCardsHaveVideos']);
+    Route::get('new-show-videos-links/{report_number}', [VideosReportController::class, 'show']);
 
 
     // Falak Videos
@@ -201,4 +221,15 @@ Route::middleware('guest')->group(function () {
     // Refund Clients
     Route::get('get-one-refund-client-by-rand/{rand}', [RefundClineController::class, 'showByRand']);
     Route::post('update-refund-client-data/{id}', [RefundClineController::class, 'update']);
+
+
+    // Send withdraw notification
+    Route::post('send-withdraw-notification', [SendWithdrawNotificationController::class, 'sendWithdrawNotification']);
+
+    // Lottery
+    Route::post('/lottery', [LotteryEntryController::class, 'store']);
+    Route::get('/lottery', [LotteryEntryController::class, 'index']);
+    // Route::patch('/lottery/{id}/use', [LotteryEntryController::class, 'markUsed']);
+    Route::get('/lottery/{phone}', [LotteryEntryController::class, 'show']);
+    Route::get('/lottery/check/{phone}', [LotteryEntryController::class, 'checkValid']);
 });

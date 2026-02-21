@@ -8,16 +8,8 @@ export const useAddVideoApi = () => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ data, onUploadProgress }) => {
-      const res = await API.post("api/post-video", data, {
-        onUploadProgress: (progressEvent) => {
-          if (onUploadProgress) {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            onUploadProgress(percentCompleted);
-          }
-        },
-      });
-
+    mutationFn: async (data) => {
+      const res = await API.post("api/new-post-video", data);
       return res.data;
     },
 

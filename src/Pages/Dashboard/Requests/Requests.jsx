@@ -1,5 +1,6 @@
 import style from "./Requests.module.scss";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 // MUI
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -30,6 +31,7 @@ const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 const { RangePicker } = DatePicker;
 
 export default function Requests() {
+  const navigate = useNavigate();
   // Cookie
   const [cookies, setCookie] = useCookies(["role"]);
 
@@ -561,7 +563,7 @@ export default function Requests() {
         </DialogActions>
       </Dialog>
 
-      <Stack sx={{ pb: 3, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+      <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
         <Button
           sx={{
             width: "100%",
@@ -631,6 +633,21 @@ export default function Requests() {
             <DownloadIcon />
           </Button>
         </DownloadTableExcel> */}
+      </Stack>
+
+      <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="secondary"
+          size="large"
+          variant="outlined"
+          onClick={() => navigate("/dashboard/orders-analytics")}
+        >
+          Analytics
+        </Button>
       </Stack>
 
       {/* Hidden table for export */}
@@ -720,6 +737,9 @@ export default function Requests() {
           sx={{
             "& .MuiDataGrid-row": {
               pointerEvents: "none", // Disable hover/click effects
+            },
+            "& .MuiDataGrid-footerContainer p": {
+              margin: 0,
             },
           }}
           disableRowSelectionOnClick // Prevents selection on click

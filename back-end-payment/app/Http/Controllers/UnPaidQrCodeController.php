@@ -444,4 +444,68 @@ class UnPaidQrCodeController extends Controller
             'data' => $foundRecord,
         ], 200);
     }
+
+
+    public function getOrdersCountLast12Months()
+    {
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        // Moyasar
+        $moyasar = PaidQrCode::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->groupBy('month');
+
+        // Tabby
+        $tabby = TabbyPaidClient::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->groupBy('month');
+
+        // Tamara
+        $tamara = TamaraPaidClient::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->groupBy('month');
+
+        // Union all results
+        $result = $moyasar
+            ->unionAll($tabby)
+            ->unionAll($tamara);
+
+        // Sum all per month
+        $orders = DB::query()
+            ->fromSub($result, 't')
+            ->selectRaw("month, SUM(total) as total")
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        // Build last 12 months response (including empty months)
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+
+            $date = $startDate->copy()->addMonths($i);
+            $monthKey = $date->format('Y-m');
+
+            $months[] = [
+                'month' => $date->format('M'), // Mar
+                'year'  => $date->format('Y'), // 2025
+                'orders' => isset($orders[$monthKey]) ? (int) $orders[$monthKey]->total : 0
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Orders count for last 12 months',
+            'data' => $months
+        ], 200);
+    }
 }

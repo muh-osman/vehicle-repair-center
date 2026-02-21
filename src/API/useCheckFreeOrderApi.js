@@ -11,8 +11,7 @@ export default function useCheckFreeOrderApi(phoneNumber) {
       return res.data;
     } catch (err) {
       console.error(err);
-      const errorMessage =
-        err?.response?.data?.message || err?.message || "An error occurred";
+      const errorMessage = err?.response?.data?.message || err?.message || "An error occurred";
       toast.error(errorMessage);
 
       // Return a default value that matches your success response structure

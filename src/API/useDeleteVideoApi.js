@@ -9,7 +9,7 @@ export const useDeleteVideoApi = () => {
 
   return useMutation({
     mutationFn: async (id) => {
-      const res = await API.delete(`api/delete-video/${id}`);
+      const res = await API.delete(`api/new-delete-video/${id}`);
       return res.data;
     },
 
@@ -21,8 +21,7 @@ export const useDeleteVideoApi = () => {
 
     onError: (err) => {
       console.error(err);
-      const errorMessage =
-        err?.response?.data?.message || err?.message || "An error occurred";
+      const errorMessage = err?.response?.data?.message || err?.message || "An error occurred";
       // Toastify
       toast.error(errorMessage);
     },

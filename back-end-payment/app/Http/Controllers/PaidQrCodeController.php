@@ -279,6 +279,8 @@ class PaidQrCodeController extends Controller
             $paymentData = $webhookData['data'] ?? [];
             $metadata = $paymentData['metadata'] ?? [];
 
+            $phone = $metadata['phone'] ?? null;
+
             // Prepare data for storage and notification
             $paymentInfo = [
                 'paid_qr_code' => $paymentData['id'],
@@ -317,6 +319,38 @@ class PaidQrCodeController extends Controller
 
             // Store payment data in database
             $payment = PaidQrCode::create($paymentInfo);
+
+
+
+            /**
+             * ===============================
+             * LOTTERY API CALL (MAKE is_discount_used true)
+             * ===============================
+             */
+            if ($phone) {
+                try {
+                    $lotteryResponse = Http::timeout(5)
+                        ->get("https://cashif.online/back-end/public/api/lottery/{$phone}");
+
+                    if ($lotteryResponse->successful()) {
+                        Log::info('Lottery discount updated successfully', [
+                            'phone' => $phone,
+                            'response' => $lotteryResponse->json(),
+                        ]);
+                    } else {
+                        Log::warning('Lottery API returned error', [
+                            'phone' => $phone,
+                            'status' => $lotteryResponse->status(),
+                            'response' => $lotteryResponse->body(),
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Lottery API call failed', [
+                        'phone' => $phone,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
 
             // Make API request if redeemeAmoumntValue > 0 point (هذا api يخصم النقاط من حساب العميل في حال استخدامها)

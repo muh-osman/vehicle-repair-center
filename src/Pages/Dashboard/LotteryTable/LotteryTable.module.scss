@@ -1,0 +1,32 @@
+.container {
+  //   padding: 20px;
+  direction: rtl;
+  min-height: calc(100vh - 112px);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #174545;
+}
+
+
+
+.used {
+  color: green;
+  font-weight: bold;
+}
+
+.notUsed {
+  color: red;
+  font-weight: bold;
+}
+
+// Responsive table
+.datagrid_container {
+  height: calc(100vh - 168px);
+
+  @media (max-width: 600px) {
+    height: calc(100vh - 154px);
+  }
+}

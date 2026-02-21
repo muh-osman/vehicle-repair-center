@@ -170,6 +170,35 @@ class TabbyPaidClientController extends Controller
                 'date_of_visited' => null,
             ]);
 
+            /**
+             * ✅ LOTTERY API CALL (MAKE is_discount_used true)
+             */
+            if (!empty($phone)) {
+                try {
+                    $lotteryResponse = Http::timeout(5)
+                        ->retry(1, 200)
+                        ->get("https://cashif.online/back-end/public/api/lottery/{$phone}");
+
+                    if ($lotteryResponse->successful()) {
+                        Log::info('Lottery discount marked as used (Tabby)', [
+                            'phone' => $phone,
+                            'response' => $lotteryResponse->json(),
+                        ]);
+                    } else {
+                        Log::warning('Lottery discount API responded with error (Tabby)', [
+                            'phone' => $phone,
+                            'status' => $lotteryResponse->status(),
+                            'response' => $lotteryResponse->body(),
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Lottery discount API call failed (Tabby)', [
+                        'phone' => $phone,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
             // Make API request if redeemeAmoumntValue > 0
             if ($redeemeAmoumntValue > 0 && !empty($clientId)) {
                 $this->updateClientPoints($clientId, $redeemeAmoumntValue);

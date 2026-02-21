@@ -1,5 +1,6 @@
 import style from "./Videos.module.scss";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
 import Grid from "@mui/material/Grid";
@@ -15,10 +16,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-
+import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
 // API
 import useGetAllVideosApi from "../../../API/useGetAllVideosApi";
 import { useAddVideoApi } from "../../../API/useAddVideoApi";
@@ -26,6 +29,8 @@ import { useDeleteVideoApi } from "../../../API/useDeleteVideoApi";
 import { useEditVideoApi } from "../../../API/useEditVideoApi";
 // Toastify
 import { toast } from "react-toastify";
+// Cookies
+import { useCookies } from "react-cookie";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -40,6 +45,9 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 export default function Videos() {
+  // Cookie
+  const [cookies, setCookie] = useCookies(["role"]);
+  //
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -48,66 +56,14 @@ export default function Videos() {
   const { mutate: mutateDeleteVideo, isPending: isDeleteVideoPending } = useDeleteVideoApi();
   const { data, isPending: isGetAllVideosPending } = useGetAllVideosApi();
 
-  const [formData, setFormData] = useState({
-    report_number: "",
-    video_files: [],
-  });
-
-  // Add upload progress state
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
+  const [reportNumber, setReportNumber] = useState("");
 
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle file input change
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-
-    // Reset upload progress when new files are selected
-    setUploadProgress(0);
-    setIsUploading(false);
-
-    // Limit to 3 files
-    if (files.length > 3) {
-      toast.error("You can upload a maximum of 3 videos");
-      setFormData((prev) => ({
-        ...prev,
-        video_files: [],
-      }));
-      return;
-    }
-
-    // Check if all files are videos
-    const allVideos = files.every((file) => file.type.startsWith("video/"));
-    if (!allVideos) {
-      toast.error("Please select only video files");
-      setFormData((prev) => ({
-        ...prev,
-        video_files: [],
-      }));
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      video_files: files,
-    }));
-  };
 
   // Submit form
   const modelFormRef = useRef();
 
   // Handle file input change for main form
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -115,57 +71,19 @@ export default function Videos() {
     const isValid = modelFormRef.current.reportValidity();
     if (!isValid) return;
 
-    if (formData.video_files.length === 0) {
-      toast.error("Please select at least one video file");
-      return;
-    }
-
-    // Create FormData for file upload
-    const submitData = new FormData();
-    submitData.append("report_number", formData.report_number);
-    // Append each file
-    formData.video_files.forEach((file, index) => {
-      if (index === 0) {
-        submitData.append("video_file", file); // First file
-      } else if (index === 1) {
-        submitData.append("video_file_2", file); // Second file
-      } else if (index === 2) {
-        submitData.append("video_file_3", file); // Third file
-      }
-    });
-
-    // Reset progress before starting upload
-    setUploadProgress(0);
-    setIsUploading(true);
-
     mutate(
-      {
-        data: submitData,
-        onUploadProgress: (progress) => {
-          setUploadProgress(progress);
-        },
-      },
+      { report_number: reportNumber },
+
       {
         onSuccess: () => {
-          toast.success("Videos submitted successfully!");
+          toast.success("Created successfully!");
           // Reset form after successful submission
-          setFormData({
-            report_number: "",
-            video_file: [],
-          });
-
-          setUploadProgress(0);
-          setIsUploading(false);
+          setReportNumber("");
 
           // Clear file input
           if (modelFormRef.current) {
             modelFormRef.current.reset();
           }
-        },
-
-        onError: () => {
-          setUploadProgress(0);
-          setIsUploading(false);
         },
       }
     );
@@ -186,70 +104,93 @@ export default function Videos() {
     }
   };
 
-  // Handle edit report
-  const [uploadingVideoId, setUploadingVideoId] = useState(null); // Track which video is being uploaded
-  const fileInputRef = useRef(null); // Ref for the hidden file input
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { mutate: mutateEditVideo, isPending: isEditVideoPending } = useEditVideoApi(setUploadProgress);
 
-  const { mutate: mutateEditVideo, isPending: isEditVideoPending } = useEditVideoApi();
+  //
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState(null);
 
-  // Handle file input change for AddCircleIcon
+  const [videosFiles, setVideosFiles] = useState([]);
+  const [employeeNames, setEmployeeNames] = useState([]);
+  const [videoTypes, setVideoTypes] = useState([]);
+
   const handleAddVideoClick = (reportId) => {
-    setUploadingVideoId(reportId); // Set the ID of the report being added to
-    fileInputRef.current.click(); // Trigger the file input
+    setSelectedReportId(reportId);
+    setUploadProgress(0);
+    setOpenModal(true);
   };
 
-  // Handle file selection for AddCircleIcon
-  const handleSingleFileChange = (e) => {
-    const file = e.target.files[0]; // Get only the first file
-    if (!file) {
-      setUploadingVideoId(null);
+  const handleVideoFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setVideosFiles(files);
+
+    // Prepare matching inputs
+    setEmployeeNames(Array(files.length).fill(""));
+    setVideoTypes(Array(files.length).fill(""));
+  };
+
+  const handleEmployeeChange = (index, value) => {
+    const updated = [...employeeNames];
+    updated[index] = value;
+    setEmployeeNames(updated);
+  };
+
+  const handleVideoTypeChange = (index, value) => {
+    const updated = [...videoTypes];
+    updated[index] = value;
+    setVideoTypes(updated);
+  };
+
+  const handleModalSubmit = () => {
+    // No videos selected
+    if (videosFiles.length === 0) {
+      toast.error("Please select at least one video");
       return;
     }
 
-    // Check if file is a video
-    if (!file.type.startsWith("video/")) {
-      toast.error("Please select a video file");
-      setUploadingVideoId(null);
-      return;
+    // Check all video types filled
+    for (let i = 0; i < videoTypes.length; i++) {
+      if (!videoTypes[i]) {
+        toast.error(`Please select video type for video ${i + 1}`);
+        return;
+      }
     }
 
-    // Find the report to update
-    const report = data.data.find((r) => r.id === uploadingVideoId);
-    if (!report) {
-      setUploadingVideoId(null);
-      return;
+    // Check all employee names filled
+    for (let i = 0; i < employeeNames.length; i++) {
+      if (!employeeNames[i].trim()) {
+        toast.error(`Please enter employee name for video ${i + 1}`);
+        return;
+      }
     }
 
-    // Create FormData for file upload
-    const submitData = new FormData();
-    submitData.append("id", uploadingVideoId);
-    submitData.append("report_number", report.report_number);
+    // Build FormData
+    const formData = new FormData();
 
-    // Determine which video slot to use (first empty slot)
-    if (!report.video_url) {
-      submitData.append("video_file", file);
-    } else if (!report.video_url_2) {
-      submitData.append("video_file_2", file);
-    } else if (!report.video_url_3) {
-      submitData.append("video_file_3", file);
-    } else {
-      toast.error("This report already has 3 videos");
-      setUploadingVideoId(null);
-      return;
-    }
+    videosFiles.forEach((file) => formData.append("videos[]", file));
+    videoTypes.forEach((type) => formData.append("video_type[]", type));
+    employeeNames.forEach((name) => formData.append("employee_name[]", name));
 
-    mutateEditVideo(submitData, {
-      onSuccess: () => {
-        toast.success("Video added successfully!");
-      },
-      onError: () => {
-        toast.error("Failed to add video");
-      },
-      onSettled: () => {
-        setUploadingVideoId(null);
-        fileInputRef.current.value = "";
-      },
-    });
+    mutateEditVideo(
+      { id: selectedReportId, data: formData },
+      {
+        onSuccess: () => {
+          toast.success("Videos uploaded successfully!");
+          setOpenModal(false);
+          resetModal();
+          setUploadProgress(0);
+        },
+        onError: () => toast.error("Upload failed"),
+      }
+    );
+  };
+
+  const resetModal = () => {
+    setVideosFiles([]);
+    setEmployeeNames([]);
+    setVideoTypes([]);
+    setSelectedReportId(null);
   };
 
   return (
@@ -260,18 +201,20 @@ export default function Videos() {
         </div>
       )}
 
-      <Avatar
-        sx={{
-          margin: "auto",
-          marginBottom: "0px",
-          bgcolor: "transparent",
-          color: "#757575",
-          width: "100px",
-          height: "100px",
-        }}
-      >
-        <VideocamIcon sx={{ fontSize: "75px" }} />
-      </Avatar>
+      <Link to={cookies.role === 255 ? "/dashboard/videos-analytics" : "/dashboard/videos"}>
+        <Avatar
+          sx={{
+            margin: "auto",
+            marginBottom: "0px",
+            bgcolor: "transparent",
+            color: "#757575",
+            width: "100px",
+            height: "100px",
+          }}
+        >
+          <VideocamIcon sx={{ fontSize: "75px" }} />
+        </Avatar>
+      </Link>
       {/* Start Form */}
       <Box
         onSubmit={handleSubmit}
@@ -286,7 +229,7 @@ export default function Videos() {
         }}
       >
         {/* Start report number input */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3}>
           <Grid item xs={12}>
             <TextField
               sx={{ backgroundColor: "#fff" }}
@@ -297,97 +240,12 @@ export default function Videos() {
               name="report_number"
               disabled={isAddVideoPending}
               required
-              value={formData.report_number}
-              onChange={handleInputChange}
+              value={reportNumber}
+              onChange={(e) => setReportNumber(e.target.value)}
             />
           </Grid>
         </Grid>
         {/* End report number input */}
-
-        {/* Start video file input */}
-
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <Button
-              component="label"
-              variant="outlined"
-              startIcon={<CloudUploadIcon />}
-              fullWidth
-              disabled={isAddVideoPending}
-              sx={{
-                height: "56px",
-                backgroundColor: "#fff",
-                color: "rgba(0, 0, 0, 0.87)",
-                "&:hover": {
-                  backgroundColor: "#f5f5f5",
-                },
-              }}
-            >
-              Upload Videos (Max 3)
-              <VisuallyHiddenInput
-                type="file"
-                // accept=".mp4"
-                accept="video/*" // Accept all video types
-                multiple
-                onChange={handleFileChange}
-                required
-              />
-            </Button>
-
-            {/* Show selected files */}
-            {formData?.video_files?.length > 0 && (
-              <div style={{ marginTop: "16px" }}>
-                <p>Selected files:</p>
-                <ul style={{ paddingLeft: "20px", margin: "8px 0" }}>
-                  {formData.video_files.map((file, index) => (
-                    <li key={index} style={{ fontSize: "0.875rem" }}>
-                      {file.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {formData?.video_files?.length >= 3 && (
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "green",
-                  marginTop: "8px",
-                }}
-              >
-                Maximum of 3 videos selected
-              </p>
-            )}
-
-            {/* Upload Progress Bar */}
-            {isUploading && (
-              <Box sx={{ width: "100%", mt: 2 }}>
-                <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
-                  Uploading: {uploadProgress}%
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={uploadProgress}
-                  sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: "#e0e0e0",
-                    "& .MuiLinearProgress-bar": {
-                      borderRadius: 4,
-                      backgroundColor: "#1976d2",
-                    },
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary" align="center" display="block" sx={{ mt: 1 }}>
-                  Please wait while your files are being uploaded...
-                </Typography>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-
-        {/* End video file input */}
 
         {/* Start loading button for form 1 */}
         <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddVideoPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
@@ -396,9 +254,6 @@ export default function Videos() {
         {/* End loading button for form 1 */}
       </Box>
       {/* End Form one */}
-
-      {/* Hidden file input for AddCircleIcon */}
-      <VisuallyHiddenInput type="file" accept="video/*" ref={fileInputRef} onChange={handleSingleFileChange} />
 
       <p
         style={{
@@ -424,42 +279,23 @@ export default function Videos() {
               </tr>
             </thead>
             <tbody>
-              {data.data.map((report) => (
+              {data?.map((report) => (
                 <tr key={report.id}>
                   <td>{report.report_number}</td>
 
                   <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
 
                   <td style={{ whiteSpace: "nowrap" }}>
-                    <a href={report.video_url} target="_blank" rel="noopener noreferrer">
-                      1
-                    </a>{" "}
-                    {report?.video_url_2 && (
-                      <a href={report.video_url_2} target="_blank" rel="noopener noreferrer">
-                        2
-                      </a>
-                    )}{" "}
-                    {report?.video_url_3 && (
-                      <a href={report.video_url_3} target="_blank" rel="noopener noreferrer">
-                        3
-                      </a>
-                    )}
+                    {report.videos?.map((video, index) => (
+                      <Tooltip key={video.id || index} title={`Type: ${video.video_type} - Staff: ${video.employee_name || "No name"}`} arrow placement="top">
+                        <a href={video.video_url} target="_blank" rel="noopener noreferrer" style={{ marginRight: "8px", textDecoration: "none" }}>
+                          {index + 1}
+                        </a>
+                      </Tooltip>
+                    ))}
                   </td>
 
                   <td>
-                    {/* <LoadingButton
-                      type="button"
-                      fullWidth
-                      variant="contained"
-                      disableRipple
-                      color="error"
-                      onClick={() => handleDeleteReport(report.id)}
-                      loading={deletingId === report.id} // Only show loading for this specific button
-                      disabled={deletingId !== null && deletingId !== report.id} // Disable other buttons while one is loading
-                    >
-                      Delete
-                    </LoadingButton> */}
-
                     <div
                       style={{
                         display: "flex",
@@ -467,12 +303,16 @@ export default function Videos() {
                         justifyContent: "space-evenly",
                       }}
                     >
-                      <IconButton
+                      {/* <IconButton
                         color="primary"
                         onClick={() => handleAddVideoClick(report.id)}
                         disabled={isDeleteVideoPending || isEditVideoPending || Boolean(report.video_file_path_3) || isAddVideoPending}
                       >
                         {uploadingVideoId === report.id && isEditVideoPending ? <CircularProgress size={24} /> : <AddCircleIcon />}
+                      </IconButton> */}
+
+                      <IconButton color="primary" onClick={() => handleAddVideoClick(report.id)}>
+                        <AddCircleIcon />
                       </IconButton>
 
                       <IconButton
@@ -490,6 +330,71 @@ export default function Videos() {
           </table>
         </div>
       )}
+
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 375,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Add Videos
+          </Typography>
+
+          <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+            Select Videos
+            <VisuallyHiddenInput type="file" multiple accept="video/*" onChange={handleVideoFilesChange} />
+          </Button>
+
+          {videosFiles.map((file, index) => (
+            <Box key={index} mt={2}>
+              <Typography variant="body2">{file.name}</Typography>
+
+              <TextField
+                dir="rtl"
+                fullWidth
+                select
+                label="نوع الفيديو"
+                value={videoTypes[index] || ""}
+                onChange={(e) => handleVideoTypeChange(index, e.target.value)}
+                sx={{ mt: 1 }}
+              >
+                <MenuItem dir="rtl" value="شرح التقرير">
+                  شرح التقرير
+                </MenuItem>
+                <MenuItem dir="rtl" value="فيديو للسيارة">
+                  فيديو للسيارة
+                </MenuItem>
+              </TextField>
+
+              <TextField dir="rtl" fullWidth label="اسم الموظف" value={employeeNames[index] || ""} onChange={(e) => handleEmployeeChange(index, e.target.value)} sx={{ mt: 1 }} />
+            </Box>
+          ))}
+
+          <Box mt={3} display="flex" justifyContent="space-between">
+            <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+
+            <LoadingButton variant="contained" loading={isEditVideoPending} onClick={handleModalSubmit} disabled={videosFiles.length === 0}>
+              Upload
+            </LoadingButton>
+          </Box>
+
+          {isEditVideoPending && (
+            <Box mt={2}>
+              <Typography variant="body2">Uploading... {uploadProgress}%</Typography>
+              <LinearProgress variant="determinate" value={uploadProgress} />
+            </Box>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }

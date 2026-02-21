@@ -70,113 +70,148 @@ export default function PaidClient() {
         </div>
       ) : null}
 
-      {data?.date_of_visited && (
-        <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
-          <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}</Alert>
-        </Stack>
-      )}
-
       {data && (
-        <div className={style.table_container} dir="rtl">
-          <table>
-            <tbody>
-              <tr>
-                <td>اسم العميل:</td>
-                <td>{data?.metadata?.name ? data?.metadata?.name : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>رقم الهاتف:</td>
-                <td>{data?.metadata?.phone ? data?.metadata?.phone : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>الفرع:</td>
-                <td>{data?.metadata?.branch ? data?.metadata?.branch : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>المبلغ:</td>
-                <td>{data?.amount_format}</td>
-              </tr>
-
-              <tr>
-                <td>كود الخصم:</td>
-                <td>{data?.metadata?.dc || "-"}</td>
-              </tr>
-
-              <tr>
-                <td>Client ID:</td>
-                <td>{data?.metadata?.cd || "-"}</td>
-              </tr>
-
-              <tr>
-                <td>النقاط المستبدلة:</td>
-                <td>{data?.metadata?.rv ? `${data.metadata.rv} نقطة` : "-"}</td>
-              </tr>
-
-              <tr>
-                <td>وسيلة الدفع:</td>
-                <td>ميسر</td>
-              </tr>
-
-              <tr>
-                <td>الحالة:</td>
-                <td
-                  style={{
-                    backgroundColor: data?.status === "paid" ? "green" : "red",
-                    color: data?.status === "paid" ? "#fff" : "#000000DE",
-                  }}
-                >
-                  {data?.status}
-                </td>
-              </tr>
-
-              <tr>
-                <td>الخدمة:</td>
-                <td>{data?.metadata?.service ? data?.metadata?.service : "العادية"}</td>
-              </tr>
-
-              <tr>
-                <td>الباقة:</td>
-                <td>{data?.metadata?.plan}</td>
-              </tr>
-
-              <tr>
-                <td>الخدمات الاضافية:</td>
-                <td>{data?.metadata?.additionalServices ? data?.metadata?.additionalServices : "لا يوجد"}</td>
-              </tr>
-
-              <tr>
-                <td>موديل:</td>
-                <td>{data?.metadata?.model}</td>
-              </tr>
-
-              <tr>
-                <td>تاريخ الصنع:</td>
-                <td>{data?.metadata?.fy ? data.metadata.fy : data?.metadata?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
-              </tr>
-
-              <tr>
-                <td>تاريخ:</td>
-                <td dir="ltr">{data?.created_at ? formatDate(data.created_at) : "غير متوفر"}</td>
-              </tr>
-
-              <tr>
-                <td>رقم المرجع:</td>
-                <td>{data?.id}</td>
-              </tr>
-
-              {data?.metadata?.affiliate && (
-                <tr>
-                  <td>الإحالة:</td>
-                  <td>{data?.metadata?.affiliate ? data?.metadata?.affiliate : "N/A"}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <h1
+          style={{
+            backgroundColor: data?.metadata?.service ? "#d33030" : "#7431fa",
+            color: "#fff",
+            textAlign: "center",
+            padding: "16px",
+            margin: "0",
+            borderTopLeftRadius: "9px",
+            borderTopRightRadius: "9px",
+          }}
+        >
+          الخدمة: {data?.metadata?.service ? data?.metadata?.service : "فحص الشراء"}
+        </h1>
       )}
+
+      <div
+        style={{
+          border: `1px solid ${data?.metadata?.service ? "#d33030" : "#7431fa"}`,
+        }}
+      >
+        {data?.date_of_visited && (
+          <Stack sx={{ width: "100%", direction: "rtl", textAlign: "right" }} spacing={2} dir="rtl">
+            <Alert severity="warning">تم مسح الباركود سابقا بتاريخ: {data?.date_of_visited}</Alert>
+          </Stack>
+        )}
+
+        {data && (
+          <div className={style.table_container} dir="rtl">
+            <table>
+              <tbody>
+                <tr>
+                  <td>اسم العميل:</td>
+                  <td>{data?.metadata?.name ? data?.metadata?.name : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>رقم الهاتف:</td>
+                  <td>{data?.metadata?.phone ? data?.metadata?.phone : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>الفرع:</td>
+                  <td>{data?.metadata?.branch ? data?.metadata?.branch : "غير متوفر"}</td>
+                </tr>
+
+                <tr>
+                  <td>المبلغ:</td>
+                  <td>{data?.amount_format}</td>
+                </tr>
+
+                {/* {data?.metadata?.dc && (
+                  <tr>
+                    <td>كود الخصم:</td>
+                    <td>{data?.metadata?.dc || "-"}</td>
+                  </tr>
+                )}
+
+                {data?.metadata?.cd && (
+                  <tr>
+                    <td>Client ID:</td>
+                    <td>{data?.metadata?.cd || "-"}</td>
+                  </tr>
+                )}
+
+                {data?.metadata?.rv && (
+                  <tr>
+                    <td>النقاط المستبدلة:</td>
+                    <td>{data?.metadata?.rv ? `${data.metadata.rv} نقطة` : "-"}</td>
+                  </tr>
+                )} */}
+
+                <tr>
+                  <td>وسيلة الدفع:</td>
+                  <td>ميسر</td>
+                </tr>
+
+                <tr>
+                  <td>الحالة:</td>
+                  <td
+                    style={{
+                      backgroundColor: data?.status === "paid" ? "" : "red",
+                      color: data?.status === "paid" ? "" : "#000000DE",
+                    }}
+                  >
+                    {data?.status}
+                  </td>
+                </tr>
+
+                {/* <tr>
+                <td>الخدمة:</td>
+                <td>{data?.metadata?.service ? data?.metadata?.service : "فحص الشراء"}</td>
+              </tr> */}
+
+                <tr>
+                  <td>الباقة:</td>
+                  <td>{data?.metadata?.plan}</td>
+                </tr>
+
+                <tr>
+                  <td>الخدمات الاضافية:</td>
+                  <td
+                    style={{
+                      backgroundColor: data?.metadata?.additionalServices !== "لايوجد" ? "green" : "",
+                      color: data?.metadata?.additionalServices !== "لايوجد" ? "#fff" : "",
+                    }}
+                  >
+                    {data?.metadata?.additionalServices ? data?.metadata?.additionalServices : "لا يوجد"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>موديل:</td>
+                  <td>{data?.metadata?.model}</td>
+                </tr>
+
+                <tr>
+                  <td>تاريخ الصنع:</td>
+                  <td>{data?.metadata?.fy ? data.metadata.fy : data?.metadata?.year === "2" ? "2017 أو أعلى" : "2016 أو أدنى"}</td>
+                </tr>
+
+                <tr>
+                  <td>تاريخ:</td>
+                  <td dir="ltr">{data?.created_at ? formatDate(data.created_at) : "غير متوفر"}</td>
+                </tr>
+
+                {/* <tr>
+                  <td>رقم المرجع:</td>
+                  <td>{data?.id}</td>
+                </tr> */}
+
+                {data?.metadata?.affiliate && (
+                  <tr>
+                    <td>الإحالة:</td>
+                    <td>{data?.metadata?.affiliate ? data?.metadata?.affiliate : "N/A"}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
