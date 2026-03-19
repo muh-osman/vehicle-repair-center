@@ -13,6 +13,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import { Tooltip } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MenuItem from "@mui/material/MenuItem";
 // Signature Pad
 import SignaturePad from "signature_pad";
 // API
@@ -29,11 +30,7 @@ function getTodayDate() {
 export default function DisclaimerForm() {
   const navigate = useNavigate();
   //
-  const {
-    mutate,
-    isPending: isAddDisclaimersPending,
-    isSuccess: isAddDisclaimersSuccess,
-  } = useAddDisclaimersApi();
+  const { mutate, isPending: isAddDisclaimersPending, isSuccess: isAddDisclaimersSuccess } = useAddDisclaimersApi();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -46,6 +43,7 @@ export default function DisclaimerForm() {
     plate_number: "",
     car_type: "",
     report_number: "",
+    branch: "",
     name: "",
     date: getTodayDate(),
   });
@@ -144,6 +142,7 @@ export default function DisclaimerForm() {
         plate_number: "",
         car_type: "",
         report_number: "",
+        branch: "",
         name: "",
         date: getTodayDate(),
       });
@@ -157,21 +156,10 @@ export default function DisclaimerForm() {
 
   const generatePDF = async () => {
     try {
-      const {
-        plate_letter1,
-        plate_letter2,
-        plate_letter3,
-        plate_number,
-        car_type,
-        report_number,
-        name,
-        date,
-      } = formData;
+      const { plate_letter1, plate_letter2, plate_letter3, plate_number, car_type, report_number, branch, name, date } = formData;
 
       // Get signature data URL
-      const signatureData = signaturePadRef.current.isEmpty()
-        ? ""
-        : signaturePadRef.current.toDataURL();
+      const signatureData = signaturePadRef.current.isEmpty() ? "" : signaturePadRef.current.toDataURL();
 
       // Create a temporary div for PDF content
       const pdfContent = document.createElement("div");
@@ -206,7 +194,8 @@ export default function DisclaimerForm() {
         </div>
 
         <p style="margin-bottom: 8px;"><span style="font-weight: bold;">نوع السيارة:</span> ${car_type}</p>
-        <p style="margin-bottom: 15px;"><span style="font-weight: bold;">رقم التقرير:</span> ${report_number}</p>
+        <p style="margin-bottom: 8px;"><span style="font-weight: bold;">رقم التقرير:</span> ${report_number}</p>
+        <p style="margin-bottom: 15px;"><span style="font-weight: bold;">الفرع:</span> ${branch}</p>
 
         <p style="margin-bottom: 15px;">
           وقد تم إبلاغي من قبل (مؤسسة كاشف التجارية) بأن حالة المركبة قد لا تكون مناسبة فنياً للتجربة الميدانية، وأنه قد يترتب على ذلك أعطال فنية خلال أو بعد التجربة.
@@ -224,11 +213,7 @@ export default function DisclaimerForm() {
 
           <div>
             <p style="font-weight: bold; margin-bottom: 5px;">التوقيع:</p>
-            ${
-              signatureData
-                ? `<img src="${signatureData}" style="max-width: 200px; max-height: 80px;" />`
-                : ""
-            }
+            ${signatureData ? `<img src="${signatureData}" style="max-width: 200px; max-height: 80px;" />` : ""}
           </div>
         </div>
       `;
@@ -321,8 +306,7 @@ export default function DisclaimerForm() {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12}>
             <p dir="rtl" style={{ marginBottom: "0px" }}>
-              أقر أنا الموقع أدناه بأني مالك أو المفوض على المركبة ذات البيانات
-              التالية:
+              أقر أنا الموقع أدناه بأني مالك أو المفوض على المركبة ذات البيانات التالية:
             </p>
           </Grid>
 
@@ -445,17 +429,60 @@ export default function DisclaimerForm() {
             />
           </Grid>
 
+          {/* Branch Select Input */}
+          <Grid item xs={12}>
+            <TextField
+              sx={{
+                backgroundColor: "#fff",
+                // 1. Move the dropdown icon to the left
+                "& .MuiSelect-icon": {
+                  right: "auto",
+                  left: 7,
+                },
+                // 2. Adjust padding to make room for the icon on the left instead of the right
+                "& .MuiSelect-select": {
+                  paddingRight: "14px !important", // Default left padding, moved to right
+                  paddingLeft: "32px !important", // Extra padding on left for the icon
+                },
+              }}
+              dir="rtl"
+              fullWidth
+              select
+              label="الفرع"
+              name="branch"
+              required
+              disabled={loading || isAddDisclaimersPending}
+              value={formData.branch}
+              onChange={handleInputChange}
+              InputLabelProps={{
+                className: "custom-label-rtl",
+              }}
+            >
+              <MenuItem dir="rtl" value="القادسية">
+                القادسية
+              </MenuItem>
+              <MenuItem dir="rtl" value="الشفا">
+                الشفا
+              </MenuItem>
+              <MenuItem dir="rtl" value="الدمام">
+                الدمام
+              </MenuItem>
+              <MenuItem dir="rtl" value="جدة">
+                جدة
+              </MenuItem>
+              <MenuItem dir="rtl" value="القصيم">
+                القصيم
+              </MenuItem>
+            </TextField>
+          </Grid>
+
           <Grid item xs={12}>
             <p style={{ marginBottom: "15px" }}>
-              وقد تم إبلاغي من قبل (مؤسسة كاشف التجارية) بأن حالة المركبة قد لا
-              تكون مناسبة فنياً للتجربة الميدانية، وأنه قد يترتب على ذلك أعطال
-              فنية خلال أو بعد التجربة.
+              وقد تم إبلاغي من قبل (مؤسسة كاشف التجارية) بأن حالة المركبة قد لا تكون مناسبة فنياً للتجربة الميدانية، وأنه قد يترتب على ذلك أعطال فنية خلال أو بعد التجربة.
             </p>
 
             <p style={{ marginBottom: "15px" }}>
-              وبناء عليه، أوافق على إجراء التجربة الميدانية على مسؤوليتي
-              الشخصية، وأخلي طرف المؤسسة وفنييها من أي مسؤولية عن أي أعطال أو
-              أضرار قد تنتج عن هذه التجربة.
+              وبناء عليه، أوافق على إجراء التجربة الميدانية على مسؤوليتي الشخصية، وأخلي طرف المؤسسة وفنييها من أي مسؤولية عن أي أعطال أو أضرار قد تنتج عن هذه التجربة.
             </p>
           </Grid>
 

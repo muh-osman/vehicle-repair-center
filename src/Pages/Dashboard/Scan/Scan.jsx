@@ -34,12 +34,14 @@ export default function Scan() {
         const trimmedFreeOrderScanResult = scanResult.replace(/^free-/, "");
         navigate(`/dashboard/free-order-result/${trimmedFreeOrderScanResult}`);
       } else if (scanResult.startsWith("lottery-")) {
-        // Free Order
+        // Lottery
         const trimmedLotteryScanResult = scanResult.replace(/^lottery-/, "");
         navigate(`/dashboard/lottery-result/${trimmedLotteryScanResult}`);
-      } else if (scanResult.length === 14) {
-        // UnPaid user
-        navigate(`/dashboard/unpaid-client/${scanResult}`);
+      } else if (scanResult.includes("branch-discount-client")) {
+        // Branch discount
+        // Extract the part after the last slash
+        const xxx = scanResult.substring(scanResult.lastIndexOf("/") + 1);
+        navigate(`/branch-discount-client/${xxx}`);
       } else if (scanResult.startsWith("tamara")) {
         // Tamara payment
         const trimmedScanResult = scanResult.replace(/^tamara/, ""); // Remove "tamara" from the beginning of scanResult
@@ -54,7 +56,7 @@ export default function Scan() {
       }
     } catch (err) {
       console.log(err);
-      setError(err);
+      setError(err.message);
     }
   };
 

@@ -13,6 +13,7 @@ class VideosReport extends Model
 
     protected $fillable = [
         'report_number',
+        'branch',
     ];
 
     public function videos()

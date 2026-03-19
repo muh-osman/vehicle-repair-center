@@ -16,6 +16,7 @@ class Disclaimer extends Model
         'plate_number',
         'car_type',
         'report_number',
+        'branch',
         'name',
         'signature',
     ];

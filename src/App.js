@@ -61,6 +61,8 @@ import VideosAnalytics from "./Pages/Dashboard/VideosAnalytics/VideosAnalytics";
 import LotteryResult from "./Pages/Dashboard/LotteryResult/LotteryResult";
 import LotteryTable from "./Pages/Dashboard/LotteryTable/LotteryTable";
 import OrdersAnalytics from "./Pages/Dashboard/OrdersAnalytics/OrdersAnalytics";
+import BranchDiscount from "./Pages/Dashboard/BranchDiscount/BranchDiscount";
+import BranchDiscountClient from "./Pages/Dashboard/BranchDiscountClient/BranchDiscountClient";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -75,6 +77,8 @@ export default function App() {
 
         <Route path="shipping-client/:id" element={<ShippingClient />} />
         <Route path="mertah-client/:qrCode" element={<MertahClient />} />
+
+        <Route path="branch-discount-client/:branch" element={<BranchDiscountClient />} />
 
         <Route element={<NotAuth />}>
           {/* Start Check if login */}
@@ -120,6 +124,7 @@ export default function App() {
               <Route path="falak-post" element={<FalakPost />} />
               <Route path="falak-video" element={<FalakVideo />} />
               <Route path="free-order" element={<FreeOrder />} />
+              <Route path="branch-discount" element={<BranchDiscount />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="orders-analytics" element={<OrdersAnalytics />} />
 

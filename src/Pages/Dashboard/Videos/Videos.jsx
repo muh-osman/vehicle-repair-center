@@ -57,6 +57,7 @@ export default function Videos() {
   const { data, isPending: isGetAllVideosPending } = useGetAllVideosApi();
 
   const [reportNumber, setReportNumber] = useState("");
+  const [branch, setBranch] = useState("");
 
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
 
@@ -72,13 +73,17 @@ export default function Videos() {
     if (!isValid) return;
 
     mutate(
-      { report_number: reportNumber },
+      {
+        report_number: reportNumber,
+        branch: branch,
+      },
 
       {
         onSuccess: () => {
           toast.success("Created successfully!");
           // Reset form after successful submission
           setReportNumber("");
+          setBranch("");
 
           // Clear file input
           if (modelFormRef.current) {
@@ -91,7 +96,7 @@ export default function Videos() {
 
   // Handle delete report
   const handleDeleteReport = (reportId) => {
-    if (window.confirm("Are you sure you want to delete this video?")) {
+    if (window.confirm("هل أنت متأكد من رغبتك في حذف هذا الفيديو؟")) {
       setDeletingId(reportId); // Set the ID of the report being deleted
       mutateDeleteVideo(reportId, {
         onSuccess: () => {
@@ -216,43 +221,77 @@ export default function Videos() {
         </Avatar>
       </Link>
       {/* Start Form */}
-      <Box
-        onSubmit={handleSubmit}
-        ref={modelFormRef}
-        component="form"
-        noValidate
-        sx={{
-          mt: 3,
-          maxWidth: "400px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        {/* Start report number input */}
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField
-              sx={{ backgroundColor: "#fff" }}
-              dir="ltr"
-              fullWidth
-              label="رقم التقرير"
-              type="text"
-              name="report_number"
-              disabled={isAddVideoPending}
-              required
-              value={reportNumber}
-              onChange={(e) => setReportNumber(e.target.value)}
-            />
-          </Grid>
-        </Grid>
-        {/* End report number input */}
+      {cookies.role !== 50 && (
+        <Box
+          onSubmit={handleSubmit}
+          ref={modelFormRef}
+          component="form"
+          noValidate
+          sx={{
+            mt: 3,
+            maxWidth: "400px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          {/* Start report number input */}
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ backgroundColor: "#fff" }}
+                dir="ltr"
+                fullWidth
+                label="رقم التقرير"
+                type="text"
+                name="report_number"
+                disabled={isAddVideoPending}
+                required
+                value={reportNumber}
+                onChange={(e) => setReportNumber(e.target.value)}
+              />
+            </Grid>
 
-        {/* Start loading button for form 1 */}
-        <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddVideoPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
-          Add
-        </LoadingButton>
-        {/* End loading button for form 1 */}
-      </Box>
+            {/* Branch Select Input */}
+            <Grid item xs={12}>
+              <TextField
+                sx={{ backgroundColor: "#fff" }}
+                dir="rtl" // Set to rtl for Arabic text
+                fullWidth
+                select
+                label="الفرع"
+                name="branch"
+                required
+                disabled={isAddVideoPending}
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+              >
+                <MenuItem dir="rtl" value="القادسية">
+                  القادسية
+                </MenuItem>
+                <MenuItem dir="rtl" value="الشفا">
+                  الشفا
+                </MenuItem>
+                <MenuItem dir="rtl" value="الدمام">
+                  الدمام
+                </MenuItem>
+                <MenuItem dir="rtl" value="جدة">
+                  جدة
+                </MenuItem>
+                <MenuItem dir="rtl" value="القصيم">
+                  القصيم
+                </MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+          {/* End report number input */}
+
+          {/* Start loading button for form 1 */}
+          <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddVideoPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
+            Add
+          </LoadingButton>
+          {/* End loading button for form 1 */}
+        </Box>
+      )}
       {/* End Form one */}
 
       <p
@@ -273,6 +312,7 @@ export default function Videos() {
             <thead>
               <tr>
                 <th>Card Number</th>
+                <th>Branch</th>
                 <th>Date</th>
                 <th>Video</th>
                 <th>Action</th>
@@ -283,14 +323,18 @@ export default function Videos() {
                 <tr key={report.id}>
                   <td>{report.report_number}</td>
 
+                  <td>{report.branch || "-"}</td>
+
                   <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
 
-                  <td style={{ whiteSpace: "nowrap" }}>
+                  <td style={{ whiteSpace: "nowrap", display: "table-cell", flexDirection: "column" }}>
                     {report.videos?.map((video, index) => (
                       <Tooltip key={video.id || index} title={`Type: ${video.video_type} - Staff: ${video.employee_name || "No name"}`} arrow placement="top">
-                        <a href={video.video_url} target="_blank" rel="noopener noreferrer" style={{ marginRight: "8px", textDecoration: "none" }}>
-                          {index + 1}
-                        </a>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                          <a href={video.video_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                            {index + 1}
+                          </a>
+                        </div>
                       </Tooltip>
                     ))}
                   </td>
@@ -299,6 +343,7 @@ export default function Videos() {
                     <div
                       style={{
                         display: "flex",
+                        flexDirection: "column",
                         gap: "8px",
                         justifyContent: "space-evenly",
                       }}
@@ -311,14 +356,15 @@ export default function Videos() {
                         {uploadingVideoId === report.id && isEditVideoPending ? <CircularProgress size={24} /> : <AddCircleIcon />}
                       </IconButton> */}
 
-                      <IconButton color="primary" onClick={() => handleAddVideoClick(report.id)}>
+                      <IconButton style={{ width: "fit-content", margin: "auto" }} disabled={cookies.role === 50} color="primary" onClick={() => handleAddVideoClick(report.id)}>
                         <AddCircleIcon />
                       </IconButton>
 
                       <IconButton
+                        style={{ width: "fit-content", margin: "auto" }}
                         color="error"
                         onClick={() => handleDeleteReport(report.id)}
-                        disabled={(deletingId !== null && deletingId !== report.id) || isDeleteVideoPending || isEditVideoPending || isAddVideoPending}
+                        disabled={(deletingId !== null && deletingId !== report.id) || isDeleteVideoPending || isEditVideoPending || isAddVideoPending || cookies.role === 50}
                       >
                         {deletingId === report.id ? <CircularProgress size={24} /> : <DeleteIcon />}
                       </IconButton>

@@ -32,11 +32,13 @@ class VideosReportController extends Controller
         // validation
         $request->validate([
             'report_number' => 'required|unique:videos_reports',
+            'branch'        => 'nullable|string',
         ]);
 
         // create report
         $report = VideosReport::create([
-            'report_number' => $request->report_number
+            'report_number' => $request->report_number,
+            'branch'        => $request->branch
         ]);
 
         return response()->json([

@@ -18,12 +18,13 @@ use App\Http\Controllers\PhoneNumberController;
 
 use App\Http\Controllers\RefundClineController;
 use App\Http\Controllers\VisitorInfoController;
+use App\Http\Controllers\LotteryEntryController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\VideosReportController;
 use App\Http\Controllers\MarketingPostController;
+use App\Http\Controllers\BranchDiscountController;
 use App\Http\Controllers\YearOfManufactureController;
 use App\Http\Controllers\SendWithdrawNotificationController;
-use App\Http\Controllers\LotteryEntryController;
 
 
 // Group for protected routes
@@ -129,6 +130,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-all-refund-clients', [RefundClineController::class, 'index']);
     Route::get('get-one-refund-client/{id}', [RefundClineController::class, 'show']);
     Route::delete('delete-refund-client/{id}', [RefundClineController::class, 'destroy']);
+
+
+    // Branch discount
+    Route::get('get-all-branch-discount', [BranchDiscountController::class, 'index']);
+    Route::post('post-branch-discount', [BranchDiscountController::class, 'store']);
+    Route::delete('delete-branch-discount/{id}', [BranchDiscountController::class, 'destroy']);
 });
 
 
@@ -232,4 +239,7 @@ Route::middleware('guest')->group(function () {
     // Route::patch('/lottery/{id}/use', [LotteryEntryController::class, 'markUsed']);
     Route::get('/lottery/{phone}', [LotteryEntryController::class, 'show']);
     Route::get('/lottery/check/{phone}', [LotteryEntryController::class, 'checkValid']);
+
+    // Branch discount
+    Route::get('show-branch-discount/{branch}', [BranchDiscountController::class, 'show']);
 });

@@ -16,6 +16,8 @@ class SendWithdrawNotificationController extends Controller
             'marketerId' => 'nullable|integer',
             'point' => 'nullable|numeric',
             'tranferPaymentTypeId' => 'nullable|integer',
+            'marketerName' => 'nullable|string',
+            'marketerCode' => 'nullable|string',
         ]);
 
         // Example: Send email
@@ -24,7 +26,10 @@ class SendWithdrawNotificationController extends Controller
                 $request->accountNumber,
                 $request->marketerId,
                 $request->point,
-                $request->tranferPaymentTypeId
+                $request->tranferPaymentTypeId,
+
+                $request->marketerName,
+                $request->marketerCode
             )
         );
 

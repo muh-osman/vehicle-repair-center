@@ -14,16 +14,20 @@ class WithdrawNotificationMail extends Mailable
     public $marketerId;
     public $point;
     public $tranferPaymentTypeId;
+    public $marketerName;
+    public $marketerCode;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($accountNumber, $marketerId, $point, $tranferPaymentTypeId)
+    public function __construct($accountNumber, $marketerId, $point, $tranferPaymentTypeId, $marketerName, $marketerCode)
     {
         $this->accountNumber = $accountNumber;
         $this->marketerId = $marketerId;
         $this->point = $point;
         $this->tranferPaymentTypeId = $tranferPaymentTypeId;
+        $this->marketerName = $marketerName;
+        $this->marketerCode = $marketerCode;
     }
 
     /**

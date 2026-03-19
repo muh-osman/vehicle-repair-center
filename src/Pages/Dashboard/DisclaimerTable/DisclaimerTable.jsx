@@ -25,13 +25,9 @@ export default function DisclaimerTable() {
   }, []);
 
   //
-  const { data, isPending: isGetAllDisclaimersPending } =
-    useGetAllDisclaimersApi();
+  const { data, isPending: isGetAllDisclaimersPending } = useGetAllDisclaimersApi();
   //
-  const {
-    mutate: mutateDeleteDisclaimer,
-    isPending: isDeleteDisclaimerPending,
-  } = useDeleteDisclaimerApi();
+  const { mutate: mutateDeleteDisclaimer, isPending: isDeleteDisclaimerPending } = useDeleteDisclaimerApi();
 
   //
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
@@ -77,23 +73,11 @@ export default function DisclaimerTable() {
 
   const generatePDF = async (data) => {
     try {
-      const {
-        plate_letter1,
-        plate_letter2,
-        plate_letter3,
-        plate_number,
-        car_type,
-        report_number,
-        name,
-        created_at,
-        signature_base64,
-      } = data;
+      const { plate_letter1, plate_letter2, plate_letter3, plate_number, car_type, report_number, name, branch, created_at, signature_base64 } = data;
 
       // Format the date
       const dateObj = new Date(created_at);
-      const formattedDate = `${dateObj.getFullYear()}/${String(
-        dateObj.getMonth() + 1
-      ).padStart(2, "0")}/${String(dateObj.getDate()).padStart(2, "0")}`;
+      const formattedDate = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(2, "0")}`;
 
       // Create a temporary div for PDF content
       const pdfContent = document.createElement("div");
@@ -129,7 +113,8 @@ export default function DisclaimerTable() {
       </div>
 
       <p style="margin-bottom: 8px;"><span style="font-weight: bold;">نوع السيارة:</span> ${car_type}</p>
-      <p style="margin-bottom: 15px;"><span style="font-weight: bold;">رقم التقرير:</span> ${report_number}</p>
+      <p style="margin-bottom: 8px;"><span style="font-weight: bold;">رقم التقرير:</span> ${report_number}</p>
+      <p style="margin-bottom: 15px;"><span style="font-weight: bold;">الفرع:</span> ${branch}</p>
 
       <p style="margin-bottom: 15px;">
         وقد تم إبلاغي من قبل (مؤسسة كاشف التجارية) بأن حالة المركبة قد لا تكون مناسبة فنياً للتجربة الميدانية، وأنه قد يترتب على ذلك أعطال فنية خلال أو بعد التجربة.
@@ -148,11 +133,7 @@ export default function DisclaimerTable() {
 
         <div>
             <p style="font-weight: bold; margin-bottom: 5px;">التوقيع:</p>
-            ${
-              signature_base64
-                ? `<img src="${signature_base64}" style="max-width: 200px; max-height: 80px;" />`
-                : ""
-            }
+            ${signature_base64 ? `<img src="${signature_base64}" style="max-width: 200px; max-height: 80px;" />` : ""}
         </div>
       </div>
     `;
@@ -233,6 +214,7 @@ export default function DisclaimerTable() {
             <thead>
               <tr>
                 <th>Report Number</th>
+                <th>Branch</th>
                 <th>Name</th>
                 <th>Car model</th>
                 <th style={{ whiteSpace: "nowrap" }}>Plate number</th>
@@ -244,18 +226,14 @@ export default function DisclaimerTable() {
               {data?.disclaimers?.map((disclaimer) => (
                 <tr key={disclaimer.id}>
                   <td>{disclaimer.report_number}</td>
+                  <td>{disclaimer.branch || "-"}</td>
                   <td>{disclaimer.name}</td>
                   <td>{disclaimer.car_type}</td>
                   <td>
-                    {disclaimer.plate_number} {disclaimer.plate_letter1}{" "}
-                    {disclaimer.plate_letter2} {disclaimer.plate_letter3}
+                    {disclaimer.plate_number} {disclaimer.plate_letter1} {disclaimer.plate_letter2} {disclaimer.plate_letter3}
                   </td>
 
-                  <td>
-                    {new Date(disclaimer.created_at).toLocaleDateString(
-                      "en-GB"
-                    )}
-                  </td>
+                  <td>{new Date(disclaimer.created_at).toLocaleDateString("en-GB")}</td>
 
                   <td
                     style={{
@@ -271,13 +249,9 @@ export default function DisclaimerTable() {
                       variant="contained"
                       disableRipple
                       color="primary"
-                      onClick={() =>
-                        handleDownloadDisclaimerData(disclaimer.id)
-                      }
+                      onClick={() => handleDownloadDisclaimerData(disclaimer.id)}
                       loading={disclaimerId === disclaimer.id} // Only show loading for this specific button
-                      disabled={
-                        disclaimerId !== null && disclaimerId !== disclaimer.id
-                      } // Disable other buttons while one is loading
+                      disabled={disclaimerId !== null && disclaimerId !== disclaimer.id} // Disable other buttons while one is loading
                     >
                       Download
                     </LoadingButton>
@@ -291,9 +265,7 @@ export default function DisclaimerTable() {
                         color="error"
                         onClick={() => handleDeleteDisclaimer(disclaimer.id)}
                         loading={deletingId === disclaimer.id} // Only show loading for this specific button
-                        disabled={
-                          deletingId !== null && deletingId !== disclaimer.id
-                        } // Disable other buttons while one is loading
+                        disabled={deletingId !== null && deletingId !== disclaimer.id} // Disable other buttons while one is loading
                       >
                         Delete
                       </LoadingButton>

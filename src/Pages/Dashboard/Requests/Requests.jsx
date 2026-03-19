@@ -41,6 +41,12 @@ export default function Requests() {
   const tableRef = useRef();
   //
   const handleDelete = (id) => {
+    const password = window.prompt("Enter password to delete:");
+    if (password === null) return; // User cancelled
+    if (password !== "3652") {
+      window.alert("Incorrect password. Deletion cancelled.");
+      return;
+    }
     setItemIdToDelete(id);
     setOpen(true);
   };

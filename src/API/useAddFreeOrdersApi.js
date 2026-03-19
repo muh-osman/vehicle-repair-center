@@ -21,11 +21,7 @@ export const useAddFreeOrdersApi = () => {
 
     onError: (err) => {
       console.error(err);
-      const errorMessage =
-        err?.response?.data?.errors?.phone_number[0] ||
-        err?.response?.data?.message ||
-        err?.message ||
-        "An error occurred";
+      const errorMessage = err?.response?.data?.errors?.phone_number[0] || err?.response?.data?.message || err?.message || "An error occurred";
       // Toastify
       toast.error(errorMessage);
     },

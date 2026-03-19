@@ -15,15 +15,19 @@ import { useAddReportApi } from "../../../API/useAddReportApi";
 import { useDeleteReportApi } from "../../../API/useDeleteReportApi";
 // Toastify
 import { toast } from "react-toastify";
+// Cookies
+import { useCookies } from "react-cookie";
 
 export default function Reports() {
+  // Cookie
+  const [cookies, setCookie] = useCookies(["role"]);
+  //
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const { mutate, isPending: isAddReportPending } = useAddReportApi();
-  const { mutate: mutateDeleteReport, isPending: isDeleteReportPending } =
-    useDeleteReportApi();
+  const { mutate: mutateDeleteReport, isPending: isDeleteReportPending } = useDeleteReportApi();
   const { data, isPending: isGetAllReportsPending } = useGetAllReportsApi();
 
   const [formData, setFormData] = useState({
@@ -120,68 +124,64 @@ export default function Reports() {
         <InsertDriveFileIcon sx={{ fontSize: "75px" }} />
       </Avatar>
       {/* Start Form */}
-      <Box
-        onSubmit={handleSubmit}
-        ref={modelFormRef}
-        component="form"
-        noValidate
-        sx={{
-          mt: 3,
-          maxWidth: "400px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        {/* Start report number input */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <TextField
-              sx={{ backgroundColor: "#fff" }}
-              dir="ltr"
-              fullWidth
-              label="رقم التقرير"
-              type="text"
-              name="report_number"
-              disabled={isAddReportPending}
-              required
-              value={formData.report_number}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        </Grid>
-        {/* End report number input */}
-
-        {/* Start pdf file input */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12}>
-            <TextField
-              sx={{ backgroundColor: "#fff" }}
-              dir="ltr"
-              fullWidth
-              type="file"
-              inputProps={{ accept: "application/pdf" }}
-              name="pdf_file"
-              onChange={handleFileChange}
-              required
-              disabled={isAddReportPending}
-            />
-          </Grid>
-        </Grid>
-        {/* End pdf file input */}
-
-        {/* Start loading button for form 1 */}
-        <LoadingButton
-          type="submit"
-          fullWidth
-          variant="contained"
-          disableRipple
-          loading={isAddReportPending}
-          sx={{ mt: 3, mb: 2, transition: "0.1s" }}
+      {cookies.role !== 50 && (
+        <Box
+          onSubmit={handleSubmit}
+          ref={modelFormRef}
+          component="form"
+          noValidate
+          sx={{
+            mt: 3,
+            maxWidth: "400px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
         >
-          Add
-        </LoadingButton>
-        {/* End loading button for form 1 */}
-      </Box>
+          {/* Start report number input */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ backgroundColor: "#fff" }}
+                dir="ltr"
+                fullWidth
+                label="رقم التقرير"
+                type="text"
+                name="report_number"
+                disabled={isAddReportPending}
+                required
+                value={formData.report_number}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
+          {/* End report number input */}
+
+          {/* Start pdf file input */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ backgroundColor: "#fff" }}
+                dir="ltr"
+                fullWidth
+                type="file"
+                inputProps={{ accept: "application/pdf" }}
+                name="pdf_file"
+                onChange={handleFileChange}
+                required
+                disabled={isAddReportPending}
+              />
+            </Grid>
+          </Grid>
+          {/* End pdf file input */}
+
+          {/* Start loading button for form 1 */}
+          <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddReportPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
+            Add
+          </LoadingButton>
+          {/* End loading button for form 1 */}
+        </Box>
+      )}
+
       {/* End Form one */}
 
       <p
@@ -212,16 +212,10 @@ export default function Reports() {
                 <tr key={report.id}>
                   <td>{report.report_number}</td>
 
-                  <td>
-                    {new Date(report.created_at).toLocaleDateString("en-GB")}
-                  </td>
+                  <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
 
                   <td>
-                    <a
-                      href={report.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={report.pdf_url} target="_blank" rel="noopener noreferrer">
                       PDF
                     </a>
                   </td>
@@ -235,7 +229,7 @@ export default function Reports() {
                       color="error"
                       onClick={() => handleDeleteReport(report.id)}
                       loading={deletingId === report.id} // Only show loading for this specific button
-                      disabled={deletingId !== null && deletingId !== report.id} // Disable other buttons while one is loading
+                      disabled={(deletingId !== null && deletingId !== report.id) || cookies.role === 50} // Disable other buttons while one is loading
                     >
                       Delete
                     </LoadingButton>

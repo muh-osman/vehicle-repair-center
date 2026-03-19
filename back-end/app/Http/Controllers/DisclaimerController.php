@@ -28,6 +28,7 @@ class DisclaimerController extends Controller
                 'plate_number'  => 'required|string|max:20',
                 'car_type'      => 'required|string|max:255',
                 'report_number' => 'required|string|max:255|unique:disclaimers',
+                'branch'        => 'nullable|string|max:255',
                 'name'          => 'required|string|max:255',
                 'signature'     => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
@@ -45,6 +46,7 @@ class DisclaimerController extends Controller
                 'plate_number' => $validated['plate_number'],
                 'car_type'     => $validated['car_type'],
                 'report_number' => $validated['report_number'],
+                'branch'        => $validated['branch'],
                 'name'         => $validated['name'],
                 'signature'    => $filename
             ]);

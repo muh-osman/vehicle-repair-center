@@ -39,6 +39,7 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import CarRepairIcon from "@mui/icons-material/CarRepair";
 import ChairIcon from "@mui/icons-material/Chair";
 import RedeemIcon from "@mui/icons-material/Redeem";
+import PercentIcon from "@mui/icons-material/Percent";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -389,6 +390,27 @@ function ResponsiveDrawer(props) {
           </ListItem>
         )}
 
+        {/* Branch discount */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/branch-discount" selected={pathname === "/dashboard/branch-discount"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <PercentIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Branch Discount" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
         {/* Lottery Result */}
         {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/lottery-table" selected={pathname === "/dashboard/lottery-table"}>
@@ -434,7 +456,7 @@ function ResponsiveDrawer(props) {
         )}
 
         {/* Videos */}
-        {(cookies.role === 255 || cookies.role === 3) && (
+        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/videos" selected={pathname === "/dashboard/videos"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -457,7 +479,7 @@ function ResponsiveDrawer(props) {
         <Divider />
 
         {/* Disclaimer Form */}
-        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+        {(cookies.role === 255 || cookies.role === 3) && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/disclaimer-form" selected={pathname === "/dashboard/disclaimer-form"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -478,7 +500,7 @@ function ResponsiveDrawer(props) {
         )}
 
         {/* Refund Form */}
-        {(cookies.role === 255 || cookies.role === 100) && (
+        {(cookies.role === 255 || cookies.role === 100 || cookies.role === 50) && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/refund-form" selected={pathname === "/dashboard/refund-form"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
