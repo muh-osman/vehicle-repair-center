@@ -29,5 +29,10 @@ class TamaraPaidClient extends Model
         'redeemeAmoumntValue',
         'isShipped',
         'address',
+        'is_sent_to_internal_system',
+    ];
+
+    protected $casts = [
+        'is_sent_to_internal_system' => 'boolean',
     ];
 }

@@ -388,15 +388,15 @@ class PriceController extends Controller
 
                         // Apply different discounts based on service type
                         if ($serviceName === "شامل") {
-                            $discountedPrice = $originalPrice + 200; // 10% discount
+                            $discountedPrice = $originalPrice + 245; // 10% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } elseif ($serviceName === "أساسي") {
-                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountedPrice = $originalPrice + 245; // 0% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } elseif ($serviceName === "محركات") {
-                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountedPrice = $originalPrice + 245; // 0% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } else {
@@ -409,7 +409,7 @@ class PriceController extends Controller
                         return [
                             'service_name' => $serviceName,
                             'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
-                            'original_price' => number_format($originalPrice + 300, 2, '.', ''), // Price before dicount (if exist)
+                            'original_price' => number_format($originalPrice + 345, 2, '.', ''), // Price before dicount (if exist)
                             'discount_percent' => $discountPercent,
                             'discount_unit' => $discountUnit,
                             'you_save' => number_format(100, 2, '.', ''),
@@ -526,15 +526,15 @@ class PriceController extends Controller
 
                         // Apply different discounts based on service type
                         if ($serviceName === "شامل") {
-                            $discountedPrice = $originalPrice + 200; // 10% discount
+                            $discountedPrice = $originalPrice + 245; // 10% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } elseif ($serviceName === "أساسي") {
-                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountedPrice = $originalPrice + 245; // 0% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } elseif ($serviceName === "محركات") {
-                            $discountedPrice = $originalPrice + 200; // 0% discount
+                            $discountedPrice = $originalPrice + 245; // 0% discount
                             $discountPercent = 100;
                             $discountUnit = "ريال";
                         } else {
@@ -547,7 +547,7 @@ class PriceController extends Controller
                         return [
                             'service_name' => $serviceName,
                             'price' => number_format($discountedPrice, 2, '.', ''), // Price after dicount (if exist)
-                            'original_price' => number_format($originalPrice + 300, 2, '.', ''), // Price before dicount (if exist)
+                            'original_price' => number_format($originalPrice + 345, 2, '.', ''), // Price before dicount (if exist)
                             'discount_percent' => $discountPercent,
                             'discount_unit' => $discountUnit,
                             'you_save' => number_format(100, 2, '.', ''),

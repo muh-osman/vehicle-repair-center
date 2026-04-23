@@ -24,6 +24,18 @@ class QrCodeStored extends Notification
         return ['mail'];
     }
 
+    protected function resolveSubject(array $mailData): string
+    {
+        $service = $mailData['service'] ?? null;
+        $plan    = $mailData['plan'] ?? null;
+
+        $serviceLabel = !empty($service)
+            ? $service
+            : ($plan === 'المسافر' ? 'فحص المسافر' : 'فحص الشراء');
+
+        return "طلب خدمة - {$serviceLabel}";
+    }
+
     public function toMail($notifiable)
     {
         // Determine the year value to display
@@ -56,8 +68,10 @@ class QrCodeStored extends Notification
             'address' => $this->qrCodeData['address'] ?? 'غير محدد',
         ];
 
+        $subject = $this->resolveSubject($mailData);
+
         return (new MailMessage)
-            ->subject('طلب خدمة جديد')
+            ->subject($subject)
             ->view('emails.order-notification', ['data' => $mailData])
             ->from('noreply@yourdomain.com', 'Cashif')
             ->replyTo('support@yourdomain.com', 'Support Team');

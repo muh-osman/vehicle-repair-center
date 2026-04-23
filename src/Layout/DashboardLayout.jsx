@@ -370,7 +370,7 @@ function ResponsiveDrawer(props) {
         )}
 
         {/* Free Order */}
-        {cookies.role === 255 && (
+        {(cookies.role === 255 || cookies.role === 50) && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/free-order" selected={pathname === "/dashboard/free-order"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
