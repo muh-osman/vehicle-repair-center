@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MojazController;
 use App\Http\Controllers\PaidQrCodeController;
 use App\Http\Controllers\UnPaidQrCodeController;
 use App\Http\Controllers\TabbyPaidClientController;
@@ -99,4 +100,16 @@ Route::middleware('guest')->group(function () {
     Route::put('/mertah-service/toggle-is-shipped/{qrCode}', [UnPaidQrCodeController::class, 'toggleShippedStatus']);
     // Route for finding record in payment tables only
     Route::get('/get-mertah-client/debends-on-qr-code/{qrCode}', [UnPaidQrCodeController::class, 'findRecordByQrCode']);
+
+
+    // Mojaz order
+    Route::post('/moyasar-webhook-for-mojaz-report-order', [MojazController::class, 'MojazPaymentPaidWebhook']);
+    Route::post('/mojaz/inquiry', [MojazController::class, 'inquiry']);
+    Route::get('/mojaz/orders/{user_id}', [MojazController::class, 'userOrders']);
+    Route::get('/mojaz/all-orders', [MojazController::class, 'index']);
+    // Route::get('/test-mojaz/{id}', function ($id) {
+    //     $order = \App\Models\MojazOrder::findOrFail($id);
+    //     \App\Jobs\InitiateMojazReport::dispatchSync($order);
+    //     return 'Done';
+    // });
 });

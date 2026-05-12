@@ -176,7 +176,7 @@ export default function ShippingClient() {
   const matchedBranch = albasamiBranches.find((branch) => branch.nameAr === data?.from);
 
   return (
-    <div className={style.container}>
+    <div className={style.container} lang="ar" dir="rtl">
       {error ? (
         <pre>{error}</pre>
       ) : loadding ? (

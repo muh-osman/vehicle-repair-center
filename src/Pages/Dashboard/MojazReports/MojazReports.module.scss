@@ -29,10 +29,10 @@
 
 // Responsive table
 .datagrid_container {
-  height: calc(100vh - 160px);
+  height: calc(100vh - 184px);
 
   @media (max-width: 600px) {
-    height: calc(100vh - 152px);
+    height: calc(100vh - 400px);
   }
 }
 
@@ -57,6 +57,6 @@
 }
 
 .NotshippedRow:hover {
-  color: #000;
-  background-color: #c5ebff !important;
+  color: #fff;
+  background-color: #d32f2f !important;
 }

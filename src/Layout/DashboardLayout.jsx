@@ -14,6 +14,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import LoadingButton from "@mui/lab/LoadingButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import Collapse from "@mui/material/Collapse";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
@@ -53,6 +56,7 @@ import CustomToast from "../Components/CustomToast ";
 const drawerWidth = 240;
 
 function ResponsiveDrawer(props) {
+  const [mojazOpen, setMojazOpen] = React.useState(false);
   // Cookie
   const [cookies, setCookie] = useCookies(["token", "verified", "role"]);
 
@@ -436,23 +440,47 @@ function ResponsiveDrawer(props) {
 
         {/* Mojaz */}
         {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
-          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/reports" selected={pathname === "/dashboard/reports"}>
-            <ListItemButton sx={{ color: "#757575" }}>
-              <ListItemIcon>
-                <Avatar
-                  alt="icon"
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  <InsertDriveFileIcon sx={{ color: "#757575" }} />
-                </Avatar>
-              </ListItemIcon>
-              <ListItemText primary="Mojaz" />
-            </ListItemButton>
-          </ListItem>
+          <>
+            <ListItem dir="ltr" disablePadding button onClick={() => setMojazOpen((prev) => !prev)}>
+              <ListItemButton sx={{ color: "#757575" }}>
+                <ListItemIcon>
+                  <Avatar alt="icon" sx={{ width: 36, height: 36, backgroundColor: "transparent" }}>
+                    <InsertDriveFileIcon sx={{ color: "#757575" }} />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText primary="Mojaz" />
+                {mojazOpen ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+            </ListItem>
+
+            <Collapse in={mojazOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {/* Sub-button 1 */}
+                <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/reports" selected={pathname === "/dashboard/reports"}>
+                  <ListItemButton sx={{ color: "#757575", pl: 4 }}>
+                    <ListItemIcon>
+                      <Avatar alt="icon" sx={{ width: 36, height: 36, backgroundColor: "transparent" }}>
+                        <InsertDriveFileIcon sx={{ color: "#757575" }} />
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText primary="Old Reports" />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Sub-button 2 */}
+                <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/mojaz-reports" selected={pathname === "/dashboard/mojaz-reports"}>
+                  <ListItemButton sx={{ color: "#757575", pl: 4 }}>
+                    <ListItemIcon>
+                      <Avatar alt="icon" sx={{ width: 36, height: 36, backgroundColor: "transparent" }}>
+                        <InsertDriveFileIcon sx={{ color: "#757575" }} />
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText primary="New Reports" />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </Collapse>
+          </>
         )}
 
         {/* Videos */}

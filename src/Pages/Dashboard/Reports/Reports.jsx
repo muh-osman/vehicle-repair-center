@@ -123,6 +123,7 @@ export default function Reports() {
       >
         <InsertDriveFileIcon sx={{ fontSize: "75px" }} />
       </Avatar>
+
       {/* Start Form */}
       {cookies.role !== 50 && (
         <Box

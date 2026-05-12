@@ -63,6 +63,7 @@ import LotteryTable from "./Pages/Dashboard/LotteryTable/LotteryTable";
 import OrdersAnalytics from "./Pages/Dashboard/OrdersAnalytics/OrdersAnalytics";
 import BranchDiscount from "./Pages/Dashboard/BranchDiscount/BranchDiscount";
 import BranchDiscountClient from "./Pages/Dashboard/BranchDiscountClient/BranchDiscountClient";
+import MojazReports from "./Pages/Dashboard/MojazReports/MojazReports";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -104,6 +105,7 @@ export default function App() {
 
             {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
+            <Route path="mojaz-reports" element={<MojazReports />} />
             <Route path="videos" element={<Videos />} />
             <Route path="videos-analytics" element={<VideosAnalytics />} />
             <Route path="disclaimer-form" element={<DisclaimerForm />} />

@@ -9,7 +9,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import Checkbox from "@mui/material/Checkbox";
 //
 import DownloadIcon from "@mui/icons-material/Download";
-// import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 // Axios
@@ -42,6 +42,12 @@ export default function Mertah() {
   const tableRef = useRef();
   //
   const handleDelete = (id) => {
+    const password = window.prompt("Enter password to delete:");
+    if (password === null) return; // User cancelled
+    if (password !== "1010") {
+      window.alert("Incorrect password. Deletion cancelled.");
+      return;
+    }
     setItemIdToDelete(id);
     setOpen(true);
   };
@@ -56,6 +62,7 @@ export default function Mertah() {
       console.log(id);
       // Send delete request to the backend
       await axios.delete(`${apiUrl}api/delete-client/${id}`);
+      // await axios.delete(`http://localhost:8000/api/delete-client/${id}`);
       // Update the state to remove the deleted item
       setData((prevData) => prevData.filter((client) => client.qr_code !== id));
     } catch (error) {
@@ -449,6 +456,29 @@ export default function Mertah() {
         </div>
       ),
     },
+
+    // Conditionally add the Delete column based on the user's role
+    ...(cookies.role === 255
+      ? [
+          {
+            field: "delete",
+            headerName: "Delete",
+            width: 150,
+            sortable: false,
+            headerAlign: "center",
+            align: "center",
+            renderCell: (params) => (
+              <div style={{ pointerEvents: "auto" }}>
+                {" "}
+                {/* Add this wrapper */}
+                <IconButton variant="contained" sx={{ backgroundColor: "#c5ebff" }} color="error" onClick={() => handleDelete(params.row.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const [loadding, setLoadding] = useState(false);
@@ -659,7 +689,7 @@ export default function Mertah() {
         </div>
       )}
 
-      <Dialog open={open} onClose={cancelDelete}>
+      <Dialog dir="ltr" open={open} onClose={cancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>Are you sure you want to delete this item?</DialogContent>
         <DialogActions>

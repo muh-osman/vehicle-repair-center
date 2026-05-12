@@ -488,9 +488,11 @@ class PaidQrCodeController extends Controller
             }
         }
 
+        // Check 2: Payload secret token — ALWAYS validate if present
         // Additional security: Verify secret token from payload
+        // ✅ Reject if missing OR mismatched
         $payloadToken = $request->input('secret_token');
-        if ($payloadToken && $payloadToken !== $secretToken) {
+        if (!$payloadToken || !hash_equals($secretToken, $payloadToken)) {
             throw new \Exception('Invalid secret token in payload');
         }
 

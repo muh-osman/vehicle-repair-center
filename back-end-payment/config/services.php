@@ -31,4 +31,11 @@ return [
         ],
     ],
 
+    'mojaz' => [
+        'base_url'   => env('MOJAZ_BASE_URL'),
+        'client_key' => env('MOJAZ_CLIENT_KEY'),
+        'app_id'     => env('MOJAZ_APP_ID'),
+        'app_key'    => env('MOJAZ_APP_KEY'),
+    ],
+
 ];

@@ -43,7 +43,7 @@ export default function Requests() {
   const handleDelete = (id) => {
     const password = window.prompt("Enter password to delete:");
     if (password === null) return; // User cancelled
-    if (password !== "3652") {
+    if (password !== "1010") {
       window.alert("Incorrect password. Deletion cancelled.");
       return;
     }
@@ -556,7 +556,7 @@ export default function Requests() {
         </div>
       )}
 
-      <Dialog open={open} onClose={cancelDelete}>
+      <Dialog dir="ltr" open={open} onClose={cancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>Are you sure you want to delete this item?</DialogContent>
         <DialogActions>

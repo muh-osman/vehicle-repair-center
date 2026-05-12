@@ -262,11 +262,13 @@ class MoyasarShippingPaymentController extends Controller
     //         }
     //     }
 
-    //     // Additional security: Verify secret token from payload
-    //     $payloadToken = $request->input('secret_token');
-    //     if ($payloadToken && $payloadToken !== $secretToken) {
-    //         throw new \Exception('Invalid secret token in payload');
-    //     }
+    //      // Check 2: Payload secret token — ALWAYS validate if present
+    //      // Additional security: Verify secret token from payload
+    //      // ✅ Reject if missing OR mismatched
+    //      $payloadToken = $request->input('secret_token');
+    //      if (!$payloadToken || !hash_equals($secretToken, $payloadToken)) {
+    //     throw new \Exception('Invalid secret token in payload');
+    //      }
 
     //     // Verify event type is payment_paid
     //     $eventType = $request->input('type');
@@ -391,12 +393,12 @@ class MoyasarShippingPaymentController extends Controller
             }
 
             // Log successful retrieval
-            Log::channel('daily')->info('Payment data retrieved successfully from database', [
-                'database_id' => $payment->id,
-                'payment_id' => $payment->payment_id,
-                'status' => $payment->status,
-                'retrieved_at' => now()->toDateTimeString()
-            ]);
+            // Log::channel('daily')->info('Payment data retrieved successfully from database', [
+            //     'database_id' => $payment->id,
+            //     'payment_id' => $payment->payment_id,
+            //     'status' => $payment->status,
+            //     'retrieved_at' => now()->toDateTimeString()
+            // ]);
 
             // Return the database record directly
             return response()->json([
