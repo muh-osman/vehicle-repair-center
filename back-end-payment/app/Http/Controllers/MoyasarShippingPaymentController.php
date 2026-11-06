@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ShippingPaymentPaid;
 
+use App\Notifications\ShippingTransferPaid;
+
 class MoyasarShippingPaymentController extends Controller
 {
 
@@ -44,7 +46,7 @@ class MoyasarShippingPaymentController extends Controller
         }
     }
 
-    // Store shipping car order
+    // Store shipping car order (ذهاب صاحب السيارة إلى شركة الشحن)
     public function storeShippingCarOrder(Request $request)
     {
         try {
@@ -76,7 +78,7 @@ class MoyasarShippingPaymentController extends Controller
             ]);
 
             // Send email notification to multiple recipients
-            // $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            // $recipients = ['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
             $recipients = ['gp415400@gmail.com']; // For testing
 
             try {
@@ -185,7 +187,7 @@ class MoyasarShippingPaymentController extends Controller
     //         $payment = MoyasarShippingPayment::create($paymentInfo);
 
     //         // Send email notification to multiple recipients
-    //         $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+    //         $recipients = ['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
     //         // $recipients = ['gp415400@gmail.com']; // For testing
 
     //         try {
@@ -638,5 +640,251 @@ class MoyasarShippingPaymentController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get shipping payments count for last 12 months
+     */
+    public function getShippingPaymentsCountLast12Months()
+    {
+        try {
+            $startDate = now()->subMonths(11)->startOfMonth();
+            $endDate = now()->endOfMonth();
+
+            // Query shipping payments grouped by month
+            $result = MoyasarShippingPayment::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get()
+                ->keyBy('month');
+
+            // Build last 12 months response (including empty months)
+            $months = [];
+            for ($i = 0; $i < 12; $i++) {
+                $date = $startDate->copy()->addMonths($i);
+                $monthKey = $date->format('Y-m');
+
+                $months[] = [
+                    'month'    => $date->format('M'), // Jan, Feb, etc.
+                    'year'     => $date->format('Y'), // 2025
+                    'orders'   => isset($result[$monthKey]) ? (int) $result[$monthKey]->total : 0,
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Shipping payments count for last 12 months',
+                'data'    => $months,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::channel('daily')->error('Failed to retrieve shipping payments analytics', [
+                'error'     => $e->getMessage(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to retrieve analytics data',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Store shipping payment received from Mojaz payment webhook (سطحة من مركز الفحص إلى شركة الشحن) 115 SAR
+     *
+     * @param array $metadata
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeShippingPaymentFromMojaz(array $paymentData)
+    {
+        try {
+
+            // Get metadata from Moyasar payment data
+            $metadata = $paymentData['metadata'] ?? [];
+
+            // Prepare shipping payment data from Moyaz metadata
+            $paymentInfo = [
+                // This comes from metadata, not from Moyasar payment ID
+                'payment_id' => $paymentData['id'] ?? null,
+                // Customer / vehicle information
+                'name' => $metadata['name'] ?? null,
+                'reportNumber' => $metadata['reportNumber'] ?? null,
+                'model' => $metadata['model'] ?? null,
+                'modelCategory' => $metadata['modelCategory'] ?? null,
+                'plateNumber' => $metadata['plateNumber'] ?? 'N/A',
+                // Shipping information
+                'from' => $metadata['from'] ?? null,
+                'to' => $metadata['to'] ?? null,
+                'shippingType' => $metadata['shippingType'] ?? null,
+                // IMPORTANT:
+                // This is the shipping price WITHOUT the 100 SAR fee
+                'price' => $metadata['price'] ?? 0,
+                // Customer contact
+                'phoneNumber' => $metadata['phoneNumber'] ?? null,
+                // This is explicitly supplied by frontend metadata
+                'status' => $metadata['status'] ?? 'الدفع عند الاستلام',
+                // Default values for a new shipping order
+                'isShipped' => false,
+                'accountant_status' => false,
+            ];
+
+            // Validate the required data
+            $validator = validator($paymentInfo, [
+                'payment_id' => 'required|string|max:255',
+                'name' => 'required|string|max:255',
+                'reportNumber' => 'required|max:255',
+                'model' => 'required|string|max:255',
+                'modelCategory' => 'required|string|max:255',
+                'plateNumber' => 'required|string|max:255',
+                'from' => 'required|string|max:255',
+                'to' => 'required|string|max:255',
+                'shippingType' => 'required|string|max:255',
+                'price' => 'required|numeric|min:0',
+                'phoneNumber' => 'required|string|max:255',
+                'status' => 'required|string|max:255',
+                'isShipped' => 'boolean',
+                'accountant_status' => 'boolean',
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+
+            // Prevent duplicate webhook processing using the actual Moyasar payment ID
+            $existingPayment = MoyasarShippingPayment::where(
+                'payment_id',
+                $paymentInfo['payment_id']
+            )->first();
+
+            if ($existingPayment) {
+                Log::channel('daily')->info(
+                    'Moyasar shipping payment already exists',
+                    [
+                        'database_id' => $existingPayment->id,
+                        'payment_id' => $existingPayment->payment_id,
+                        'report_number' => $existingPayment->reportNumber,
+                        'phone_number' => $existingPayment->phoneNumber,
+                    ]
+                );
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Shipping payment already exists in database',
+                    'payment_id' => $existingPayment->payment_id,
+                    'database_id' => $existingPayment->id,
+                ], 200);
+            }
+
+            // Store shipping payment
+            $payment = MoyasarShippingPayment::create($paymentInfo);
+
+            // Prepare email data
+            $emailData = array_merge($paymentInfo, [
+                'database_id' => $payment->id,
+            ]);
+
+            // Send notification
+            // $recipients = ['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            $recipients = ['gp415400@gmail.com']; // Testing
+
+            try {
+                // First email notification
+                Notification::route('mail', $recipients)
+                    ->notify(new ShippingPaymentPaid($emailData));
+
+
+                // second email notification after 15s
+                $transferEmailData = array_merge($emailData, [
+                    'price' => 115,
+                ]);
+                dispatch(function () use ($transferEmailData, $recipients, $payment) {
+                    sleep(15);
+                    try {
+                        Notification::route('mail', $recipients)
+                            ->notify(new ShippingTransferPaid($transferEmailData));
+
+                        Log::channel('daily')->info('Shipping transfer email notification sent successfully', [
+                            'payment_id' => $payment->payment_id,
+                            'database_id' => $payment->id,
+                            'recipients' => $recipients,
+                            'sent_at' => now()->toDateTimeString(),
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::channel('daily')->error('Shipping transfer email notification failed', [
+                            'error' => $e->getMessage(),
+                            'payment_id' => $payment->payment_id,
+                            'database_id' => $payment->id,
+                            'recipients' => $recipients,
+                            'timestamp' => now()->toDateTimeString(),
+                        ]);
+                    }
+                })->afterResponse();
+
+                Log::channel('daily')->info(
+                    'Shipping payment email notification sent successfully',
+                    [
+                        'payment_id' => $payment->payment_id,
+                        'database_id' => $payment->id,
+                        'recipients' => $recipients,
+                        'sent_at' => now()->toDateTimeString(),
+                    ]
+                );
+            } catch (\Exception $e) {
+                // Do not fail the payment storage if email fails
+                Log::channel('daily')->error(
+                    'Shipping payment email notification failed',
+                    [
+                        'error' => $e->getMessage(),
+                        'payment_id' => $payment->payment_id,
+                        'database_id' => $payment->id,
+                        'recipients' => $recipients,
+                        'timestamp' => now()->toDateTimeString(),
+                    ]
+                );
+            }
+
+            // Log successful storage
+            Log::channel('daily')->info(
+                'Moyasar shipping payment from Mojaz stored successfully',
+                [
+                    'database_id' => $payment->id,
+                    'payment_id' => $payment->payment_id,
+                    'report_number' => $payment->reportNumber,
+                    'price' => $payment->price,
+                    'status' => $payment->status,
+                    'stored_at' => now()->toDateTimeString(),
+                ]
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Shipping payment stored successfully',
+                'payment_id' => $payment->payment_id,
+                'database_id' => $payment->id,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::channel('daily')->error(
+                'Failed to store shipping payment from Mojaz',
+                [
+                    'error' => $e->getMessage(),
+                    'metadata' => $metadata,
+                    'timestamp' => now()->toDateTimeString(),
+                ]
+            );
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to store shipping payment',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getShippingPaymentIdByPaymentId(string $paymentId): ?int
+    {
+        return MoyasarShippingPayment::where('payment_id', $paymentId)
+            ->value('id');
     }
 }

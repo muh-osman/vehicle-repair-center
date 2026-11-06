@@ -25,6 +25,7 @@ use App\Http\Controllers\MarketingPostController;
 use App\Http\Controllers\BranchDiscountController;
 use App\Http\Controllers\YearOfManufactureController;
 use App\Http\Controllers\SendWithdrawNotificationController;
+use App\Http\Controllers\ServiceDiscountController;
 
 
 // Group for protected routes
@@ -98,6 +99,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('new-delete-video/{id}', [VideosReportController::class, 'destroy']);
     Route::get('videos-reports-analytics', [VideosReportController::class, 'analytics']);
 
+    Route::post('upload-video-chunk', [VideosReportController::class, 'uploadChunk']);
+    Route::post('new-edit-video-chunked/{id}', [VideosReportController::class, 'updateChunked']);
+
+
     // Falak Videos
     Route::post('post-falak-video', [FalakVideoController::class, 'store']);
     Route::delete('delete-falak-video/{id}', [FalakVideoController::class, 'destroy']);
@@ -136,6 +141,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-all-branch-discount', [BranchDiscountController::class, 'index']);
     Route::post('post-branch-discount', [BranchDiscountController::class, 'store']);
     Route::delete('delete-branch-discount/{id}', [BranchDiscountController::class, 'destroy']);
+
+
+    // Discount service
+    Route::post('service-discounts', [ServiceDiscountController::class, 'store']);
+    Route::put('service-discounts/{id}', [ServiceDiscountController::class, 'update']);
+    Route::delete('service-discounts/{id}', [ServiceDiscountController::class, 'destroy']);
 });
 
 
@@ -195,6 +206,7 @@ Route::middleware('guest')->group(function () {
     Route::post('post-accepted-phone-number', [PhoneNumberController::class, 'store']);
     Route::get('get-all-accepted-phone-numbers', [PhoneNumberController::class, 'index']);
     Route::get('check-if-phone-numbers-exist-in-db/{phoneNumber}', [PhoneNumberController::class, 'checkIfPhoneNumberExistInDb']);
+    Route::post('i-accept-terms/{phoneNumber}', [PhoneNumberController::class, 'acceptTerms']);
     // // Get all marketing posts
     Route::get('get-all/marketing-posts', [MarketingPostController::class, 'index']);
     // Get all marketing posts (return images as file)
@@ -242,4 +254,8 @@ Route::middleware('guest')->group(function () {
 
     // Branch discount
     Route::get('show-branch-discount/{branch}', [BranchDiscountController::class, 'show']);
+
+    // Discount service
+    Route::get('service-discounts', [ServiceDiscountController::class, 'index']);
+    Route::get('service-discounts/{id}', [ServiceDiscountController::class, 'show']);
 });

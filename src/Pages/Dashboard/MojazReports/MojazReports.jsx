@@ -89,6 +89,7 @@ export default function MojazReports() {
       mojaz_request_id: order.mojaz_request_id,
       pdf_url: order.pdf_url || null,
       created_at: order.created_at,
+      main_report_number: order.main_report_number || "N/A",
     }));
 
   const handleFilter = () => {
@@ -263,6 +264,16 @@ export default function MojazReports() {
       headerName: "User ID",
       flex: 1,
       minWidth: 120,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (params.value ? params.value : <div style={{ color: "#757575" }}>N/A</div>),
+    },
+    {
+      field: "main_report_number",
+      headerName: "Main Report Id",
+      flex: 1,
+      minWidth: 180,
       sortable: false,
       headerAlign: "center",
       align: "center",

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 // Axios
 import axios from "axios";
 //
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 // MUI
 import CircularProgress from "@mui/material/CircularProgress";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -171,6 +171,11 @@ export default function ShippingClient() {
       address: "بريدة - شارع قرطبة",
       link: "https://maps.app.goo.gl/ooynnSB14yZQjUvaA",
     },
+    {
+      nameAr: "خميس مشيط",
+      address: "خميس مشيط",
+      link: "https://this_link_should_change",
+    },
   ];
   // Find the matching Albasami branch
   const matchedBranch = albasamiBranches.find((branch) => branch.nameAr === data?.from);
@@ -198,7 +203,9 @@ export default function ShippingClient() {
             {/* Header */}
             <div style={{ width: "100%", padding: "16px 0", textAlign: "center" }}>
               <div style={{ width: "100px", margin: "auto" }}>
-                <img style={{ width: "100%" }} src={logo} alt="cashif logo" />
+                <a href="https://cashif.cc/dashboard/reports" style={{ display: "block" }}>
+                  <img style={{ width: "100%", cursor: "pointer" }} src={logo} alt="cashif logo" />
+                </a>
               </div>
 
               <h4 dir="rtl" style={{ fontSize: "18px", marginTop: "16px" }}>
@@ -245,6 +252,13 @@ export default function ShippingClient() {
                     <td>الخدمة:</td>
                     <td>شحن سيارة</td>
                   </tr>
+
+                  {/* <tr>
+                    <td>طريقة التسليم :</td>
+                    <td style={data?.modelCategory === "سطحة من مركز الفحص إلى شركة الشحن" ? { backgroundColor: "#d32f2f", color: "#fff" } : undefined}>
+                      {data?.modelCategory ? data?.modelCategory : "غير متوفر"}
+                    </td>
+                  </tr> */}
 
                   <tr>
                     <td>نوع الشحن :</td>
@@ -318,7 +332,7 @@ export default function ShippingClient() {
           </div>
 
           {/* Download buttons section */}
-          <div dir="rtl" style={{ textAlign: "center", marginTop: "20px", marginBottom: "36px", display: "flex", justifyContent: "center", gap: "10px" }}>
+          <div dir="rtl" style={{ textAlign: "center", marginTop: "20px", marginBottom: "10px", display: "flex", justifyContent: "center", gap: "10px" }}>
             {/* Option 1: Two separate buttons */}
             <button
               onClick={() => downloadImage("png")}
@@ -370,6 +384,31 @@ export default function ShippingClient() {
               تحميل البيانات كصورة
             </button>
           </div> */}
+
+          {/* Back Button */}
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="https://cashif.cc/dashboard/reports"
+              style={{
+                padding: "12px 18px",
+                backgroundColor: "#1976d2",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "16px",
+                minWidth: "160px",
+                textDecoration: "none",
+                display: "inline-block",
+                textAlign: "center",
+                minWidth: "340px",
+                margin: "auto",
+                marginBottom: "36px",
+              }}
+            >
+              عودة
+            </a>
+          </div>
         </>
       )}
     </div>

@@ -27,7 +27,7 @@ import { toast } from "react-toastify";
 // Add this import at the top of your file
 import QRCode from "qrcode";
 
-const BRANCHES = ["القادسية", "الشفا", "الدمام", "جدة", "القصيم"];
+const BRANCHES = ["القادسية", "الشفا", "الدمام", "جدة", "القصيم", "خميس مشيط"];
 
 export default function BranchDiscount() {
   useEffect(() => {

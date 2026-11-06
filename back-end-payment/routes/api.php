@@ -67,6 +67,7 @@ Route::middleware('guest')->group(function () {
     // Tabby Payment Route
     Route::post('/pay-with-tabby', [TabbyPaidClientController::class, 'processPayment']); // cerate checkout url using Tabby api
     Route::post('/tabby-webhooks', [TabbyPaidClientController::class, 'tabbyWebhook']); // Tabby webhook
+    Route::post('/test-tabby-webhooks', [TabbyPaidClientController::class, 'tabbyWebhook']); // Test Tabby webhook
 
 
 
@@ -83,6 +84,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 
     Route::get('/orders/monthly-count-last-12-months', [UnPaidQrCodeController::class, 'getOrdersCountLast12Months']);
+    Route::get('/orders/monthly-count-last-12-months-for-mertah-orders', [UnPaidQrCodeController::class, 'getSpecialServiceOrdersCountLast12Months']);
 
 
     // Shipping payments Webhook
@@ -94,6 +96,8 @@ Route::middleware('guest')->group(function () {
     Route::put('/shipping-payments/mark-as-shipped/{id}', [MoyasarShippingPaymentController::class, 'markAsShipped']);
     Route::put('/shipping-payments/update_accounted_status/{id}', [MoyasarShippingPaymentController::class, 'markAsAccounted']);
     Route::put('/shipping-payments/update_note/{id}', [MoyasarShippingPaymentController::class, 'updateNote']);
+    Route::get('/shipping-payments/orders/monthly-count-last-12-months', [MoyasarShippingPaymentController::class, 'getShippingPaymentsCountLast12Months']);
+    Route::get('/get-shipping-payment-id-by-paymentId/{paymentId}', [MoyasarShippingPaymentController::class, 'getShippingPaymentIdByPaymentId']);
 
     // Mertah
     // For the first method (only paid tables)
@@ -107,9 +111,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/mojaz/inquiry', [MojazController::class, 'inquiry']);
     Route::get('/mojaz/orders/{user_id}', [MojazController::class, 'userOrders']);
     Route::get('/mojaz/all-orders', [MojazController::class, 'index']);
+
+    // Note: $id is id of order in DB NOT "Mojaz Request ID"
     // Route::get('/test-mojaz/{id}', function ($id) {
     //     $order = \App\Models\MojazOrder::findOrFail($id);
     //     \App\Jobs\InitiateMojazReport::dispatchSync($order);
     //     return 'Done';
     // });
+
+    // Loop on records to find which record NOT send to Internal System yet
+    Route::get('/send-to-internal-system', [UnPaidQrCodeController::class, 'sendToInternalSystem']);
+
+    // this api for "my orders" page
+    Route::get('/my-orders/{phone}', [UnPaidQrCodeController::class, 'getRecordsByPhone']);
+
+    // this api mark order as canceled in internal system
+    Route::put('/order/mark-as-canceled/{qrCode}', [UnPaidQrCodeController::class, 'setCanceledStatus']);
 });

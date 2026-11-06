@@ -29,31 +29,38 @@ export default function Scan() {
   const scanUserId = async () => {
     qrScanSoundEffect.play(); // Sound
     try {
-      if (scanResult.startsWith("free-")) {
-        // Free Order
-        const trimmedFreeOrderScanResult = scanResult.replace(/^free-/, "");
-        navigate(`/dashboard/free-order-result/${trimmedFreeOrderScanResult}`);
-      } else if (scanResult.startsWith("lottery-")) {
-        // Lottery
-        const trimmedLotteryScanResult = scanResult.replace(/^lottery-/, "");
-        navigate(`/dashboard/lottery-result/${trimmedLotteryScanResult}`);
-      } else if (scanResult.includes("branch-discount-client")) {
+      if (scanResult.includes("branch-discount-client")) {
         // Branch discount
         // Extract the part after the last slash
         const xxx = scanResult.substring(scanResult.lastIndexOf("/") + 1);
         navigate(`/branch-discount-client/${xxx}`);
-      } else if (scanResult.startsWith("tamara")) {
-        // Tamara payment
-        const trimmedScanResult = scanResult.replace(/^tamara/, ""); // Remove "tamara" from the beginning of scanResult
-        navigate(`/dashboard/tamara-client/${trimmedScanResult}`);
-      } else if (scanResult.startsWith("tabby")) {
-        // Tabby payment
-        const trimmedTabbyScanResult = scanResult.replace(/^tabby/, ""); // Remove "tabby" from the beginning of scanResult
-        navigate(`/dashboard/tabby-client/${trimmedTabbyScanResult}`);
-      } else {
-        // Moyasar payment
-        navigate(`/dashboard/paid-client/${scanResult}`);
       }
+
+      // if (scanResult.startsWith("free-")) {
+      //   // Free Order
+      //   const trimmedFreeOrderScanResult = scanResult.replace(/^free-/, "");
+      //   navigate(`/dashboard/free-order-result/${trimmedFreeOrderScanResult}`);
+      // } else if (scanResult.startsWith("lottery-")) {
+      //   // Lottery
+      //   const trimmedLotteryScanResult = scanResult.replace(/^lottery-/, "");
+      //   navigate(`/dashboard/lottery-result/${trimmedLotteryScanResult}`);
+      // } else if (scanResult.includes("branch-discount-client")) {
+      //   // Branch discount
+      //   // Extract the part after the last slash
+      //   const xxx = scanResult.substring(scanResult.lastIndexOf("/") + 1);
+      //   navigate(`/branch-discount-client/${xxx}`);
+      // } else if (scanResult.startsWith("tamara")) {
+      //   // Tamara payment
+      //   const trimmedScanResult = scanResult.replace(/^tamara/, ""); // Remove "tamara" from the beginning of scanResult
+      //   navigate(`/dashboard/tamara-client/${trimmedScanResult}`);
+      // } else if (scanResult.startsWith("tabby")) {
+      //   // Tabby payment
+      //   const trimmedTabbyScanResult = scanResult.replace(/^tabby/, ""); // Remove "tabby" from the beginning of scanResult
+      //   navigate(`/dashboard/tabby-client/${trimmedTabbyScanResult}`);
+      // } else {
+      //   // Moyasar payment
+      //   navigate(`/dashboard/paid-client/${scanResult}`);
+      // }
     } catch (err) {
       console.log(err);
       setError(err.message);
@@ -157,7 +164,7 @@ export default function Scan() {
 
         {/* <pre>{scanResult && scanResult}</pre> */}
 
-        <TextField
+        {/* <TextField
           label="Phone Number"
           placeholder="05XXXXXXXX"
           variant="outlined"
@@ -169,11 +176,11 @@ export default function Scan() {
             minLength: 10,
             maxLength: 10,
           }}
-        />
+        /> */}
 
-        <LoadingButton variant="contained" onClick={handleSubmit} loading={isLoading} disabled={inputValue.length < 10} fullWidth size="large" sx={{ marginTop: "16px" }}>
+        {/* <LoadingButton variant="contained" onClick={handleSubmit} loading={isLoading} disabled={inputValue.length < 10} fullWidth size="large" sx={{ marginTop: "16px" }}>
           Search
-        </LoadingButton>
+        </LoadingButton> */}
 
         {/* Fetch error */}
         {error && <pre style={{ color: "red", overflow: "hidden" }}>{error}</pre>}

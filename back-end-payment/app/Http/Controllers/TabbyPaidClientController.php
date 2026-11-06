@@ -200,12 +200,12 @@ class TabbyPaidClientController extends Controller
             }
 
             // Make API request if redeemeAmoumntValue > 0
-            if ($redeemeAmoumntValue > 0 && !empty($clientId)) {
-                $this->updateClientPoints($clientId, $redeemeAmoumntValue);
-            }
+            // if ($redeemeAmoumntValue > 0 && !empty($clientId)) {
+            //     $this->updateClientPoints($clientId, $redeemeAmoumntValue);
+            // }
 
             // Send notification to recipients
-            $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            $recipients = ['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com', 'thamralsbyy139@gmail.com'];
             // $recipients = ['gp415400@gmail.com'];
 
             $paymentMethod = "Tabby";
@@ -240,40 +240,40 @@ class TabbyPaidClientController extends Controller
     }
 
 
-    private function updateClientPoints($clientId, $redeemeAmoumntValue)
-    {
-        try {
-            $dataPayload = [
-                "clientId" => (int)$clientId,
-                "points" => (int)$redeemeAmoumntValue
-            ];
+    // private function updateClientPoints($clientId, $redeemeAmoumntValue)
+    // {
+    //     try {
+    //         $dataPayload = [
+    //             "clientId" => (int)$clientId,
+    //             "points" => (int)$redeemeAmoumntValue
+    //         ];
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json-patch+json',
-            ])->put("https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto", $dataPayload);
+    //         $response = Http::withHeaders([
+    //             'Content-Type' => 'application/json-patch+json',
+    //         ])->put("https://cashif-001-site1.dtempurl.com/api/Clients/UpdateClientPointDto", $dataPayload);
 
-            if ($response->successful()) {
-                Log::info('Client points updated successfully', [
-                    'clientId' => $clientId,
-                    'points' => $redeemeAmoumntValue,
-                    'response' => $response->json(),
-                ]);
-            } else {
-                Log::error('Failed to update client points', [
-                    'clientId' => $clientId,
-                    'points' => $redeemeAmoumntValue,
-                    'status' => $response->status(),
-                    'response' => $response->body(),
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error occurred while updating client points', [
-                'clientId' => $clientId,
-                'points' => $redeemeAmoumntValue,
-                'message' => $e->getMessage(),
-            ]);
-        }
-    }
+    //         if ($response->successful()) {
+    //             Log::info('Client points updated successfully', [
+    //                 'clientId' => $clientId,
+    //                 'points' => $redeemeAmoumntValue,
+    //                 'response' => $response->json(),
+    //             ]);
+    //         } else {
+    //             Log::error('Failed to update client points', [
+    //                 'clientId' => $clientId,
+    //                 'points' => $redeemeAmoumntValue,
+    //                 'status' => $response->status(),
+    //                 'response' => $response->body(),
+    //             ]);
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Error occurred while updating client points', [
+    //             'clientId' => $clientId,
+    //             'points' => $redeemeAmoumntValue,
+    //             'message' => $e->getMessage(),
+    //         ]);
+    //     }
+    // }
 
 
     private function capturePayment($paymentId, $amount)
@@ -391,45 +391,47 @@ class TabbyPaidClientController extends Controller
 
                     // Marketer API
                     // Check if discountCode and marketerShare are not null
-                    if (!is_null($qrCode->discountCode) && !is_null($qrCode->marketerShare)) {
-                        // Prepare data for the API Marketer request
-                        $dataPayload = [
-                            'id' => 0,
-                            'code' => $qrCode->discountCode, // Assuming discountCode is already set
-                            'points' => (int) $qrCode->marketerShare, // Assuming marketerShare is already set
-                            'clientId' => 0,
-                            'cardCountFromSite' => 0,
-                            'isActive' => true
-                        ];
+                    // if (!is_null($qrCode->discountCode) && !is_null($qrCode->marketerShare)) {
+                    //     // Prepare data for the API Marketer request
+                    //     $dataPayload = [
+                    //         'id' => 0,
+                    //         'code' => $qrCode->discountCode, // Assuming discountCode is already set
+                    //         'points' => (int) $qrCode->marketerShare, // Assuming marketerShare is already set
+                    //         'clientId' => 0,
+                    //         'cardCountFromSite' => 0,
+                    //         'isActive' => true
+                    //     ];
 
-                        // Make the API request
-                        try {
-                            $res = Http::withHeaders([
-                                'Content-Type' => 'application/json-patch+json',
-                            ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $dataPayload);
+                    //     // Make the API request
+                    //     try {
+                    //         $res = Http::withHeaders([
+                    //             'Content-Type' => 'application/json-patch+json',
+                    //         ])->put("https://cashif-001-site1.dtempurl.com/api/Marketers", $dataPayload);
 
-                            // Optionally handle the response from the API
-                            if ($res->successful()) {
-                                Log::info('API request successful', [
-                                    'response' => $res->json(), // Log the response data
-                                ]);
-                            } else {
-                                Log::error('API request failed', [
-                                    'status' => $res->status(),
-                                    'response' => $res->json(), // Log the error response data
-                                ]);
-                            }
-                        } catch (\Exception $e) {
-                            // Handle any exceptions that may occur during the request
-                            Log::error('Error occurred while making API request', [
-                                'message' => $e->getMessage(),
-                            ]);
-                            // Handle any exceptions that may occur during the request
-                            return response()->json([
-                                'message' => 'Error occurred while making API request: ' . $e->getMessage(),
-                            ], 500);
-                        }
-                    }
+                    //         // Optionally handle the response from the API
+                    //         if ($res->successful()) {
+                    //             Log::info('API request successful', [
+                    //                 'response' => $res->json(), // Log the response data
+                    //             ]);
+                    //         } else {
+                    //             Log::error('API request failed', [
+                    //                 'status' => $res->status(),
+                    //                 'response' => $res->json(), // Log the error response data
+                    //             ]);
+                    //         }
+                    //     } catch (\Exception $e) {
+                    //         // Handle any exceptions that may occur during the request
+                    //         Log::error('Error occurred while making API request', [
+                    //             'message' => $e->getMessage(),
+                    //         ]);
+                    //         // Handle any exceptions that may occur during the request
+                    //         return response()->json([
+                    //             'message' => 'Error occurred while making API request: ' . $e->getMessage(),
+                    //         ], 500);
+                    //     }
+                    // }
+
+
                 }
                 // Return the modified response
                 return response()->json([

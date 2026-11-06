@@ -11,5 +11,11 @@ class PhoneNumber extends Model
 
     protected $fillable = [
         'accepted_phone_number',
+        'is_accept_terms',
+        'special_code',
+    ];
+
+    protected $casts = [
+        'is_accept_terms' => 'boolean',
     ];
 }

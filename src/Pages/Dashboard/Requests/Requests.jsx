@@ -22,13 +22,13 @@ import Tabby from "../../../Assets/Images/tabby.png";
 import Tamara from "../../../Assets/Images/tamara.png";
 import Moyasar from "../../../Assets/Images/moyasar.png";
 import unPaid from "../../../Assets/Images/unPaid.png";
-// Ant Design
-import { DatePicker } from "antd";
+
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-// API
+
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
-// Ant Design
-const { RangePicker } = DatePicker;
 
 export default function Requests() {
   const navigate = useNavigate();
@@ -194,7 +194,7 @@ export default function Requests() {
       field: "plan",
       headerName: "Plan",
       flex: 1,
-      minWidth: 100,
+      minWidth: 125,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -210,6 +210,19 @@ export default function Requests() {
       align: "center",
       filterable: true,
       renderCell: (params) => <div dir="rtl">{Math.trunc(params.value)} ريال</div>,
+    },
+    {
+      field: "address",
+      headerName: "City",
+      flex: 1,
+      minWidth: 100,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? params.value : <div>N/A</div>;
+      },
     },
     {
       field: "discountCode",
@@ -326,23 +339,6 @@ export default function Requests() {
       align: "center",
       filterable: true,
     },
-    // {
-    //   field: "affiliate",
-    //   headerName: "Affiliate",
-    //   flex: 1,
-    //   minWidth: 150,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   filterable: true,
-    //   renderCell: (params) => {
-    //     return params.value ? (
-    //       params.value
-    //     ) : (
-    //       <div style={{ color: "#757575" }}>N/A</div>
-    //     );
-    //   },
-    // },
     {
       field: "date_of_visited",
       headerName: "Date of visited",
@@ -358,8 +354,58 @@ export default function Requests() {
             {formatDate(params.value)} - {formatTime(params.value)}
           </div>
         ) : (
-          <div style={{ color: "#fff" }}>N/A</div>
+          <div>N/A</div>
         );
+      },
+    },
+
+    {
+      field: "is_sent_to_internal_system",
+      headerName: "Sent To Internal System",
+      flex: 1,
+      minWidth: 180,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        if (params.value === null || params.value === undefined) {
+          return <div>N/A</div>;
+        }
+
+        return <div>{params.value ? "Yes" : "No"}</div>;
+      },
+    },
+
+    // {
+    //   field: "isCanceled",
+    //   headerName: "Is Canceled",
+    //   flex: 1,
+    //   minWidth: 120,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   filterable: true,
+    //   renderCell: (params) => {
+    //     if (params.value === null || params.value === undefined) {
+    //       return <div>N/A</div>;
+    //     }
+
+    //     return <div>{params.value ? "Yes" : "No"}</div>;
+    //   },
+    // },
+
+    {
+      field: "affiliate",
+      headerName: "Front-end discount",
+      flex: 1,
+      minWidth: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+      renderCell: (params) => {
+        return params.value ? params.value : <div>0</div>;
       },
     },
 
@@ -419,6 +465,9 @@ export default function Requests() {
         created_at: client.created_at,
         gateway: client.table_name,
         visited: client.date_of_visited,
+        address: client.address,
+        is_sent_to_internal_system: client.is_sent_to_internal_system,
+        isCanceled: client.isCanceled,
       }));
       // console.log(response.data);
       setData(transformedData);
@@ -457,17 +506,21 @@ export default function Requests() {
 
   /////////////////////////////////
   // Add this state near your other state declarations
-  const [dateRange, setDateRange] = useState([]);
+  const [dateRange, setDateRange] = useState([null, null]);
 
   // Add this function to handle date range changes
-  const handleDateRangeChange = (dates) => {
-    setDateRange(dates);
+  const handleDateRangeChange = (index, newValue) => {
+    setDateRange((prev) => {
+      const updated = [...prev];
+      updated[index] = newValue;
+      return updated;
+    });
   };
 
-  const disabledDate = (current) => {
-    // Disable dates after today
-    return current && current > dayjs().endOf("day");
-  };
+  // const disabledDate = (current) => {
+  //   // Disable dates after today
+  //   return current && current > dayjs().endOf("day");
+  // };
   //////////////////////////
 
   const rows = data
@@ -497,6 +550,9 @@ export default function Requests() {
       marketerShare: client.marketerShare,
       redeemeAmoumntValue: client.redeemeAmoumntValue,
       clientId: client.clientId,
+      address: client.address,
+      is_sent_to_internal_system: client.is_sent_to_internal_system,
+      isCanceled: client.isCanceled,
     }))
     .filter((client) => {
       // Apply active button filter
@@ -507,8 +563,8 @@ export default function Requests() {
       // Apply date range filter if dates are selected
       let dateFilter = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
-        const startDate = dateRange[0].startOf("day");
-        const endDate = dateRange[1].endOf("day");
+        const startDate = dateRange[0].startOf("day").toDate();
+        const endDate = dateRange[1].endOf("day").toDate();
         const clientDate = new Date(client.created_at);
 
         dateFilter = clientDate >= startDate && clientDate <= endDate;
@@ -569,7 +625,7 @@ export default function Requests() {
         </DialogActions>
       </Dialog>
 
-      <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+      {/* <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
         <Button
           sx={{
             width: "100%",
@@ -583,7 +639,7 @@ export default function Requests() {
           All
         </Button>
 
-        {/* <Button
+        <Button
           sx={{
             width: "100%",
             flex: 1,
@@ -594,7 +650,7 @@ export default function Requests() {
           onClick={() => handleButtonClick("paid")}
         >
           Paid
-        </Button> */}
+        </Button>
 
         <Button
           sx={{
@@ -622,7 +678,7 @@ export default function Requests() {
           Not Visited
         </Button>
 
-        {/* <DownloadTableExcel
+        <DownloadTableExcel
           filename="orders table"
           sheet="orders"
           currentTableRef={tableRef.current}
@@ -638,8 +694,8 @@ export default function Requests() {
           >
             <DownloadIcon />
           </Button>
-        </DownloadTableExcel> */}
-      </Stack>
+        </DownloadTableExcel>
+      </Stack> */}
 
       <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
         <Button
@@ -669,15 +725,20 @@ export default function Requests() {
             <th>Branch</th>
             <th>Plan</th>
             <th>Price</th>
+            <th>City</th>
+            <th>Discount code</th>
+            <th>Marketer share</th>
+            <th>Redeemed points</th>
+            <th>Client Id</th>
             <th>Model</th>
             <th>Year</th>
             <th>Service</th>
             <th>Additional Services</th>
             <th>Reference Number</th>
-            <th>Affiliate</th>
             <th>Date of visited</th>
-            <th>Discount code</th>
-            <th>Marketer share</th>
+            <th>Sent To Internal System</th>
+            <th>Is Canceled</th>
+            <th>Front-end discount</th>
           </tr>
         </thead>
         <tbody>
@@ -692,27 +753,73 @@ export default function Requests() {
               <td>{row.branch}</td>
               <td>{row.plan}</td>
               <td>{row.price}</td>
+              <td>{row.address}</td>
+              <td>{row.discountCode || "N/A"}</td>
+              <td>{row.marketerShare || "N/A"}</td>
+              <td>{row.redeemeAmoumntValue || "N/A"}</td>
+              <td>{row.clientId || "N/A"}</td>
               <td>{row.model}</td>
               <td>{row.mergedYear}</td>
               <td>{row.service || "N/A"}</td>
               <td>{row.additionalServices || "N/A"}</td>
               <td>{row.barCode}</td>
-              <td>{row.affiliate || "N/A"}</td>
               <td>{row.date_of_visited || "N/A"}</td>
-              <td>{row.discountCode || "N/A"}</td>
-              <td>{row.marketerShare || "N/A"}</td>
-
-              <td>{row.redeemeAmoumntValue || "N/A"}</td>
-              <td>{row.clientId || "N/A"}</td>
+              <td>{row.is_sent_to_internal_system === null || row.is_sent_to_internal_system === undefined ? "N/A" : row.is_sent_to_internal_system ? "Yes" : "No"}</td>
+              <td>{row.isCanceled === null || row.isCanceled === undefined ? "N/A" : row.isCanceled ? "Yes" : "No"}</td>
+              <td>{row.affiliate || 0}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/*  */}
-      <div style={{ textAlign: "center", marginBottom: "16px" }}>
-        <RangePicker onChange={handleDateRangeChange} disabledDate={disabledDate} />
-      </div>
+      <Stack
+        dir="ltr"
+        sx={{ pb: 2, maxWidth: "617px", margin: "auto", direction: "ltr" }}
+        spacing={2}
+        justifyContent="center"
+        direction={{ xs: "row", sm: "row" }}
+        alignItems="stretch"
+      >
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Stack dir="ltr" direction={{ xs: "row", sm: "row" }} spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 2, width: "100%", direction: "ltr" }}>
+            <DatePicker
+              label="Start Date"
+              value={dateRange[0] ?? null}
+              onChange={(newValue) => handleDateRangeChange(0, newValue)}
+              maxDate={dateRange[1] ?? dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: {
+                  sx: { direction: "ltr" }, // 👈 targets the portal directly
+                },
+                mobilePaper: {
+                  sx: { direction: "ltr" },
+                  dir: "ltr", // 👈 for mobile dialog/drawer
+                },
+              }}
+              sx={{ width: "100%" }}
+            />
+            <DatePicker
+              label="End Date"
+              value={dateRange[1] ?? null}
+              onChange={(newValue) => handleDateRangeChange(1, newValue)}
+              minDate={dateRange[0] ?? undefined}
+              maxDate={dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: {
+                  sx: { direction: "ltr" }, // 👈 targets the portal directly
+                },
+                mobilePaper: {
+                  sx: { direction: "ltr" },
+                  dir: "ltr", // 👈 for mobile dialog/drawer
+                },
+              }}
+              sx={{ width: "100%" }}
+            />
+          </Stack>
+        </LocalizationProvider>
+      </Stack>
 
       {/*  */}
       <div
@@ -738,11 +845,21 @@ export default function Requests() {
           // disableColumnMenu // Hide column menu
           style={{ width: "100%", height: "100%", overflowX: "auto" }}
           getRowClassName={(params) => {
-            return params.row.visited ? "visited" : "notVisited";
+            const base = params.row.is_sent_to_internal_system ? "visited" : "notVisited";
+            return params.row.isCanceled ? `${base} canceled` : base;
           }}
           sx={{
             "& .MuiDataGrid-row": {
               pointerEvents: "none", // Disable hover/click effects
+            },
+            "& .MuiDataGrid-row.canceled": {
+              backgroundColor: "#b0b0b0",
+              "&:hover": {
+                backgroundColor: "#b0b0b0",
+              },
+              "& .MuiDataGrid-cell": {
+                textDecoration: "line-through",
+              },
             },
             "& .MuiDataGrid-footerContainer p": {
               margin: 0,

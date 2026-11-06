@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Facades\Notification;
 
+use App\Http\Controllers\MoyasarShippingPaymentController;
+
+
+
 
 class MojazController extends Controller
 {
@@ -124,6 +128,24 @@ class MojazController extends Controller
             $paymentData = $webhookData['data'] ?? [];
             $metadata = $paymentData['metadata'] ?? [];
 
+            // //////////////////////////////////////////
+            // Handle shipping payment separately
+            if (($metadata['flag'] ?? null) === 'shipping') {
+
+                Log::channel('daily')->info(
+                    'Shipping payment received in Mojaz webhook',
+                    [
+                        'metadata' => $metadata,
+                        'moyasar_payment_id' => $paymentData['id'] ?? null,
+                    ]
+                );
+
+                $shippingController = app(MoyasarShippingPaymentController::class);
+
+                return $shippingController->storeShippingPaymentFromMojaz($paymentData);
+            }
+            // //////////////////////////////////////////
+
             // Prepare data for storage and notification
             $paymentInfo = [
                 'payment_id' => $paymentData['id'] ?? null,
@@ -135,6 +157,7 @@ class MojazController extends Controller
                 'user_id' => $metadata['userId'] ?? null,
                 'email' => $metadata['email'] ?? null,
                 'amount' => $metadata['price'] ?? 0,
+                'main_report_number' => $metadata['main_report_number'] ?? null,
             ];
 
             // Check if payment already exists to avoid duplicates
@@ -159,7 +182,7 @@ class MojazController extends Controller
 
 
             // Send email notification to multiple recipients
-            // $recipients = ['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
+            // $recipients = ['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'];
             // $recipients = ['gp415400@gmail.com']; // For testing
 
             // try {

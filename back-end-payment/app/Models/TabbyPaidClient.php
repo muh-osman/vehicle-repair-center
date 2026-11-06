@@ -29,6 +29,7 @@ class TabbyPaidClient extends Model
         'redeemeAmoumntValue',
         'isShipped',
         'address',
+        'isCanceled',
         'is_sent_to_internal_system',
     ];
 

@@ -23,12 +23,17 @@ class PhoneNumberController extends Controller
 
     public function checkIfPhoneNumberExistInDb($phoneNumber)
     {
-        $exists = PhoneNumber::where('accepted_phone_number', $phoneNumber)->exists();
+        $phoneNumberModel = PhoneNumber::where(
+            'accepted_phone_number',
+            $phoneNumber
+        )->first();
 
         return response()->json([
             'status' => 'success',
-            'exists' => $exists,
-            'phone_number' => $phoneNumber
+            'exists' => (bool) $phoneNumberModel,
+            'phone_number' => $phoneNumber,
+            'special_code' => $phoneNumberModel?->special_code,
+            'is_accept_terms' => $phoneNumberModel?->is_accept_terms ?? false,
         ]);
     }
 
@@ -39,7 +44,8 @@ class PhoneNumberController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'accepted_phone_number' => 'required|string|unique:phone_numbers|max:20'
+            'accepted_phone_number' => 'required|string|unique:phone_numbers|max:20',
+            'special_code' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -50,7 +56,8 @@ class PhoneNumberController extends Controller
         }
 
         $phoneNumber = PhoneNumber::create([
-            'accepted_phone_number' => $request->accepted_phone_number
+            'accepted_phone_number' => $request->accepted_phone_number,
+            'special_code' => $request->special_code,
         ]);
 
         return response()->json([
@@ -80,6 +87,31 @@ class PhoneNumberController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Phone number deleted successfully'
+        ]);
+    }
+
+    public function acceptTerms($phoneNumber)
+    {
+        $phoneNumberModel = PhoneNumber::where(
+            'accepted_phone_number',
+            $phoneNumber
+        )->first();
+
+        if (!$phoneNumberModel) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Phone number not found'
+            ], 404);
+        }
+
+        $phoneNumberModel->update([
+            'is_accept_terms' => true
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Terms accepted successfully',
+            'data' => $phoneNumberModel
         ]);
     }
 }

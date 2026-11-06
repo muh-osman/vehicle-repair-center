@@ -201,12 +201,12 @@ export default function PaidClient() {
                   <td>{data?.id}</td>
                 </tr> */}
 
-                {data?.metadata?.affiliate && (
+                {/* {data?.metadata?.affiliate && (
                   <tr>
                     <td>الإحالة:</td>
                     <td>{data?.metadata?.affiliate ? data?.metadata?.affiliate : "N/A"}</td>
                   </tr>
-                )}
+                )} */}
               </tbody>
             </table>
           </div>

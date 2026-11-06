@@ -55,6 +55,13 @@
             font-weight: bold;
             text-align: center;
         }
+
+        .highlight-delivery {
+            background: #d32f2f;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -68,6 +75,11 @@
             <td class="label">الخدمة:</td>
             <td class="value">شحن سيارة</td>
         </tr>
+
+        {{-- <tr>
+            <td class="label">طريقة التسليم:</td>
+            <td class="value {{ ($data['modelCategory'] ?? null) === 'سطحة من مركز الفحص إلى شركة الشحن' ? 'highlight-delivery' : '' }}">{{ $data['modelCategory'] ?? 'غير متوفر' }}</td>
+        </tr> --}}
 
         <tr>
             <td class="label">نوع الشحن:</td>

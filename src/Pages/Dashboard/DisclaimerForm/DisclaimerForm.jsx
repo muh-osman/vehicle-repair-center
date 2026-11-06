@@ -473,6 +473,9 @@ export default function DisclaimerForm() {
               <MenuItem dir="rtl" value="القصيم">
                 القصيم
               </MenuItem>
+              <MenuItem dir="rtl" value="خميس مشيط">
+                خميس مشيط
+              </MenuItem>
             </TextField>
           </Grid>
 

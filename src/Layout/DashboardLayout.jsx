@@ -43,6 +43,7 @@ import CarRepairIcon from "@mui/icons-material/CarRepair";
 import ChairIcon from "@mui/icons-material/Chair";
 import RedeemIcon from "@mui/icons-material/Redeem";
 import PercentIcon from "@mui/icons-material/Percent";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 // React router
 import { Link, useLocation, Outlet, NavLink } from "react-router-dom";
 // Cookies
@@ -139,7 +140,7 @@ function ResponsiveDrawer(props) {
         )}
 
         {/* Table */}
-        {(cookies.role === 255 || cookies.role === 3) && (
+        {/* {(cookies.role === 255 || cookies.role === 3) && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/table" selected={pathname === "/dashboard/table"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -157,10 +158,10 @@ function ResponsiveDrawer(props) {
               <ListItemText primary="Table" />
             </ListItemButton>
           </ListItem>
-        )}
+        )} */}
 
         {/* Add */}
-        {cookies.role === 255 && (
+        {/* {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/add" selected={pathname === "/dashboard/add"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -178,10 +179,10 @@ function ResponsiveDrawer(props) {
               <ListItemText primary="Add" />
             </ListItemButton>
           </ListItem>
-        )}
+        )} */}
 
         {/* Edit */}
-        {cookies.role === 255 && (
+        {/* {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/edit" selected={pathname === "/dashboard/edit"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -199,10 +200,10 @@ function ResponsiveDrawer(props) {
               <ListItemText primary="Edit" />
             </ListItemButton>
           </ListItem>
-        )}
+        )} */}
 
         {/* Delete */}
-        {cookies.role === 255 && (
+        {/* {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/delete" selected={pathname === "/dashboard/delete"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -220,12 +221,12 @@ function ResponsiveDrawer(props) {
               <ListItemText primary="Delete" />
             </ListItemButton>
           </ListItem>
-        )}
+        )} */}
 
         <Divider />
 
         {/* Scan QR */}
-        {(cookies.role === 255 || cookies.role === 3 || cookies.role === 50) && (
+        {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/scan" selected={pathname === "/dashboard/scan"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -308,8 +309,31 @@ function ResponsiveDrawer(props) {
           </ListItem>
         )}
 
-        {/* Analytics */}
+        <Divider />
+
+        {/* Shipping request */}
         {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/add-shipping-request" selected={pathname === "/dashboard/add-shipping-request"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <AddBoxIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Add Shipping Request" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* Analytics */}
+        {/* {cookies.role === 255 && (
           <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/analytics" selected={pathname === "/dashboard/analytics"}>
             <ListItemButton sx={{ color: "#757575" }}>
               <ListItemIcon>
@@ -327,7 +351,7 @@ function ResponsiveDrawer(props) {
               <ListItemText primary="Analytics" />
             </ListItemButton>
           </ListItem>
-        )}
+        )} */}
 
         <Divider />
 
@@ -411,6 +435,27 @@ function ResponsiveDrawer(props) {
                 </Avatar>
               </ListItemIcon>
               <ListItemText primary="Branch Discount" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {/* service discount */}
+        {cookies.role === 255 && (
+          <ListItem dir="ltr" disablePadding button component={NavLink} to="/dashboard/service-discount" selected={pathname === "/dashboard/service-discount"}>
+            <ListItemButton sx={{ color: "#757575" }}>
+              <ListItemIcon>
+                <Avatar
+                  alt="icon"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <TrendingDownIcon sx={{ color: "#757575" }} />
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="Service Discount" />
             </ListItemButton>
           </ListItem>
         )}

@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-// API base
-import API from "./Api";
+// Axios
+import axios from "axios";
 
-export const fetchModels = async () => {
-  const res = await API.get(`api/all-car-models`);
+export const fetchPriceServices = async ({ year, modelId }) => {
+  const res = await axios.get(`https://cashif-001-site3.anytempurl.com/api/ServicePrices/ByYearAndMark?year=${year}&markId=${modelId}`);
   return res.data;
 };
 
-export default function useSearchModelByNameApi() {
+export default function useSearchModelByNameApi(year, modelId) {
   return useQuery({
-    queryKey: ["allSearchModels"],
-    queryFn: fetchModels,
+    queryKey: ["allSearchModels", year, modelId],
+    queryFn: () => fetchPriceServices({ year, modelId }),
+    enabled: !!year && !!modelId, // prevents request if values are missing
   });
 }

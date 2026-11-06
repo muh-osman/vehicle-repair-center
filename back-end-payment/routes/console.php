@@ -10,6 +10,10 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
+// Send order to النظام الداخي
+Schedule::command('cashif:send-to-internal')->everyMinute();
+
+
 // Mojaz reports: init then download pdf Mojaz report after pay
 Schedule::command('queue:work --timeout=90 --stop-when-empty')
     ->everyMinute()

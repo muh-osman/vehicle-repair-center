@@ -1,252 +1,139 @@
-// Dashboard.jsx
 import style from "./Dashboard.module.scss";
-// React
-import { useEffect, useState } from "react";
-// MUI
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import LinearProgress from "@mui/material/LinearProgress";
-// import OutlinedInput from "@mui/material/OutlinedInput";
-// import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-// import FormControl from "@mui/material/FormControl";
-// import ListItemText from "@mui/material/ListItemText";
-// import Select from "@mui/material/Select";
-// import Checkbox from "@mui/material/Checkbox";
-// import Radio from "@mui/material/Radio";
-import Tooltip from "@mui/material/Tooltip";
+import { useEffect, useState, useMemo } from "react";
 
+// MUI
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import LinearProgress from "@mui/material/LinearProgress";
+import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import LoyaltyIcon from "@mui/icons-material/Loyalty";
-// API
-import useGetCountriesApi from "../../API/useGetCountriesApi";
-import useGetManufacturesApi from "../../API/useGetManufacturesApi";
-import useGetModelsApi from "../../API/useGetModelsApi";
-import useGetYearsApi from "../../API/useGetYearsApi";
-import useGetServicesApi from "../../API/useGetServicesApi";
-import useGetPriceApi from "../../API/useGetPriceApi";
 
-const ITEM_HEIGHT = 68;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-      direction: "rtl",
-    },
-  },
-};
+// API
+import useGetAllCarManufacturerApi from "../../API/useGetAllCarManufacturerApi";
+import useGetAllCarModelsApi from "../../API/useGetAllCarModelsApi";
+import useSearchModelByNameApi from "../../API/useSearchModelByNameApi";
+
+const YEAR_OPTIONS = [
+  { id: "old", label: "2016 أو أدنى" },
+  { id: "new", label: "2017 أو أعلى" },
+];
 
 export default function Dashboard() {
-  // Countries logic
-  const { data: countries, isSuccess: isGetCountriesSuccess, isPending: isGetCountriesPending, fetchStatus: countriesFetchStatus } = useGetCountriesApi();
+  // serviceId 8 = "الفحص الشامل" → 10% discount; all others → 5%
+  const FULL_INSPECTION_SERVICE_ID = 8;
+  // --- Data fetching ---
+  const { data: manufacturers, isFetching: isManufacturersFetching } = useGetAllCarManufacturerApi();
 
-  const [selectedCountryId, setSelectedCountryId] = useState("");
+  const { data: allModels, isSuccess: isModelsSuccess } = useGetAllCarModelsApi();
 
-  function handleCountriesChange(e) {
-    const countryId = e.target.value;
-    setSelectedCountryId(countryId);
-    setSelectedManufacturerId(""); // Reset selected manufacturer ID
-    setSelectedModelId(""); // Reset selected model ID
-    setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
-    setPrice(""); // Reset the price
-    setIsSaleClicked(false); // Reset sale 10% show
-    setIsSale5Clicked(false); // Reset sale 5% show
-  }
-
-  // Manufactures logic
+  // --- Selection state ---
   const [selectedManufacturerId, setSelectedManufacturerId] = useState("");
-  const {
-    refetch: fetchManufactures,
-    data: manufactures,
-    isPending: isGetManufacturesPending,
-    isSuccess: isGetManufacturesSuccess,
-    fetchStatus: manufacturesFetchStatus,
-  } = useGetManufacturesApi(selectedCountryId);
-
-  useEffect(() => {
-    if (selectedCountryId) {
-      fetchManufactures(selectedCountryId);
-    }
-  }, [selectedCountryId]);
-
-  function handleManufacturerChange(e) {
-    const manufacturerId = e.target.value;
-    setSelectedManufacturerId(manufacturerId);
-    setSelectedModelId(""); // Reset selected model ID
-    setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
-    setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset 10% sale show
-    setIsSale5Clicked(false); // Reset sale 5% show
-  }
-
-  // Models logic
   const [selectedModelId, setSelectedModelId] = useState("");
-  const {
-    refetch: fetchModels,
-    data: models,
-    isPending: isGetModelsPending,
-    isSuccess: isGetModelsSuccess,
-    fetchStatus: modelsFetchStatus,
-  } = useGetModelsApi(selectedManufacturerId);
+  const [selectedYear, setSelectedYear] = useState(""); // "old" | "new"
+  const [selectedServiceId, setSelectedServiceId] = useState("");
 
+  // Map year option to numeric year for the API
+  const yearParam = useMemo(() => {
+    if (selectedYear === "old") return 2016;
+    if (selectedYear === "new") return 2017;
+    return null;
+  }, [selectedYear]);
+
+  // --- Price/services search ---
+  const {
+    data: priceServices,
+    isSuccess: isPriceServicesSuccess,
+    isFetching: isPriceServicesFetching,
+    refetch: fetchPriceServices,
+  } = useSearchModelByNameApi(yearParam, selectedModelId);
+
+  // Fetch whenever model + year are both selected
   useEffect(() => {
-    if (selectedManufacturerId) {
-      fetchModels(selectedManufacturerId);
+    if (selectedModelId && yearParam) {
+      fetchPriceServices();
     }
-  }, [selectedManufacturerId]);
+  }, [selectedModelId, yearParam]);
+
+  // Reset downstream selections when a parent changes
+  function handleManufacturerChange(e) {
+    setSelectedManufacturerId(e.target.value);
+    setSelectedModelId("");
+    setSelectedYear("");
+    setSelectedServiceId("");
+  }
 
   function handleModelChange(e) {
-    const modelId = e.target.value;
-    setSelectedModelId(modelId);
-    setSelectedYearId(""); // Reset selected year ID
-    setSelectedServicesId(""); // Reset selected service ID
-    setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale 10% show
-    setIsSale5Clicked(false); // Reset sale 5% show
+    setSelectedModelId(e.target.value);
+    setSelectedYear("");
+    setSelectedServiceId("");
   }
-
-  // Years logic
-  const [selectedYearId, setSelectedYearId] = useState("");
-  const { refetch: fetchYears, data: years, isPending: isGetYearsPending, isSuccess: isGetYearsSuccess, fetchStatus: yearsFetchStatus } = useGetYearsApi(selectedModelId);
-
-  useEffect(() => {
-    if (selectedModelId) {
-      fetchYears(selectedModelId);
-    }
-  }, [selectedModelId]);
 
   function handleYearChange(e) {
-    const yearId = e.target.value;
-    setSelectedYearId(yearId);
-    setSelectedServicesId(""); // Reset selected service ID
-    setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale 10% show
-    setIsSale5Clicked(false); // Reset sale 5% show
+    setSelectedYear(e.target.value);
+    setSelectedServiceId("");
   }
 
-  // Services logic
-  const [selectedServicesId, setSelectedServicesId] = useState("");
-  const {
-    refetch: fetchServices,
-    data: services,
-    isPending: isGetServicesPending,
-    isSuccess: isGetServicesSuccess,
-    fetchStatus: servicesFetchStatus,
-  } = useGetServicesApi(selectedYearId);
-
-  useEffect(() => {
-    if (selectedYearId) {
-      fetchServices(selectedYearId);
-    }
-  }, [selectedYearId]);
-
-  function handleServiceChange(e) {
-    // setSelectedServicesId([e.target.value]);
-
-    const serviceId = e.target.value;
-    setSelectedServicesId(serviceId);
-    setPrice(""); // Reset the price
-    setIsSaleClicked(false); //Reset sale 10% show
-    setIsSale5Clicked(false); // Reset sale 5% show
-
-    // const serviceId = e.target.value;
-    // setSelectedServicesId(serviceId);
-
-    // const {
-    //   target: { value },
-    // } = e;
-    // setSelectedServicesId(
-    //   // On autofill we get a stringified value.
-    //   typeof value === "string" ? value.split(",") : value
-    // );
-
-    // console.log(selectedServicesId);
-    // setPrice(""); // Reset the price
-  }
-
-  // Price logic
-  const [price, setPrice] = useState("");
-  const {
-    refetch: fetchPrice,
-    data: priceData,
-    isPending: isGetPricePending,
-    isSuccess: isGetPriceSuccess,
-    fetchStatus: priceFetchStatus,
-  } = useGetPriceApi(selectedModelId, selectedYearId, selectedServicesId);
-
-  // useEffect(() => {
-  //   if (selectedServicesId.length > 0) {
-  //     // Check if selectedServicesId has changed
-  //     fetchPrice(selectedModelId, selectedYearId, selectedServicesId);
-  //   }
-  //   setPrice(priceData);
-  // }, [selectedServicesId]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (selectedServicesId) {
-        // Check if selectedServicesId has changed
-        await fetchPrice(selectedModelId, selectedYearId, selectedServicesId);
-        setPrice(priceData);
-      }
-    };
-
-    fetchData();
-  }, [selectedServicesId]);
-
-  // Sale
+  // After selectedServiceId state, add:
   const [isSaleClicked, setIsSaleClicked] = useState(false);
-  const discountedPrice = priceData * 0.9; // 10% discount
-
-  // Progress
-  const progress = () => {
-    if (
-      countriesFetchStatus === "fetching" ||
-      manufacturesFetchStatus === "fetching" ||
-      modelsFetchStatus === "fetching" ||
-      yearsFetchStatus === "fetching" ||
-      servicesFetchStatus === "fetching" ||
-      priceFetchStatus === "fetching"
-    ) {
-      return (
-        <div className={style.progressContainer}>
-          <LinearProgress />
-        </div>
-      );
-    } else {
-      return null;
-    }
-  };
-
   const [isSale5Clicked, setIsSale5Clicked] = useState(false);
-  const discounted5Price = priceData * 0.95; // 5% discount
 
-  const sale10 = () => {
-    setIsSale5Clicked(false); // turn off 5% discount
-    setIsSaleClicked((prevState) => !prevState); // turn on 10% discount
-  };
+  // Reset sale state in handleServiceChange:
+  function handleServiceChange(e) {
+    setSelectedServiceId(e.target.value);
+    setIsSaleClicked(false);
+    setIsSale5Clicked(false);
+  }
 
-  const sale5 = () => {
-    setIsSaleClicked(false); // turn off 10% discount
-    setIsSale5Clicked((prevState) => !prevState); // turn on 5% discount
-  };
+  // --- Derived data ---
+
+  // Models filtered by selected manufacturer
+  const filteredModels = useMemo(() => {
+    if (!allModels || !selectedManufacturerId) return [];
+    return allModels.filter((m) => String(m.carManufacturerId) === String(selectedManufacturerId));
+  }, [allModels, selectedManufacturerId]);
+
+  // Selected price entry
+  const selectedPriceEntry = useMemo(() => {
+    if (!priceServices || !selectedServiceId) return null;
+    return priceServices.find((p) => String(p.serviceId) === String(selectedServiceId)) ?? null;
+  }, [priceServices, selectedServiceId]);
+
+  const price = selectedPriceEntry?.price ?? null;
+
+  // Loading indicator
+  const isLoading = isManufacturersFetching || isPriceServicesFetching;
+
+  //
+  // Discount values
+  const discountedPrice10 = price ? Math.trunc(price * 0.9) : null;
+  const discountedPrice5 = price ? Math.trunc(price * 0.95) : null;
+
+  const isFullInspection = selectedPriceEntry?.serviceId === FULL_INSPECTION_SERVICE_ID;
+
+  function handleSaleToggle() {
+    if (isFullInspection) {
+      setIsSale5Clicked(false);
+      setIsSaleClicked((p) => !p);
+    } else {
+      setIsSaleClicked(false);
+      setIsSale5Clicked((p) => !p);
+    }
+  }
 
   return (
     <div className={style.container}>
-      {progress()}
+      {isLoading && (
+        <div className={style.progressContainer}>
+          <LinearProgress />
+        </div>
+      )}
 
-      {/* <h1>Dashboard</h1> */}
-
-      {/* Start Form  */}
       <div className={style.container_box}>
         <Box
-          component="form"
-          noValidate
+          component="div"
           sx={{
             mt: 3,
             maxWidth: "400px",
@@ -254,8 +141,8 @@ export default function Dashboard() {
             marginRight: "auto",
           }}
         >
-          {/* Start Countries input */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3}>
+            {/* 1. Manufacturer */}
             <Grid item xs={12}>
               <TextField
                 sx={{ backgroundColor: "#fff" }}
@@ -263,78 +150,31 @@ export default function Dashboard() {
                 required
                 fullWidth
                 select
-                label="الدولة"
-                value={selectedCountryId}
-                onChange={handleCountriesChange}
-                disabled={isGetCountriesPending}
+                label="الشركة المصنعة"
+                value={selectedManufacturerId}
+                onChange={handleManufacturerChange}
+                disabled={isManufacturersFetching}
               >
-                {countries === undefined && (
+                {!manufacturers && (
                   <MenuItem value="">
                     <em>Loading...</em>
                   </MenuItem>
                 )}
-
-                {countries?.length === 0 && (
+                {manufacturers?.length === 0 && (
                   <MenuItem value="">
-                    <em>No country to show.</em>
+                    <em>لا توجد بيانات</em>
                   </MenuItem>
                 )}
-
-                {countries !== undefined &&
-                  countries?.length !== 0 &&
-                  countries.map((country) => (
-                    <MenuItem dir="rtl" key={country.id} value={country.id}>
-                      {country.country_name}
-                    </MenuItem>
-                  ))}
+                {manufacturers?.map((mfr) => (
+                  <MenuItem dir="rtl" key={mfr.id} value={mfr.id}>
+                    {`${mfr.nameAr} - ${mfr.nameEn}`}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
-          </Grid>
-          {/* End Countries input */}
 
-          {/* Start Manufacturers input */}
-          {manufactures && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12}>
-                <TextField
-                  sx={{ backgroundColor: "#fff" }}
-                  dir="rtl"
-                  required
-                  fullWidth
-                  select
-                  label="الشركة المصنعة"
-                  value={selectedManufacturerId}
-                  onChange={handleManufacturerChange}
-                  disabled={isGetManufacturesPending}
-                >
-                  {manufactures === undefined && (
-                    <MenuItem value="">
-                      <em>Loading...</em>
-                    </MenuItem>
-                  )}
-
-                  {manufactures?.length === 0 && (
-                    <MenuItem value="">
-                      <em>No manufacturer to show.</em>
-                    </MenuItem>
-                  )}
-
-                  {manufactures !== undefined &&
-                    manufactures?.length !== 0 &&
-                    manufactures?.map((manufacturer) => (
-                      <MenuItem dir="rtl" key={manufacturer.id} value={manufacturer.id}>
-                        {manufacturer.manufacture_name}
-                      </MenuItem>
-                    ))}
-                </TextField>
-              </Grid>
-            </Grid>
-          )}
-          {/* End Manufacturers input */}
-
-          {/* Start Models input */}
-          {models && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* 2. Model — shown once a manufacturer is picked */}
+            {selectedManufacturerId && (
               <Grid item xs={12}>
                 <TextField
                   sx={{ backgroundColor: "#fff" }}
@@ -345,76 +185,37 @@ export default function Dashboard() {
                   label="الموديل"
                   value={selectedModelId}
                   onChange={handleModelChange}
-                  disabled={isGetModelsPending}
+                  disabled={!isModelsSuccess}
                 >
-                  {models === undefined && (
+                  {filteredModels.length === 0 && (
                     <MenuItem value="">
-                      <em>Loading...</em>
+                      <em>لا توجد موديلات</em>
                     </MenuItem>
                   )}
-
-                  {models?.length === 0 && (
-                    <MenuItem value="">
-                      <em>No model to show.</em>
+                  {filteredModels.map((model) => (
+                    <MenuItem dir="rtl" key={model.id} value={model.id}>
+                      {`${model.nameAr} - ${model.nameEn}`}
                     </MenuItem>
-                  )}
-
-                  {models !== undefined &&
-                    models?.length !== 0 &&
-                    models?.map((model) => (
-                      <MenuItem dir="rtl" key={model.id} value={model.id}>
-                        {model.model_name}
-                      </MenuItem>
-                    ))}
+                  ))}
                 </TextField>
               </Grid>
-            </Grid>
-          )}
-          {/* End Models input */}
+            )}
 
-          {/* Start Years input */}
-          {years && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* 3. Year — shown once a model is picked */}
+            {selectedModelId && (
               <Grid item xs={12}>
-                <TextField
-                  sx={{ backgroundColor: "#fff" }}
-                  dir="rtl"
-                  required
-                  fullWidth
-                  select
-                  label="سنة الصنع"
-                  value={selectedYearId}
-                  onChange={handleYearChange}
-                  disabled={isGetYearsPending}
-                >
-                  {years === undefined && (
-                    <MenuItem value="">
-                      <em>Loading...</em>
+                <TextField sx={{ backgroundColor: "#fff" }} dir="rtl" required fullWidth select label="سنة الصنع" value={selectedYear} onChange={handleYearChange}>
+                  {YEAR_OPTIONS.map((opt) => (
+                    <MenuItem dir="rtl" key={opt.id} value={opt.id}>
+                      {opt.label}
                     </MenuItem>
-                  )}
-
-                  {years?.length === 0 && (
-                    <MenuItem value="">
-                      <em>No years to show.</em>
-                    </MenuItem>
-                  )}
-
-                  {years !== undefined &&
-                    years?.length !== 0 &&
-                    years?.map((year) => (
-                      <MenuItem dir="rtl" key={year.id} value={year.id}>
-                        {year.year}
-                      </MenuItem>
-                    ))}
+                  ))}
                 </TextField>
               </Grid>
-            </Grid>
-          )}
-          {/* End Years input */}
+            )}
 
-          {/* Start Services input */}
-          {services && (
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* 4. Service — shown once year is picked and data has loaded */}
+            {selectedYear && isPriceServicesSuccess && priceServices?.length > 0 && (
               <Grid item xs={12}>
                 <TextField
                   sx={{ backgroundColor: "#fff" }}
@@ -423,131 +224,71 @@ export default function Dashboard() {
                   fullWidth
                   select
                   label="الخدمة"
-                  value={selectedServicesId}
+                  value={selectedServiceId}
                   onChange={handleServiceChange}
-                  // disabled={}
+                  disabled={isPriceServicesFetching}
                 >
-                  {services === undefined && (
-                    <MenuItem value="">
-                      <em>Loading...</em>
+                  {priceServices.map((svc) => (
+                    <MenuItem dir="rtl" key={svc.serviceId} value={svc.serviceId}>
+                      {svc.serviceAr}
                     </MenuItem>
-                  )}
-
-                  {services?.length === 0 && (
-                    <MenuItem value="">
-                      <em>No services to show.</em>
-                    </MenuItem>
-                  )}
-
-                  {services !== undefined &&
-                    services?.length !== 0 &&
-                    services?.map((service) => (
-                      <MenuItem dir="rtl" key={service.id} value={service.id}>
-                        {service.service_name}
-                      </MenuItem>
-                    ))}
+                  ))}
                 </TextField>
               </Grid>
-            </Grid>
-
-            // <div>
-            //   <FormControl
-            //     sx={{ m: 0, width: "100%", backgroundColor: "#fff" }}
-            //   >
-            //     <InputLabel id="demo-multiple-checkbox-label">
-            //       الخدمات
-            //     </InputLabel>
-            //     <Select
-            //       dir="rtl"
-            //       required
-            //       labelId="demo-multiple-checkbox-label"
-            //       id="demo-multiple-checkbox"
-            //       // multiple
-            //       // value={selectedServicesId}
-            //       value={selectedServicesId.length > 0 ? selectedServicesId[0] : ''}
-            //       onChange={handleServiceChange}
-            //       input={<OutlinedInput label="الخدمات" />}
-            //       renderValue={(selected) => {
-            //         return selected
-            //           .map(
-            //             (id) =>
-            //               services.find((service) => service.id === id)
-            //                 ?.service_name
-            //           )
-            //           .filter(Boolean)
-            //           .join(", ");
-            //       }}
-            //       MenuProps={MenuProps}
-            //     >
-            //       {services?.map((service) => (
-            //         <MenuItem key={service.id} value={service.id}>
-            //           <Radio
-            //             checked={selectedServicesId.indexOf(service.id) > -1}
-            //           />
-            //           <ListItemText primary={service.service_name} />
-            //         </MenuItem>
-            //       ))}
-            //     </Select>
-            //   </FormControl>
-            // </div>
-          )}
-          {/* End Services input */}
-
-          {/* Start Price */}
-          <div className={style.price_box}>
-            {priceData && (
-              <h1 dir="rtl" style={{ color: "#757575" }} className={isSaleClicked || isSale5Clicked ? "originalPrice" : ""}>
-                {priceData} <span>ريال</span>
-              </h1>
             )}
-          </div>
 
-          {/* Price after sale 10% */}
-          {isSaleClicked && priceData && (
+            {/* No services available message */}
+            {selectedYear && isPriceServicesSuccess && (!priceServices || priceServices.length === 0) && (
+              <Grid item xs={12}>
+                <TextField sx={{ backgroundColor: "#fff" }} dir="rtl" fullWidth select label="الخدمة" value="" disabled>
+                  <MenuItem value="">
+                    <em>لا توجد خدمات متاحة</em>
+                  </MenuItem>
+                </TextField>
+              </Grid>
+            )}
+          </Grid>
+
+          {/* Price display */}
+          {price !== null && (
             <div className={style.price_box}>
-              <h1 dir="rtl" style={{ color: "#7431fa" }}>
-                {Math.trunc(discountedPrice)} <span>ريال</span>
+              <h1
+                dir="rtl"
+                style={{
+                  color: "#757575",
+                  textDecoration: isSaleClicked || isSale5Clicked ? "line-through" : "none",
+                  fontSize: isSaleClicked || isSale5Clicked ? "1.6rem" : undefined,
+                }}
+              >
+                {price} <span>ريال</span>
               </h1>
+
+              {/* Discounted price — 10% for full inspection */}
+              {isSaleClicked && (
+                <h1 dir="rtl" style={{ color: "#7431fa" }}>
+                  {discountedPrice10} <span>ريال</span>
+                </h1>
+              )}
+
+              {/* Discounted price — 5% for other services */}
+              {isSale5Clicked && (
+                <h1 dir="rtl" style={{ color: "#d32f2f" }}>
+                  {discountedPrice5} <span>ريال</span>
+                </h1>
+              )}
+
+              {/* Single discount button — label changes by service */}
+              <div className={style.saleBtn}>
+                <Tooltip title={isFullInspection ? "خصم 10%" : "خصم 5%"} arrow>
+                  <IconButton color={isFullInspection ? "primary" : "error"} onClick={handleSaleToggle}>
+                    <LoyaltyIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
             </div>
           )}
-
-          {/* Price after sale 5% */}
-          {isSale5Clicked && priceData && (selectedServicesId === 2 || selectedServicesId === 3) && (
-            <div className={style.price_box}>
-              <h1 dir="rtl" style={{ color: "#d32f2f" }}>
-                {Math.trunc(discounted5Price)} <span>ريال</span>
-              </h1>
-            </div>
-          )}
-
-          {/* Sale btn 10% */}
-          {/* باقة الشامل فقط */}
-          {priceData && selectedServicesId === 1 && (
-            <div className={style.saleBtn}>
-              <Tooltip title="10%" arrow>
-                <IconButton color="primary" onClick={sale10}>
-                  <LoyaltyIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-          )}
-
-          {/* Sale btn 5% */}
-          {/* باقة الأساسي والمحركات فقط */}
-          {priceData && (selectedServicesId === 2 || selectedServicesId === 3) && (
-            <div className={style.saleBtn_5}>
-              <Tooltip title="5%" arrow>
-                <IconButton color="error" onClick={sale5}>
-                  <LoyaltyIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-          )}
-
-          {/* End Price */}
         </Box>
       </div>
-      {/* End Form  */}
     </div>
   );
 }

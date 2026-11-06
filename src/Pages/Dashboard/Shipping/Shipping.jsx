@@ -1,6 +1,6 @@
 import style from "./Shipping.module.scss";
-import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 // API
 import useGetAllShippingPaymensApi from "../../../API/useGetAllShippingPaymensApi";
 import useEditIsShippedApi from "../../../API/useEditIsShippedApi";
@@ -19,6 +19,8 @@ import NoteIcon from "@mui/icons-material/Note"; // Add Note icon
 import Tooltip from "@mui/material/Tooltip"; // Add for tooltips
 import Checkbox from "@mui/material/Checkbox";
 import Switch from "@mui/material/Switch"; // Add Switch import
+import IconButton from "@mui/material/IconButton";
+import DownloadIcon from "@mui/icons-material/Download";
 // import FormControlLabel from "@mui/material/FormControlLabel";
 // import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 // import Snackbar from "@mui/material/Snackbar"; // For notifications
@@ -31,13 +33,34 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+// Excel Export
+import { DownloadTableExcel } from "react-export-table-to-excel";
+// Date Picker
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import Stack from "@mui/material/Stack";
+import dayjs from "dayjs";
 
 export default function Shipping() {
   // Cookies
   const [cookies, setCookie, removeCookie] = useCookies(["role"]);
-  // const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate(); // Initialize navigate
+
+  // Export As Excel Button
+  const tableRef = useRef();
+
+  // Date range filter
+  const [dateRange, setDateRange] = useState([null, null]);
+
+  const handleStartDateChange = (newValue) => {
+    setDateRange([newValue, dateRange[1]]);
+  };
+
+  const handleEndDateChange = (newValue) => {
+    setDateRange([dateRange[0], newValue]);
+  };
 
   // Add state for note modal
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -55,13 +78,14 @@ export default function Shipping() {
   //
   const markAsShippedMutation = useEditIsShippedApi();
   // Transform API data to match DataGrid rows
-  const rows =
+  const rows = (
     data?.data?.map((item, index, array) => ({
       id: item.id, // DataGrid requires an id field
       index: array.length - index, // Row number starting from 1
       date: item.created_at, // Will be formatted in renderCell
       time: item.created_at, // Will be formatted in renderCell
       reportNumber: item.reportNumber,
+      modelCategory: item.modelCategory,
       name: item.name,
       phone: item.phoneNumber,
       branch: item.from, // Assuming 'from' represents the branch
@@ -76,7 +100,16 @@ export default function Shipping() {
       isShipped: item.isShipped || false,
       accountant_status: item.accountant_status || false,
       note: item.note || "",
-    })) || [];
+    })) || []
+  ).filter((row) => {
+    if (dateRange[0] && dateRange[1]) {
+      const startDate = dateRange[0].startOf("day");
+      const endDate = dateRange[1].endOf("day");
+      const rowDate = new Date(row.date);
+      return rowDate >= startDate && rowDate <= endDate;
+    }
+    return true;
+  });
 
   // Handle mark as shipped
   // Handle checkbox change for shipped status
@@ -179,6 +212,23 @@ export default function Shipping() {
       headerAlign: "center",
       align: "center",
       disableColumnMenu: true,
+      renderHeader: () => (
+        <DownloadTableExcel filename="shipping orders table" sheet="orders" currentTableRef={tableRef.current}>
+          <IconButton
+            size="small"
+            color="primary"
+            title="Export to Excel"
+            sx={{
+              backgroundColor: "rgba(25, 118, 210, 0.08)",
+              "&:hover": {
+                backgroundColor: "rgba(25, 118, 210, 0.12)",
+              },
+            }}
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
+        </DownloadTableExcel>
+      ),
       renderCell: (params) => params.value, // Keep showing the row numbers
     },
     {
@@ -249,22 +299,60 @@ export default function Shipping() {
       filterable: true,
     },
     {
-      field: "status",
-      headerName: "Status",
+      field: "modelCategory",
+      headerName: "Type",
       flex: 1,
-      minWidth: 150,
+      minWidth: 290,
       sortable: false,
       headerAlign: "center",
       align: "center",
       filterable: true,
       renderCell: (params) => {
-        return params.value === "paid" ? (
-          <div style={{ backgroundColor: "#2e7d32", color: "#fff" }}>{params.value}</div>
-        ) : (
-          <div style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{params.value}</div>
+        const isSpecialCategory = params.value === "سطحة من مركز الفحص إلى شركة الشحن";
+        return (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: isSpecialCategory ? "#d32f2f" : "transparent",
+              color: isSpecialCategory ? "#fff" : "",
+            }}
+          >
+            {params.value}
+          </div>
         );
       },
     },
+    {
+      field: "shippingType",
+      headerName: "Shipping",
+      flex: 1,
+      minWidth: 125,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      filterable: true,
+    },
+    // {
+    //   field: "status",
+    //   headerName: "Status",
+    //   flex: 1,
+    //   minWidth: 150,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   filterable: true,
+    //   renderCell: (params) => {
+    //     return params.value === "paid" ? (
+    //       <div style={{ backgroundColor: "#2e7d32", color: "#fff" }}>{params.value}</div>
+    //     ) : (
+    //       <div style={{ backgroundColor: "#d32f2f", color: "#fff" }}>{params.value}</div>
+    //     );
+    //   },
+    // },
     {
       field: "name",
       headerName: "Name",
@@ -337,16 +425,6 @@ export default function Shipping() {
       renderCell: (params) => {
         return params.value ? params.value : <div>N/A</div>;
       },
-    },
-    {
-      field: "shippingType",
-      headerName: "Shipping Type",
-      flex: 1,
-      minWidth: 125,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      filterable: true,
     },
     {
       field: "plateNumber",
@@ -545,6 +623,112 @@ export default function Shipping() {
           <LinearProgress />
         </div>
       )}
+
+      <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="secondary"
+          size="large"
+          variant="outlined"
+          onClick={() => navigate("/dashboard/shipping-analytics")}
+        >
+          Analytics
+        </Button>
+      </Stack>
+
+      {/* Date Range Picker */}
+      <Stack
+        dir="ltr"
+        sx={{ pb: 2, maxWidth: "617px", margin: "auto", direction: "ltr" }}
+        spacing={2}
+        justifyContent="center"
+        direction={{ xs: "row", sm: "row" }}
+        alignItems="stretch"
+      >
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Stack dir="ltr" direction={{ xs: "row", sm: "row" }} spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 2, width: "100%", direction: "ltr" }}>
+            <DatePicker
+              label="Start Date"
+              value={dateRange[0]}
+              onChange={handleStartDateChange}
+              maxDate={dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: { sx: { direction: "ltr" } },
+                mobilePaper: { sx: { direction: "ltr" }, dir: "ltr" },
+              }}
+              sx={{ width: "100%" }}
+            />
+            <DatePicker
+              label="End Date"
+              value={dateRange[1]}
+              onChange={handleEndDateChange}
+              minDate={dateRange[0] || undefined}
+              maxDate={dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: { sx: { direction: "ltr" } },
+                mobilePaper: { sx: { direction: "ltr" }, dir: "ltr" },
+              }}
+              sx={{ width: "100%" }}
+            />
+          </Stack>
+        </LocalizationProvider>
+      </Stack>
+
+      {/* Hidden table for export */}
+      <table ref={tableRef} style={{ display: "none" }}>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Card Number</th>
+            <th>Status</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Price</th>
+            <th>Model</th>
+            <th>Shipping Type</th>
+            <th>model Category</th>
+
+            <th>Plate Number</th>
+            <th>Payment Id</th>
+            <th>Note</th>
+            <th>Shipped</th>
+            <th>Accounted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>{row.index}</td>
+              <td>{formatDate(row.date)}</td>
+              <td>{formatTime(row.time)}</td>
+              <td>{row.reportNumber}</td>
+              <td>{row.status}</td>
+              <td>{row.name || "N/A"}</td>
+              <td>{row.phone || "N/A"}</td>
+              <td>{row.branch}</td>
+              <td>{row.to}</td>
+              <td>{Math.trunc(row.price)}</td>
+              <td>{row.model || "N/A"}</td>
+              <td>{row.shippingType}</td>
+              <td>{row.modelCategory}</td>
+              <td>{row.plateNumber || "N/A"}</td>
+              <td>{row.payment_id}</td>
+              <td>{row.note || "N/A"}</td>
+              <td>{row.isShipped ? "Yes" : "No"}</td>
+              <td>{row.accountant_status ? "Yes" : "No"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* Table */}
       <div

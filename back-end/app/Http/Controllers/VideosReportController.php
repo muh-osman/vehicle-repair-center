@@ -283,4 +283,128 @@ class VideosReportController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Receives ONE chunk of a video. When the last chunk for a given
+     * "identifier" arrives, merges everything into the final file.
+     */
+    public function uploadChunk(Request $request)
+    {
+        $request->validate([
+            'chunk'       => 'required|file',
+            'identifier'  => 'required|string|max:100',
+            'chunkIndex'  => 'required|integer|min:0',
+            'totalChunks' => 'required|integer|min:1',
+            'filename'    => 'required|string',
+        ]);
+
+        // Sanitize identifier -> only safe characters, prevents path traversal
+        $identifier  = preg_replace('/[^a-zA-Z0-9\-_]/', '', $request->identifier);
+        $chunkIndex  = (int) $request->chunkIndex;
+        $totalChunks = (int) $request->totalChunks;
+
+        $chunkDir = storage_path('app/chunks/' . $identifier);
+        if (!is_dir($chunkDir)) {
+            mkdir($chunkDir, 0755, true);
+        }
+
+        // Save this chunk under a predictable, safe name (NOT the client filename)
+        $request->file('chunk')->move($chunkDir, 'chunk_' . $chunkIndex);
+
+        $uploadedCount = count(glob($chunkDir . '/chunk_*'));
+
+        if ($uploadedCount < $totalChunks) {
+            return response()->json([
+                'success'   => true,
+                'completed' => false,
+                'uploaded'  => $uploadedCount,
+                'total'     => $totalChunks,
+            ]);
+        }
+
+        // ---- All chunks are in -> merge them into the final file ----
+        $allowedExt = ['mp4', 'avi', 'mov'];
+        $extension  = strtolower(pathinfo($request->filename, PATHINFO_EXTENSION));
+        if (!in_array($extension, $allowedExt)) {
+            $this->cleanupChunkDir($chunkDir);
+            return response()->json(['success' => false, 'message' => 'Invalid file type'], 422);
+        }
+
+        $finalFilename = Str::uuid() . '.' . $extension;
+        $destDir = public_path('report-videos');
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+        $finalPath = $destDir . '/' . $finalFilename;
+
+        $out = fopen($finalPath, 'wb');
+        for ($i = 0; $i < $totalChunks; $i++) {
+            $chunkFile = $chunkDir . '/chunk_' . $i;
+            if (!file_exists($chunkFile)) {
+                fclose($out);
+                @unlink($finalPath);
+                $this->cleanupChunkDir($chunkDir);
+                return response()->json(['success' => false, 'message' => "Missing chunk $i, please retry upload"], 400);
+            }
+            $in = fopen($chunkFile, 'rb');
+            stream_copy_to_stream($in, $out);
+            fclose($in);
+        }
+        fclose($out);
+
+        $this->cleanupChunkDir($chunkDir);
+
+        return response()->json([
+            'success'    => true,
+            'completed'  => true,
+            'video_path' => $finalFilename,
+        ]);
+    }
+
+
+    private function cleanupChunkDir(string $dir): void
+    {
+        if (is_dir($dir)) {
+            array_map('unlink', glob($dir . '/*'));
+            @rmdir($dir);
+        }
+    }
+
+
+    /**
+     * After all files for a report have been chunk-uploaded and merged,
+     * this attaches the resulting video_path records to the report.
+     */
+    public function updateChunked(Request $request, $id)
+    {
+        $report = VideosReport::findOrFail($id);
+
+        $request->validate([
+            'videos'                    => 'required|array|min:1',
+            'videos.*.video_path'       => 'required|string',
+            'videos.*.video_type'       => 'required|string',
+            'videos.*.employee_name'    => 'required|string',
+        ]);
+
+        foreach ($request->videos as $videoData) {
+            $filePath = public_path('report-videos/' . $videoData['video_path']);
+
+            // Guard against bogus/incomplete paths being attached
+            if (!file_exists($filePath)) {
+                continue;
+            }
+
+            VideosInspection::create([
+                'videos_report_id' => $report->id,
+                'video_path'       => $videoData['video_path'],
+                'video_type'       => $videoData['video_type'],
+                'employee_name'    => $videoData['employee_name'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Report updated successfully',
+            'data'    => $report->load('videos'),
+        ]);
+    }
 }

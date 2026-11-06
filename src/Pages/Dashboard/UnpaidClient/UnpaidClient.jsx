@@ -195,7 +195,7 @@ export default function UnpaidClient() {
                 <td>{data?.un_paid_qr_code?.un_paid_qr_code}</td>
               </tr>
 
-              {data?.un_paid_qr_code?.affiliate && (
+              {/* {data?.un_paid_qr_code?.affiliate && (
                 <tr>
                   <td>الإحالة:</td>
                   <td>
@@ -204,7 +204,7 @@ export default function UnpaidClient() {
                       : "N/A"}
                   </td>
                 </tr>
-              )}
+              )} */}
             </tbody>
           </table>
         </div>

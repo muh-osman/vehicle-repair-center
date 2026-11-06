@@ -1,5 +1,5 @@
 import style from "./Videos.module.scss";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { Link } from "react-router-dom";
 // Mui
 import LinearProgress from "@mui/material/LinearProgress";
@@ -22,11 +22,12 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
+import Pagination from "@mui/material/Pagination";
 // API
 import useGetAllVideosApi from "../../../API/useGetAllVideosApi";
 import { useAddVideoApi } from "../../../API/useAddVideoApi";
 import { useDeleteVideoApi } from "../../../API/useDeleteVideoApi";
-import { useEditVideoApi } from "../../../API/useEditVideoApi";
+import { useEditVideoApiChunked } from "../../../API/useEditVideoApiChunked";
 // Toastify
 import { toast } from "react-toastify";
 // Cookies
@@ -44,12 +45,73 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
+const ROWS_PER_PAGE = 10;
+
+// Memoized row so a row only re-renders when its own report / relevant state changes,
+// not whenever the parent re-renders (e.g. on every keystroke in the top form).
+const VideoReportRow = memo(function VideoReportRow({ report, role, isRowDeleting, isDeleteDisabled, onAddVideoClick, onDeleteReport, isAddVideoPending, isEditVideoPending }) {
+  return (
+    <tr>
+      <td>{report.report_number}</td>
+
+      <td>{report.branch || "-"}</td>
+
+      <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
+
+      <td style={{ whiteSpace: "nowrap", display: "table-cell", flexDirection: "column" }}>
+        {report.videos?.map((video, index) => (
+          <Tooltip key={video.id || index} title={`Type: ${video.video_type} - Staff: ${video.employee_name || "No name"}`} arrow placement="top">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              <a href={video.video_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                {index + 1}
+              </a>
+            </div>
+          </Tooltip>
+        ))}
+      </td>
+
+      <td>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            justifyContent: "space-evenly",
+          }}
+        >
+          <IconButton
+            style={{ width: "fit-content", margin: "auto" }}
+            disabled={role === 50}
+            color="primary"
+            onClick={() => onAddVideoClick(report.id)}
+            disabled={isDeleteDisabled || isRowDeleting || isAddVideoPending || isEditVideoPending}
+          >
+            <AddCircleIcon />
+          </IconButton>
+
+          <IconButton style={{ width: "fit-content", margin: "auto" }} color="error" onClick={() => onDeleteReport(report.id)} disabled={isDeleteDisabled || role === 50}>
+            {isRowDeleting ? <CircularProgress size={24} /> : <DeleteIcon />}
+          </IconButton>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
 export default function Videos() {
   // Cookie
-  const [cookies, setCookie] = useCookies(["role"]);
+  const [cookies] = useCookies(["role"]);
   //
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  // Add direction: ltr to body when this page is open
+  useEffect(() => {
+    document.body.style.direction = "ltr";
+    return () => {
+      document.body.style.direction = "";
+    };
   }, []);
 
   const { mutate, isPending: isAddVideoPending } = useAddVideoApi();
@@ -61,56 +123,69 @@ export default function Videos() {
 
   const [deletingId, setDeletingId] = useState(null); // Track which report is being deleted
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+
   // Submit form
   const modelFormRef = useRef();
 
   // Handle file input change for main form
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
 
-    // Validate form
-    const isValid = modelFormRef.current.reportValidity();
-    if (!isValid) return;
+      // Validate form
+      const isValid = modelFormRef.current.reportValidity();
+      if (!isValid) return;
 
-    mutate(
-      {
-        report_number: reportNumber,
-        branch: branch,
-      },
-
-      {
-        onSuccess: () => {
-          toast.success("Created successfully!");
-          // Reset form after successful submission
-          setReportNumber("");
-          setBranch("");
-
-          // Clear file input
-          if (modelFormRef.current) {
-            modelFormRef.current.reset();
-          }
+      mutate(
+        {
+          report_number: reportNumber,
+          branch: branch,
         },
-      }
-    );
-  };
+        {
+          onSuccess: () => {
+            toast.success("Created successfully!");
+            // Reset form after successful submission
+            setReportNumber("");
+            setBranch("");
+
+            // Clear file input
+            if (modelFormRef.current) {
+              modelFormRef.current.reset();
+            }
+          },
+        }
+      );
+    },
+    [mutate, reportNumber, branch]
+  );
 
   // Handle delete report
-  const handleDeleteReport = (reportId) => {
-    if (window.confirm("هل أنت متأكد من رغبتك في حذف هذا الفيديو؟")) {
-      setDeletingId(reportId); // Set the ID of the report being deleted
-      mutateDeleteVideo(reportId, {
-        onSuccess: () => {
-          toast.success("Video deleted successfully!");
-        },
-        onSettled: () => {
-          setDeletingId(null); // Reset deleting ID when operation completes
-        },
-      });
-    }
-  };
+  const handleDeleteReport = useCallback(
+    (reportId) => {
+      if (window.confirm("هل أنت متأكد من رغبتك في حذف جميع الفيديوهات المرتبطة بهذا التقرير؟")) {
+        setDeletingId(reportId); // Set the ID of the report being deleted
+        mutateDeleteVideo(reportId, {
+          onSuccess: () => {
+            toast.success("Video deleted successfully!");
+          },
+          onSettled: () => {
+            setDeletingId(null); // Reset deleting ID when operation completes
+          },
+        });
+      }
+    },
+    [mutateDeleteVideo]
+  );
 
   const [uploadProgress, setUploadProgress] = useState(0);
-  const { mutate: mutateEditVideo, isPending: isEditVideoPending } = useEditVideoApi(setUploadProgress);
+  // const { mutate: mutateEditVideo, isPending: isEditVideoPending, reset: resetEditVideoMutation } = useEditVideoApi(setUploadProgress);
+  const { mutate: mutateEditVideo, isPending: isEditVideoPending, reset: resetEditVideoMutation } = useEditVideoApiChunked(setUploadProgress);
+
+  // Holds the AbortController for the in-flight upload so we can cancel it
+  // if the user closes the modal / clicks Cancel while it's uploading.
+  const abortControllerRef = useRef(null);
 
   //
   const [openModal, setOpenModal] = useState(false);
@@ -120,49 +195,55 @@ export default function Videos() {
   const [employeeNames, setEmployeeNames] = useState([]);
   const [videoTypes, setVideoTypes] = useState([]);
 
-  const handleAddVideoClick = (reportId) => {
+  const handleAddVideoClick = useCallback((reportId) => {
     setSelectedReportId(reportId);
     setUploadProgress(0);
     setOpenModal(true);
-  };
+  }, []);
 
-  const handleVideoFilesChange = (e) => {
+  const handleVideoFilesChange = useCallback((e) => {
     const files = Array.from(e.target.files);
     setVideosFiles(files);
 
     // Prepare matching inputs
     setEmployeeNames(Array(files.length).fill(""));
     setVideoTypes(Array(files.length).fill(""));
-  };
+  }, []);
 
-  const handleEmployeeChange = (index, value) => {
-    const updated = [...employeeNames];
-    updated[index] = value;
-    setEmployeeNames(updated);
-  };
+  const handleEmployeeChange = useCallback((index, value) => {
+    setEmployeeNames((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  }, []);
 
-  const handleVideoTypeChange = (index, value) => {
-    const updated = [...videoTypes];
-    updated[index] = value;
-    setVideoTypes(updated);
-  };
+  const handleVideoTypeChange = useCallback((index, value) => {
+    setVideoTypes((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  }, []);
 
-  const handleModalSubmit = () => {
-    // No videos selected
+  const resetModal = useCallback(() => {
+    setVideosFiles([]);
+    setEmployeeNames([]);
+    setVideoTypes([]);
+    setSelectedReportId(null);
+  }, []);
+
+  const handleModalSubmit = useCallback(() => {
     if (videosFiles.length === 0) {
       toast.error("Please select at least one video");
       return;
     }
-
-    // Check all video types filled
     for (let i = 0; i < videoTypes.length; i++) {
       if (!videoTypes[i]) {
         toast.error(`Please select video type for video ${i + 1}`);
         return;
       }
     }
-
-    // Check all employee names filled
     for (let i = 0; i < employeeNames.length; i++) {
       if (!employeeNames[i].trim()) {
         toast.error(`Please enter employee name for video ${i + 1}`);
@@ -170,15 +251,16 @@ export default function Videos() {
       }
     }
 
-    // Build FormData
-    const formData = new FormData();
-
-    videosFiles.forEach((file) => formData.append("videos[]", file));
-    videoTypes.forEach((type) => formData.append("video_type[]", type));
-    employeeNames.forEach((name) => formData.append("employee_name[]", name));
+    abortControllerRef.current = new AbortController();
 
     mutateEditVideo(
-      { id: selectedReportId, data: formData },
+      {
+        id: selectedReportId,
+        videosFiles,
+        videoTypes,
+        employeeNames,
+        signal: abortControllerRef.current.signal,
+      },
       {
         onSuccess: () => {
           toast.success("Videos uploaded successfully!");
@@ -186,17 +268,53 @@ export default function Videos() {
           resetModal();
           setUploadProgress(0);
         },
-        onError: () => toast.error("Upload failed"),
+        onError: (err) => {
+          const wasCancelled = err?.name === "CanceledError" || err?.code === "ERR_CANCELED" || err?.name === "AbortError";
+          if (!wasCancelled) toast.error("Upload failed");
+        },
       }
     );
-  };
+  }, [videosFiles, videoTypes, employeeNames, mutateEditVideo, selectedReportId, resetModal]);
 
-  const resetModal = () => {
-    setVideosFiles([]);
-    setEmployeeNames([]);
-    setVideoTypes([]);
-    setSelectedReportId(null);
-  };
+  // Reset to page 1 whenever the underlying dataset changes (e.g. after add/delete)
+  // so we never get stuck on a page that no longer exists.
+  const totalPages = useMemo(() => {
+    if (!data) return 1;
+    return Math.max(1, Math.ceil(data.length / ROWS_PER_PAGE));
+  }, [data]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
+
+  const paginatedData = useMemo(() => {
+    if (!data) return [];
+    const start = (page - 1) * ROWS_PER_PAGE;
+    return data.slice(start, start + ROWS_PER_PAGE);
+  }, [data, page]);
+
+  const handlePageChange = useCallback((_event, value) => {
+    setPage(value);
+    // Scroll the table back into view when changing pages
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  // Closing the modal (via backdrop click, Esc, or the Cancel button) now:
+  // 1. Aborts the in-flight upload request if one is running.
+  // 2. Force-resets the mutation's pending state instead of waiting for
+  //    the aborted request to settle on its own.
+  // 3. Clears the modal's local state (files, names, types, progress).
+  const handleCloseModal = useCallback(() => {
+    if (isEditVideoPending) {
+      abortControllerRef.current?.abort();
+      resetEditVideoMutation();
+    }
+    setOpenModal(false);
+    resetModal();
+    setUploadProgress(0);
+  }, [isEditVideoPending, resetEditVideoMutation, resetModal]);
 
   return (
     <div className={style.container}>
@@ -206,20 +324,22 @@ export default function Videos() {
         </div>
       )}
 
-      <Link to={cookies.role === 255 ? "/dashboard/videos-analytics" : "/dashboard/videos"}>
-        <Avatar
-          sx={{
-            margin: "auto",
-            marginBottom: "0px",
-            bgcolor: "transparent",
-            color: "#757575",
-            width: "100px",
-            height: "100px",
-          }}
-        >
-          <VideocamIcon sx={{ fontSize: "75px" }} />
-        </Avatar>
-      </Link>
+      {/* <Link to={cookies.role === 255 ? "/dashboard/videos-analytics" : "/dashboard/videos"}> */}
+      <Avatar
+        component={Link}
+        to={cookies.role === 255 ? "/dashboard/videos-analytics" : "/dashboard/videos"}
+        sx={{
+          margin: "auto",
+          marginBottom: "0px",
+          bgcolor: "transparent",
+          color: "#757575",
+          width: "100px",
+          height: "100px",
+        }}
+      >
+        <VideocamIcon sx={{ fontSize: "75px" }} />
+      </Avatar>
+      {/* </Link> */}
       {/* Start Form */}
       {cookies.role !== 50 && (
         <Box
@@ -244,7 +364,7 @@ export default function Videos() {
                 label="رقم التقرير"
                 type="text"
                 name="report_number"
-                disabled={isAddVideoPending}
+                disabled={isAddVideoPending || isEditVideoPending}
                 required
                 value={reportNumber}
                 onChange={(e) => setReportNumber(e.target.value)}
@@ -261,7 +381,7 @@ export default function Videos() {
                 label="الفرع"
                 name="branch"
                 required
-                disabled={isAddVideoPending}
+                disabled={isAddVideoPending || isEditVideoPending}
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
               >
@@ -280,13 +400,24 @@ export default function Videos() {
                 <MenuItem dir="rtl" value="القصيم">
                   القصيم
                 </MenuItem>
+                <MenuItem dir="rtl" value="خميس مشيط">
+                  خميس مشيط
+                </MenuItem>
               </TextField>
             </Grid>
           </Grid>
           {/* End report number input */}
 
           {/* Start loading button for form 1 */}
-          <LoadingButton type="submit" fullWidth variant="contained" disableRipple loading={isAddVideoPending} sx={{ mt: 3, mb: 2, transition: "0.1s" }}>
+          <LoadingButton
+            type="submit"
+            fullWidth
+            variant="contained"
+            disableRipple
+            loading={isAddVideoPending}
+            sx={{ mt: 3, mb: 2, transition: "0.1s" }}
+            disabled={isEditVideoPending}
+          >
             Add
           </LoadingButton>
           {/* End loading button for form 1 */}
@@ -307,77 +438,45 @@ export default function Videos() {
       <Divider sx={{ marginBottom: "32px" }} />
 
       {data && (
-        <div className={style.table_container} dir="ltr">
-          <table>
-            <thead>
-              <tr>
-                <th>Card Number</th>
-                <th>Branch</th>
-                <th>Date</th>
-                <th>Video</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data?.map((report) => (
-                <tr key={report.id}>
-                  <td>{report.report_number}</td>
-
-                  <td>{report.branch || "-"}</td>
-
-                  <td>{new Date(report.created_at).toLocaleDateString("en-GB")}</td>
-
-                  <td style={{ whiteSpace: "nowrap", display: "table-cell", flexDirection: "column" }}>
-                    {report.videos?.map((video, index) => (
-                      <Tooltip key={video.id || index} title={`Type: ${video.video_type} - Staff: ${video.employee_name || "No name"}`} arrow placement="top">
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                          <a href={video.video_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                            {index + 1}
-                          </a>
-                        </div>
-                      </Tooltip>
-                    ))}
-                  </td>
-
-                  <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                        justifyContent: "space-evenly",
-                      }}
-                    >
-                      {/* <IconButton
-                        color="primary"
-                        onClick={() => handleAddVideoClick(report.id)}
-                        disabled={isDeleteVideoPending || isEditVideoPending || Boolean(report.video_file_path_3) || isAddVideoPending}
-                      >
-                        {uploadingVideoId === report.id && isEditVideoPending ? <CircularProgress size={24} /> : <AddCircleIcon />}
-                      </IconButton> */}
-
-                      <IconButton style={{ width: "fit-content", margin: "auto" }} disabled={cookies.role === 50} color="primary" onClick={() => handleAddVideoClick(report.id)}>
-                        <AddCircleIcon />
-                      </IconButton>
-
-                      <IconButton
-                        style={{ width: "fit-content", margin: "auto" }}
-                        color="error"
-                        onClick={() => handleDeleteReport(report.id)}
-                        disabled={(deletingId !== null && deletingId !== report.id) || isDeleteVideoPending || isEditVideoPending || isAddVideoPending || cookies.role === 50}
-                      >
-                        {deletingId === report.id ? <CircularProgress size={24} /> : <DeleteIcon />}
-                      </IconButton>
-                    </div>
-                  </td>
+        <>
+          <div className={style.table_container} dir="ltr">
+            <table>
+              <thead>
+                <tr>
+                  <th>Card Number</th>
+                  <th>Branch</th>
+                  <th>Date</th>
+                  <th>Video</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {paginatedData.map((report) => (
+                  <VideoReportRow
+                    key={report.id}
+                    report={report}
+                    role={cookies.role}
+                    isRowDeleting={deletingId === report.id}
+                    isDeleteDisabled={(deletingId !== null && deletingId !== report.id) || isDeleteVideoPending || isEditVideoPending || isAddVideoPending}
+                    onAddVideoClick={handleAddVideoClick}
+                    onDeleteReport={handleDeleteReport}
+                    isAddVideoPending={isAddVideoPending}
+                    isEditVideoPending={isEditVideoPending}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 2 }}>
+              <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" shape="rounded" />
+            </Box>
+          )}
+        </>
       )}
 
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+      <Modal dir="ltr" open={openModal}>
         <Box
           sx={{
             position: "absolute",
@@ -395,14 +494,16 @@ export default function Videos() {
             Add Videos
           </Typography>
 
-          <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+          <Button disabled={isEditVideoPending} dir="ltr" component="label" variant="contained" startIcon={<CloudUploadIcon />}>
             Select Videos
             <VisuallyHiddenInput type="file" multiple accept="video/*" onChange={handleVideoFilesChange} />
           </Button>
 
           {videosFiles.map((file, index) => (
             <Box key={index} mt={2}>
-              <Typography variant="body2">{file.name}</Typography>
+              <Typography sx={{ marginBottom: "9px" }} variant="body2">
+                {file.name}
+              </Typography>
 
               <TextField
                 dir="rtl"
@@ -412,6 +513,7 @@ export default function Videos() {
                 value={videoTypes[index] || ""}
                 onChange={(e) => handleVideoTypeChange(index, e.target.value)}
                 sx={{ mt: 1 }}
+                disabled={isEditVideoPending}
               >
                 <MenuItem dir="rtl" value="شرح التقرير">
                   شرح التقرير
@@ -421,12 +523,20 @@ export default function Videos() {
                 </MenuItem>
               </TextField>
 
-              <TextField dir="rtl" fullWidth label="اسم الموظف" value={employeeNames[index] || ""} onChange={(e) => handleEmployeeChange(index, e.target.value)} sx={{ mt: 1 }} />
+              <TextField
+                dir="rtl"
+                fullWidth
+                label="اسم الموظف"
+                value={employeeNames[index] || ""}
+                onChange={(e) => handleEmployeeChange(index, e.target.value)}
+                sx={{ mt: 2 }}
+                disabled={isEditVideoPending}
+              />
             </Box>
           ))}
 
           <Box mt={3} display="flex" justifyContent="space-between">
-            <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+            <Button onClick={handleCloseModal}>Cancel</Button>
 
             <LoadingButton variant="contained" loading={isEditVideoPending} onClick={handleModalSubmit} disabled={videosFiles.length === 0}>
               Upload
@@ -435,7 +545,9 @@ export default function Videos() {
 
           {isEditVideoPending && (
             <Box mt={2}>
-              <Typography variant="body2">Uploading... {uploadProgress}%</Typography>
+              <Typography sx={{ marginBottom: "9px" }} variant="body2">
+                Uploading... {uploadProgress}%
+              </Typography>
               <LinearProgress variant="determinate" value={uploadProgress} />
             </Box>
           )}

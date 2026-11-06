@@ -21,7 +21,7 @@ class SendWithdrawNotificationController extends Controller
         ]);
 
         // Example: Send email
-        Mail::to(['omar.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'])->send(
+        Mail::to(['e.cashif@gmail.com', 'cashif.acct@gmail.com', 'cashif2020@gmail.com', 'talalmeasar55@gmail.com'])->send(
             new WithdrawNotificationMail(
                 $request->accountNumber,
                 $request->marketerId,

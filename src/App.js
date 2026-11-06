@@ -64,6 +64,10 @@ import OrdersAnalytics from "./Pages/Dashboard/OrdersAnalytics/OrdersAnalytics";
 import BranchDiscount from "./Pages/Dashboard/BranchDiscount/BranchDiscount";
 import BranchDiscountClient from "./Pages/Dashboard/BranchDiscountClient/BranchDiscountClient";
 import MojazReports from "./Pages/Dashboard/MojazReports/MojazReports";
+import MertahAnalytics from "./Pages/Dashboard/MertahAnalytics/MertahAnalytics";
+import ShippingAnalytics from "./Pages/Dashboard/ShippingAnalytics/ShippingAnalytics";
+import ServiceDiscount from "./Pages/Dashboard/ServiceDiscount/ServiceDiscount";
+import AddShippingRequest from "./Pages/Dashboard/AddShippingRequest/AddShippingRequest";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -95,7 +99,7 @@ export default function App() {
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="search" element={<Search />} />
-            <Route path="car/:id" element={<Car />} />
+            <Route path="car/:modelId/:year" element={<Car />} />
             <Route path="table" element={<Table />} />
             <Route path="scan" element={<Scan />} />
             <Route path="paid-client/:id" element={<PaidClient />} />
@@ -120,6 +124,7 @@ export default function App() {
             <Route element={<SuperAuth />}>
               <Route path="requests" element={<Requests />} />
               <Route path="shipping" element={<Shipping />} />
+              <Route path="add-shipping-request" element={<AddShippingRequest />} />
               <Route path="mertah" element={<Mertah />} />
               <Route path="phone-number" element={<PhoneNumber />} />
               <Route path="falak-media" element={<FalakMedia />} />
@@ -127,8 +132,10 @@ export default function App() {
               <Route path="falak-video" element={<FalakVideo />} />
               <Route path="free-order" element={<FreeOrder />} />
               <Route path="branch-discount" element={<BranchDiscount />} />
-              <Route path="analytics" element={<Analytics />} />
+              <Route path="service-discount" element={<ServiceDiscount />} />
               <Route path="orders-analytics" element={<OrdersAnalytics />} />
+              <Route path="mertah-analytics" element={<MertahAnalytics />} />
+              <Route path="shipping-analytics" element={<ShippingAnalytics />} />
 
               <Route path="add" element={<Add />}>
                 <Route index element={<AddIndex />} />

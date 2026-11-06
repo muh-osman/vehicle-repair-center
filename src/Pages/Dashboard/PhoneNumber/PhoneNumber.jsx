@@ -17,6 +17,11 @@ import IconButton from "@mui/material/IconButton";
 import PhoneIcon from "@mui/icons-material/Phone";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
 // Toastify
 import { toast } from "react-toastify";
 // Api
@@ -30,11 +35,7 @@ const Demo = styled("div")(({ theme }) => ({
 
 export default function PhoneNumber() {
   const { data, isPending } = useGetPhoneNumberApi();
-  const {
-    mutate: postNumber,
-    isPending: isPostNumberPending,
-    isSuccess: isPostNumberSuccess,
-  } = useAddPhoneNumberApi();
+  const { mutate: postNumber, isPending: isPostNumberPending, isSuccess: isPostNumberSuccess } = useAddPhoneNumberApi();
 
   useEffect(() => {
     if (isPostNumberSuccess) {
@@ -42,11 +43,7 @@ export default function PhoneNumber() {
     }
   }, [isPostNumberSuccess]);
 
-  const {
-    mutate: deleteNumber,
-    isPending: isDeleteNumberPending,
-    isSuccess: isDeleteNumberSuccess,
-  } = useDeletePhoneNumberApi();
+  const { mutate: deleteNumber, isPending: isDeleteNumberPending, isSuccess: isDeleteNumberSuccess } = useDeletePhoneNumberApi();
 
   useEffect(() => {
     if (isDeleteNumberSuccess) {
@@ -56,10 +53,10 @@ export default function PhoneNumber() {
 
   // Handle add number
   const handleAddNumber = () => {
-    const mobileInput = document.querySelector(
-      'input[name="accepted_phone_number"]'
-    );
+    const mobileInput = document.querySelector('input[name="accepted_phone_number"]');
+    const specialCodeInput = document.querySelector('input[name="special_code"]');
     const number = mobileInput.value;
+    const specialCode = specialCodeInput.value.trim();
 
     if (!number) {
       toast.warn("Please enter a mobile number");
@@ -79,15 +76,24 @@ export default function PhoneNumber() {
       return;
     }
 
-    postNumber({ accepted_phone_number: number });
+    // special_code is optional (nullable)
+    if (specialCode.length > 255) {
+      toast.warn("Special code must not exceed 255 characters");
+      return;
+    }
+
+    postNumber({
+      accepted_phone_number: number,
+      special_code: specialCode || null,
+    });
   };
 
   useEffect(() => {
     if (isPostNumberSuccess) {
-      const mobileInput = document.querySelector(
-        'input[name="accepted_phone_number"]'
-      );
+      const mobileInput = document.querySelector('input[name="accepted_phone_number"]');
+      const specialCodeInput = document.querySelector('input[name="special_code"]');
       mobileInput.value = "";
+      specialCodeInput.value = "";
     }
   }, [isPostNumberSuccess]);
 
@@ -120,43 +126,51 @@ export default function PhoneNumber() {
 
         <Grid container>
           <Grid item xs={12} md={6} sx={{ margin: "auto" }}>
-            <Grid item xs={12}>
-              <TextField
-                sx={{ backgroundColor: "#fff", mt: 3, mb: 2 }}
-                fullWidth
-                label="Mobile"
-                type="tel"
-                name="accepted_phone_number"
-                required
-                placeholder="05xxxxxxxx"
-                disabled={
-                  isPending || isPostNumberPending || isDeleteNumberPending
-                }
-                inputProps={{ minLength: 10, maxLength: 10 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={handleAddNumber}
-                        edge="end"
-                        disabled={
-                          isPending ||
-                          isPostNumberPending ||
-                          isDeleteNumberPending
-                        }
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+            <Grid container spacing={2} sx={{ mt: 1, mb: 2 }}>
+              <Grid item xs={8}>
+                <TextField
+                  sx={{ backgroundColor: "#fff" }}
+                  fullWidth
+                  label="Mobile"
+                  type="tel"
+                  name="accepted_phone_number"
+                  required
+                  placeholder="05xxxxxxxx"
+                  disabled={isPending || isPostNumberPending || isDeleteNumberPending}
+                  inputProps={{ minLength: 10, maxLength: 10 }}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddNumber()}
+                />
+              </Grid>
+
+              <Grid item xs={4}>
+                <TextField
+                  sx={{ backgroundColor: "#fff" }}
+                  fullWidth
+                  label="Special Code"
+                  name="special_code"
+                  placeholder="Optional"
+                  disabled={isPending || isPostNumberPending || isDeleteNumberPending}
+                  inputProps={{ maxLength: 255 }}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddNumber()}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  size="large"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleAddNumber}
+                  disabled={isPending || isPostNumberPending || isDeleteNumberPending}
+                >
+                  Save
+                </Button>
+              </Grid>
             </Grid>
+
             <Demo>
-              <List
-                dense={true}
-                sx={{ border: "1px solid #0000002d", borderRadius: "4px" }}
-              >
+              <List dense={true} sx={{ border: "1px solid #0000002d", borderRadius: "4px" }}>
                 {data?.data.length === 0 ? (
                   <Box
                     sx={{
@@ -184,20 +198,11 @@ export default function PhoneNumber() {
                           <IconButton
                             edge="end"
                             aria-label="delete"
-                            disabled={
-                              isPending ||
-                              isPostNumberPending ||
-                              isDeleteNumberPending
-                            }
+                            disabled={isPending || isPostNumberPending || isDeleteNumberPending}
                             onClick={() => handleDeleteNumber(item.id)}
                             sx={{
                               "&:hover": {
-                                color:
-                                  isPending ||
-                                  isPostNumberPending ||
-                                  isDeleteNumberPending
-                                    ? "inherit"
-                                    : "error.main", // Prevent hover effect when disabled
+                                color: isPending || isPostNumberPending || isDeleteNumberPending ? "inherit" : "error.main", // Prevent hover effect when disabled
                               },
                               transition: "color 0.2s",
                             }}
@@ -207,46 +212,37 @@ export default function PhoneNumber() {
                         }
                         sx={{
                           "&:hover": {
-                            bgcolor:
-                              isPending ||
-                              isPostNumberPending ||
-                              isDeleteNumberPending
-                                ? "transparent"
-                                : "action.hover", // Prevent hover effect when disabled
+                            bgcolor: isPending || isPostNumberPending || isDeleteNumberPending ? "transparent" : "action.hover", // Prevent hover effect when disabled
                           },
                           transition: "background-color 0.2s",
-                          opacity:
-                            isPending ||
-                            isPostNumberPending ||
-                            isDeleteNumberPending
-                              ? 0.5
-                              : 1, // Reduce opacity when disabled
-                          pointerEvents:
-                            isPending ||
-                            isPostNumberPending ||
-                            isDeleteNumberPending
-                              ? "none"
-                              : "auto", // Prevent interaction when disabled
+                          opacity: isPending || isPostNumberPending || isDeleteNumberPending ? 0.5 : 1, // Reduce opacity when disabled
+                          pointerEvents: isPending || isPostNumberPending || isDeleteNumberPending ? "none" : "auto", // Prevent interaction when disabled
                         }}
                       >
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: "primary.main" }}>
-                            <PhoneIcon />
+                          <Avatar
+                            sx={{
+                              bgcolor: item.is_accept_terms ? "success.main" : "error.main",
+                            }}
+                          >
+                            {item.is_accept_terms ? <CheckCircleIcon sx={{ width: "40px", height: "40px" }} /> : <CancelIcon sx={{ width: "40px", height: "40px" }} />}
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: 500 }}
-                            >
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
                               {item.accepted_phone_number}
                             </Typography>
                           }
+                          secondaryTypographyProps={{ component: "div" }}
                           secondary={
-                            <Typography variant="body2" color="text.secondary">
-                              {`Number ${data?.data.length - index}`}
-                            </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mt: 0.5 }}>
+                              <Typography variant="body2" color="text.secondary" component="span">
+                                {`Number ${data?.data.length - index}`}
+                              </Typography>
+
+                              {item.special_code && <Chip icon={<VpnKeyIcon />} label={item.special_code} size="small" color="warning" variant="filled" sx={{ fontWeight: 600 }} />}
+                            </Box>
                           }
                         />
                       </ListItem>
