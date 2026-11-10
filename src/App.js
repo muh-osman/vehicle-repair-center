@@ -39,6 +39,7 @@ import TamaraClient from "./Pages/Dashboard/TamaraClient/TamaraClient";
 import TabbyClient from "./Pages/Dashboard/TabbyClient/TabbyClient";
 import UnpaidClient from "./Pages/Dashboard/UnpaidClient/UnpaidClient";
 import Requests from "./Pages/Dashboard/Requests/Requests";
+import MakdomInspection from "./Pages/Dashboard/MakdomInspection/MakdomInspection";
 import PhoneNumber from "./Pages/Dashboard/PhoneNumber/PhoneNumber";
 import FalakPost from "./Pages/Dashboard/FalakPost/FalakPost";
 import Reports from "./Pages/Dashboard/Reports/Reports";
@@ -61,9 +62,11 @@ import VideosAnalytics from "./Pages/Dashboard/VideosAnalytics/VideosAnalytics";
 import LotteryResult from "./Pages/Dashboard/LotteryResult/LotteryResult";
 import LotteryTable from "./Pages/Dashboard/LotteryTable/LotteryTable";
 import OrdersAnalytics from "./Pages/Dashboard/OrdersAnalytics/OrdersAnalytics";
+import MakdomAnalytics from "./Pages/Dashboard/MakdomAnalytics/MakdomAnalytics";
 import BranchDiscount from "./Pages/Dashboard/BranchDiscount/BranchDiscount";
 import BranchDiscountClient from "./Pages/Dashboard/BranchDiscountClient/BranchDiscountClient";
 import MojazReports from "./Pages/Dashboard/MojazReports/MojazReports";
+import MojazAnalytics from "./Pages/Dashboard/MojazAnalytics/MojazAnalytics";
 import MertahAnalytics from "./Pages/Dashboard/MertahAnalytics/MertahAnalytics";
 import ShippingAnalytics from "./Pages/Dashboard/ShippingAnalytics/ShippingAnalytics";
 import ServiceDiscount from "./Pages/Dashboard/ServiceDiscount/ServiceDiscount";
@@ -110,6 +113,7 @@ export default function App() {
             {/* <Route path="post/:id" element={<Post />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="mojaz-reports" element={<MojazReports />} />
+            <Route path="mojaz-analytics" element={<MojazAnalytics />} />
             <Route path="videos" element={<Videos />} />
             <Route path="videos-analytics" element={<VideosAnalytics />} />
             <Route path="disclaimer-form" element={<DisclaimerForm />} />
@@ -123,6 +127,7 @@ export default function App() {
             {/* Super Admin only */}
             <Route element={<SuperAuth />}>
               <Route path="requests" element={<Requests />} />
+              <Route path="makdom-inspection" element={<MakdomInspection />} />
               <Route path="shipping" element={<Shipping />} />
               <Route path="add-shipping-request" element={<AddShippingRequest />} />
               <Route path="mertah" element={<Mertah />} />
@@ -134,6 +139,7 @@ export default function App() {
               <Route path="branch-discount" element={<BranchDiscount />} />
               <Route path="service-discount" element={<ServiceDiscount />} />
               <Route path="orders-analytics" element={<OrdersAnalytics />} />
+              <Route path="makdom-analytics" element={<MakdomAnalytics />} />
               <Route path="mertah-analytics" element={<MertahAnalytics />} />
               <Route path="shipping-analytics" element={<ShippingAnalytics />} />
 

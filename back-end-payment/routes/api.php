@@ -85,6 +85,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/orders/monthly-count-last-12-months', [UnPaidQrCodeController::class, 'getOrdersCountLast12Months']);
     Route::get('/orders/monthly-count-last-12-months-for-mertah-orders', [UnPaidQrCodeController::class, 'getSpecialServiceOrdersCountLast12Months']);
+    Route::get('/orders/monthly-count-last-12-months-for-makdom-orders', [UnPaidQrCodeController::class, 'getMakdomOrdersCountLast12Months']);
 
 
     // Shipping payments Webhook
@@ -109,6 +110,7 @@ Route::middleware('guest')->group(function () {
     // Mojaz order
     Route::post('/moyasar-webhook-for-mojaz-report-order', [MojazController::class, 'MojazPaymentPaidWebhook']);
     Route::post('/mojaz/inquiry', [MojazController::class, 'inquiry']);
+    Route::get('/mojaz/count/monthly-count-last-12-months', [MojazController::class, 'getOrdersCountLast12Months']);
     Route::get('/mojaz/orders/{user_id}', [MojazController::class, 'userOrders']);
     Route::get('/mojaz/all-orders', [MojazController::class, 'index']);
 

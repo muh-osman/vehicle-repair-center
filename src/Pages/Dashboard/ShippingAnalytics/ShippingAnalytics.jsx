@@ -1,10 +1,12 @@
 import style from "./ShippingAnalytics.module.scss";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 // MUI
 import { BarChart } from "@mui/x-charts/BarChart";
-import { Card, CardContent, Typography, CircularProgress } from "@mui/material";
+import { Card, CardContent, Typography, CircularProgress, Button } from "@mui/material";
 
 export default function ShippingAnalytics() {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -45,6 +47,9 @@ export default function ShippingAnalytics() {
     <div className={style.container}>
       <Card className={style.card}>
         <CardContent className={style.card_content}>
+          <Button variant="outlined" onClick={() => navigate("/dashboard/shipping")} sx={{ mb: 2 }}>
+            Back
+          </Button>
           <Typography variant="h6" className={style.title}>
             Shipping Orders Analytics (Last 12 Months)
           </Typography>

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 
 class UnPaidQrCodeController extends Controller
@@ -405,10 +407,12 @@ class UnPaidQrCodeController extends Controller
         ], 200);
     }
 
+
     /**
-     * Mark or unmark a QR code as canceled based on the request body.
+     * Update canceled status and/or branch of a paid order.
      * Requires header: X-Secret-Key
-     * Requires body: { "isCanceled": true|false }
+     * Body (both nullable, at least one required):
+     *   { "isCanceled": true|false, "branchId": 19|20|21|22|24|25 }
      */
     public function setCanceledStatus(Request $request, $qrCode)
     {
@@ -421,13 +425,7 @@ class UnPaidQrCodeController extends Controller
             ], 401);
         }
 
-        // Validate that 'isCanceled' is present and is a boolean (true/false)
-        $validated = $request->validate([
-            'isCanceled' => ['required', 'boolean'],
-        ]);
-
-        $requestedStatus = (bool) $validated['isCanceled'];
-
+        // Check the QR code right after the secret check
         $match = $this->findFirstPaidOrderByQrCode($qrCode);
 
         if (!$match) {
@@ -438,13 +436,77 @@ class UnPaidQrCodeController extends Controller
         }
 
         ['table' => $tableName, 'record' => $record] = $match;
+
+        // At least one field must be provided (checked on raw input, before validation)
+        if (is_null($request->input('isCanceled')) && is_null($request->input('branchId'))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'At least one of isCanceled or branchId is required.',
+            ], 422);
+        }
+
+        // branchId => branch name stored in DB
+        $branchMap = [
+            23 => 'افتراضي',
+            19 => 'الرياض-القادسية',
+            20 => 'الرياض-الشفا',
+            21 => 'الدمام',
+            22 => 'جدة',
+            24 => 'القصيم',
+            25 => 'خميس مشيط',
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'isCanceled' => ['nullable', 'boolean'],
+            'branchId'   => ['nullable', 'integer'],
+        ], [
+            'isCanceled.boolean' => 'isCanceled should be boolean',
+            'branchId.integer'   => 'branchId should be integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        $requestedStatus = array_key_exists('isCanceled', $validated) && !is_null($validated['isCanceled'])
+            ? (bool) $validated['isCanceled']
+            : null;
+
+        $requestedBranchId = isset($validated['branchId']) ? (int) $validated['branchId'] : null;
+
+        // branchId was sent but doesn't exist in the map
+        if (!is_null($requestedBranchId) && !array_key_exists($requestedBranchId, $branchMap)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found branch',
+            ], 422);
+        }
+
         $previousStatus = (bool) $record->isCanceled;
+        $previousBranch = $record->branch;
 
-        // Check if the record already has the requested status
-        $alreadyInState = ($previousStatus === $requestedStatus);
+        $updates = [];
 
-        if (!$alreadyInState) {
-            $record->forceFill(['isCanceled' => $requestedStatus])->save();
+        // Canceled status
+        if (!is_null($requestedStatus) && $previousStatus !== $requestedStatus) {
+            $updates['isCanceled'] = $requestedStatus;
+        }
+
+        // Branch
+        $requestedBranch = !is_null($requestedBranchId) ? $branchMap[$requestedBranchId] : null;
+        if (!is_null($requestedBranch) && $previousBranch !== $requestedBranch) {
+            $updates['branch'] = $requestedBranch;
+        }
+
+        $nothingChanged = empty($updates);
+
+        if (!$nothingChanged) {
+            $record->forceFill($updates)->save();
         }
 
         $paymentGateway = match ($tableName) {
@@ -454,20 +516,32 @@ class UnPaidQrCodeController extends Controller
             default => 'unknown',
         };
 
-        // Generate context-aware messages
-        $message = $alreadyInState
-            ? ($requestedStatus ? 'Already canceled.' : 'Already active.')
-            : ($requestedStatus ? 'Canceled status updated successfully.' : 'Cancellation removed successfully.');
+        // Context-aware message
+        if ($nothingChanged) {
+            $message = 'No changes needed. Record already up to date.';
+        } else {
+            $parts = [];
+            if (array_key_exists('isCanceled', $updates)) {
+                $parts[] = $updates['isCanceled'] ? 'order canceled' : 'cancellation removed';
+            }
+            if (array_key_exists('branch', $updates)) {
+                $parts[] = 'branch updated';
+            }
+            $message = ucfirst(implode(' and ', $parts)) . ' successfully.';
+        }
 
         return response()->json([
-            'status' => $alreadyInState ? 'skipped' : 'success',
+            'status' => $nothingChanged ? 'skipped' : 'success',
             'message' => $message,
             'data' => [
                 'payment_gateway' => $paymentGateway,
                 'payment_reference_id' => $qrCode,
                 'previous_status' => $previousStatus,
-                'new_status' => $requestedStatus,
-                'isCanceled' => $requestedStatus,
+                'new_status' => (bool) $record->isCanceled,
+                'isCanceled' => (bool) $record->isCanceled,
+                'previous_branch' => $previousBranch,
+                'branch' => $record->branch,
+                'branchId' => $requestedBranchId,
             ],
         ], 200);
     }
@@ -537,12 +611,12 @@ class UnPaidQrCodeController extends Controller
         ], 200);
     }
 
-    // exclude 'مرتاح', 'مرتاح+مخدوم'
+    // exclude 'مرتاح', 'مرتاح+مخدوم', 'مخدوم'
     public function getOrdersCountLast12Months()
     {
         $startDate = now()->subMonths(11)->startOfMonth();
         $endDate = now()->endOfMonth();
-        $excludedServices = ['مرتاح', 'مرتاح+مخدوم'];
+        $excludedServices = ['مرتاح', 'مرتاح+مخدوم', 'مخدوم'];
 
         // Moyasar
         $moyasar = PaidQrCode::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
@@ -678,6 +752,69 @@ class UnPaidQrCodeController extends Controller
 
         return response()->json([
             'message' => 'Special service orders count for last 12 months',
+            'data'    => $months
+        ], 200);
+    }
+
+    // count only 'مخدوم'
+    public function getMakdomOrdersCountLast12Months()
+    {
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        // Moyasar
+        $moyasar = PaidQrCode::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->where('service', 'مخدوم')
+            ->groupBy('month');
+
+        // Tabby
+        $tabby = TabbyPaidClient::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->where('service', 'مخدوم')
+            ->groupBy('month');
+
+        // Tamara
+        $tamara = TamaraPaidClient::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('full_name')
+            ->whereNotNull('phone')
+            ->whereNotNull('plan')
+            ->where('service', 'مخدوم')
+            ->groupBy('month');
+
+        $result = $moyasar
+            ->unionAll($tabby)
+            ->unionAll($tamara);
+
+        $orders = DB::query()
+            ->fromSub($result, 't')
+            ->selectRaw("month, SUM(total) as total")
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $date = $startDate->copy()->addMonths($i);
+            $monthKey = $date->format('Y-m');
+
+            $months[] = [
+                'month'  => $date->format('M'),
+                'year'   => $date->format('Y'),
+                'orders' => isset($orders[$monthKey]) ? (int) $orders[$monthKey]->total : 0
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Makdom orders count for last 12 months',
             'data'    => $months
         ], 200);
     }
@@ -1049,6 +1186,7 @@ class UnPaidQrCodeController extends Controller
                 'carModelId' => $carModelId, // from api (https://cashif-001-site3.anytempurl.com/api/CarMark)
                 'year'           => isset($foundRecord->full_year) ? (int) $foundRecord->full_year : null,
                 'branchId' => match ($foundRecord->branch ?? null) {
+                    'افتراضي' => 23,
                     'الرياض-القادسية' => 19,
                     'الرياض-الشفا'   => 20,
                     'القصيم'         => 24,

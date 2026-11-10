@@ -1,33 +1,35 @@
 import style from "./MojazReports.module.scss";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 // MUI
 import Stack from "@mui/material/Stack";
 import LinearProgress from "@mui/material/LinearProgress";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import { DataGrid } from "@mui/x-data-grid";
 import Chip from "@mui/material/Chip";
 // Icons
 import DownloadIcon from "@mui/icons-material/Download";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import ClearIcon from "@mui/icons-material/Clear";
 // Axios
 import axios from "axios";
 // Excel Export
 import { DownloadTableExcel } from "react-export-table-to-excel";
 // Images
 import Moyasar from "../../../Assets/Images/moyasar.png";
+// Date picker
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
 export default function MojazReports() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [filteredRows, setFilteredRows] = useState([]);
+  const [dateRange, setDateRange] = useState([null, null]);
   const tableRef = useRef();
 
   const fetchOrders = async () => {
@@ -46,11 +48,6 @@ export default function MojazReports() {
   useEffect(() => {
     fetchOrders();
   }, []);
-
-  // Sync filteredRows whenever data changes (reset to all)
-  useEffect(() => {
-    setFilteredRows(buildRows(data));
-  }, [data]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -92,31 +89,23 @@ export default function MojazReports() {
       main_report_number: order.main_report_number || "N/A",
     }));
 
-  const handleFilter = () => {
-    if (!fromDate && !toDate) {
-      setFilteredRows(buildRows(data));
-      return;
-    }
-
-    const from = fromDate ? new Date(fromDate) : null;
-    // Set toDate to end of day so the full "to" day is included
-    const to = toDate ? new Date(new Date(toDate).setHours(23, 59, 59, 999)) : null;
-
-    const filtered = data.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      if (from && orderDate < from) return false;
-      if (to && orderDate > to) return false;
-      return true;
+  const handleDateRangeChange = (index, newValue) => {
+    setDateRange((prev) => {
+      const updated = [...prev];
+      updated[index] = newValue;
+      return updated;
     });
-
-    setFilteredRows(buildRows(filtered));
   };
 
-  const handleClear = () => {
-    setFromDate("");
-    setToDate("");
-    setFilteredRows(buildRows(data));
-  };
+  const rows = buildRows(data).filter((order) => {
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const startDate = dateRange[0].startOf("day").toDate();
+      const endDate = dateRange[1].endOf("day").toDate();
+      const orderDate = new Date(order.created_at);
+      return orderDate >= startDate && orderDate <= endDate;
+    }
+    return true;
+  });
 
   const columns = [
     {
@@ -356,34 +345,61 @@ export default function MojazReports() {
         </div>
       )}
 
-      {/* ── Date Filter Bar ── */}
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "stretch", sm: "center" }} sx={{ mb: 2, p: 1 }}>
-        <TextField
-          label="From Date"
-          type="date"
-          size="small"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ max: toDate || undefined }}
-          sx={{ minWidth: 160 }}
-        />
-        <TextField
-          label="To Date"
-          type="date"
-          size="small"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ min: fromDate || undefined }}
-          sx={{ minWidth: 160 }}
-        />
-        <Button variant="contained" startIcon={<FilterAltIcon />} onClick={handleFilter} size="small" sx={{ whiteSpace: "nowrap", height: "40px" }}>
-          Filter
+      <Stack sx={{ pb: 2, maxWidth: "617px", margin: "auto" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+        <Button
+          sx={{
+            width: "100%",
+            flex: 1,
+          }}
+          color="secondary"
+          size="large"
+          variant="outlined"
+          onClick={() => navigate("/dashboard/mojaz-analytics")}
+        >
+          Analytics
         </Button>
-        <Button variant="outlined" startIcon={<ClearIcon />} onClick={handleClear} size="small" disabled={!fromDate && !toDate} sx={{ whiteSpace: "nowrap", height: "40px" }}>
-          Clear
-        </Button>
+      </Stack>
+
+      <Stack dir="ltr" sx={{ pb: 2, maxWidth: "617px", margin: "auto", direction: "ltr" }} spacing={2} justifyContent="center" direction={{ xs: "row", sm: "row" }} alignItems="stretch">
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Stack dir="ltr" direction={{ xs: "row", sm: "row" }} spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 2, width: "100%", direction: "ltr" }}>
+            <DatePicker
+              label="Start Date"
+              value={dateRange[0] ?? null}
+              onChange={(newValue) => handleDateRangeChange(0, newValue)}
+              maxDate={dateRange[1] ?? dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: {
+                  sx: { direction: "ltr" },
+                },
+                mobilePaper: {
+                  sx: { direction: "ltr" },
+                  dir: "ltr",
+                },
+              }}
+              sx={{ width: "100%" }}
+            />
+            <DatePicker
+              label="End Date"
+              value={dateRange[1] ?? null}
+              onChange={(newValue) => handleDateRangeChange(1, newValue)}
+              minDate={dateRange[0] ?? undefined}
+              maxDate={dayjs()}
+              slotProps={{
+                textField: { size: "small" },
+                popper: {
+                  sx: { direction: "ltr" },
+                },
+                mobilePaper: {
+                  sx: { direction: "ltr" },
+                  dir: "ltr",
+                },
+              }}
+              sx={{ width: "100%" }}
+            />
+          </Stack>
+        </LocalizationProvider>
       </Stack>
 
       {/* Hidden table for Excel export */}
@@ -407,7 +423,7 @@ export default function MojazReports() {
           </tr>
         </thead>
         <tbody>
-          {filteredRows.map((row) => (
+          {rows.map((row) => (
             <tr key={row.id}>
               <td>{row.index}</td>
               <td>{formatDate(row.date)}</td>
@@ -430,7 +446,7 @@ export default function MojazReports() {
 
       <div className={style.datagrid_container} style={{ width: containerWidth }}>
         <DataGrid
-          rows={filteredRows}
+          rows={rows}
           columns={columns}
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 100 } },

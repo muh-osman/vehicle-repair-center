@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 
 const apiUrl = process.env.REACT_APP_PAYMENY_SYSTEM_API_URL;
 
-export default function Requests() {
+export default function Requests({ serviceFilter, analyticsPath = "/dashboard/orders-analytics" }) {
   const navigate = useNavigate();
   // Cookie
   const [cookies, setCookie] = useCookies(["role"]);
@@ -523,9 +523,13 @@ export default function Requests() {
   // };
   //////////////////////////
 
-  const rows = data
+  const source = serviceFilter
+    ? data.filter((client) => (client.service || "").trim() === serviceFilter)
+    : data.filter((client) => (client.service || "").trim() !== "مخدوم");
+
+  const rows = source
     .map((client, index) => ({
-      index: data.length - index,
+      index: source.length - index,
       date: client.created_at, // Will be formatted as date only
       time: client.created_at, // Will be formatted as time only
       created_at: client.created_at,
@@ -706,7 +710,7 @@ export default function Requests() {
           color="secondary"
           size="large"
           variant="outlined"
-          onClick={() => navigate("/dashboard/orders-analytics")}
+          onClick={() => navigate(analyticsPath)}
         >
           Analytics
         </Button>

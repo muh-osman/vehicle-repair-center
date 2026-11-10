@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import style from "./OrdersAnalytics.module.scss";
 
 import { BarChart } from "@mui/x-charts/BarChart";
-import { Card, CardContent, Typography, CircularProgress } from "@mui/material";
+import { Card, CardContent, Typography, CircularProgress, Button } from "@mui/material";
 
 export default function OrdersAnalytics() {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -45,6 +47,9 @@ export default function OrdersAnalytics() {
     <div className={style.container}>
       <Card className={style.card}>
         <CardContent className={style.card_content}>
+          <Button variant="outlined" onClick={() => navigate("/dashboard/requests")} sx={{ mb: 2 }}>
+            Back
+          </Button>
           <Typography variant="h6" className={style.title}>
             Orders Analytics (Last 12 Months)
           </Typography>

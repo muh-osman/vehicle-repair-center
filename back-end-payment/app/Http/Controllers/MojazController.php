@@ -315,6 +315,51 @@ class MojazController extends Controller
 
 
     /**
+     * Get Mojaz orders count for the last 12 months
+     */
+    public function getOrdersCountLast12Months()
+    {
+        try {
+            $startDate = now()->subMonths(11)->startOfMonth();
+            $endDate = now()->endOfMonth();
+
+            $result = MojazOrder::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get()
+                ->keyBy('month');
+
+            $months = [];
+            for ($i = 0; $i < 12; $i++) {
+                $date = $startDate->copy()->addMonths($i);
+                $monthKey = $date->format('Y-m');
+
+                $months[] = [
+                    'month'  => $date->format('M'),
+                    'year'   => $date->format('Y'),
+                    'orders' => isset($result[$monthKey]) ? (int) $result[$monthKey]->total : 0,
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Mojaz orders count for last 12 months',
+                'data'    => $months,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::channel('daily')->error('Failed to retrieve Mojaz orders analytics', [
+                'error'     => $e->getMessage(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to retrieve analytics data',
+            ], 500);
+        }
+    }
+
+    /**
      * Get all Mojaz orders
      */
     public function index(Request $request)
