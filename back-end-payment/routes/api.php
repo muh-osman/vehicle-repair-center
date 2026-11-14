@@ -80,6 +80,7 @@ Route::middleware('guest')->group(function () {
     Route::delete('/delete-client/{qrCode}', [UnPaidQrCodeController::class, 'deleteClient']); // Delete the client
 
     Route::get('/get-all-clients-paid-and-unpaid', [UnPaidQrCodeController::class, 'getAllQrCodes']);
+    Route::get('/get-orders-by-phone/{phone}', [UnPaidQrCodeController::class, 'getAllOrdersByPhone']);
     Route::get('/get-all-mertah-service-records', [UnPaidQrCodeController::class, 'getAllQrCodesWithSpecialService']); // مرتاح
     Route::get('/get-all-phones-with-their-qr-codes', [UnPaidQrCodeController::class, 'getAllPhonesWithQrCodes']);
 

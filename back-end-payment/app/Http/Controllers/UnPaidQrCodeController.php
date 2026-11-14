@@ -213,6 +213,147 @@ class UnPaidQrCodeController extends Controller
 
 
     /**
+     * Get all orders for a phone number from both paid and unpaid tables,
+     * including "مرتاح" and "مرتاح+مخدوم", ordered by created_at.
+     */
+    public function getAllOrdersByPhone($phone)
+    {
+        try {
+            $digits = preg_replace('/\D+/', '', (string) $phone);
+
+            if ($digits === '' || ltrim($digits, '0') === '') {
+                return response()->json([
+                    'message' => 'A valid phone number is required',
+                    'phone' => $phone,
+                    'total' => 0,
+                    'data' => [],
+                ], 422);
+            }
+
+            $normalizedPhone = str_starts_with($digits, '0') ? $digits : '0' . $digits;
+            $phoneWithout0 = ltrim($normalizedPhone, '0');
+
+            // Retrieve matching records from both tables and add table name
+            $paidQrCodes = PaidQrCode::where(function ($query) use ($normalizedPhone, $phoneWithout0) {
+                $query->where('phone', $normalizedPhone)
+                    ->orWhere('phone', $phoneWithout0);
+            })->get()->map(function ($item) {
+                $item->table_name = 'Moyasar';
+                return $item;
+            });
+
+            $unPaidQrCodes = UnPaidQrCode::where(function ($query) use ($normalizedPhone, $phoneWithout0) {
+                $query->where('phone', $normalizedPhone)
+                    ->orWhere('phone', $phoneWithout0);
+            })->get()->map(function ($item) {
+                $item->table_name = 'unPaid';
+                return $item;
+            });
+
+            $tamaraPaidClients = TamaraPaidClient::where(function ($query) use ($normalizedPhone, $phoneWithout0) {
+                $query->where('phone', $normalizedPhone)
+                    ->orWhere('phone', $phoneWithout0);
+            })->get()->map(function ($item) {
+                $item->table_name = 'Tamara';
+                return $item;
+            });
+
+            $tabbyPaidClients = TabbyPaidClient::where(function ($query) use ($normalizedPhone, $phoneWithout0) {
+                $query->where('phone', $normalizedPhone)
+                    ->orWhere('phone', $phoneWithout0);
+            })->get()->map(function ($item) {
+                $item->table_name = 'Tabby';
+                return $item;
+            });
+
+            // Filter out records where full_name, phone, and plan are null
+            $filteredTamaraPaidClients = $tamaraPaidClients->filter(function ($client) {
+                return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+            });
+
+            // Filter out records where full_name, phone, and plan are null
+            $filteredTabbyPaidClients = $tabbyPaidClients->filter(function ($client) {
+                return !is_null($client->full_name) && !is_null($client->phone) && !is_null($client->plan);
+            });
+
+            // Combine the results into a single collection
+            $sortedQrCodes = $paidQrCodes->concat($unPaidQrCodes)
+                ->concat($filteredTamaraPaidClients)
+                ->concat($filteredTabbyPaidClients)
+                ->sortByDesc('created_at')
+                ->values()
+                ->map(function ($item) {
+                    return $this->formatOrderByPhone($item);
+                });
+
+            if ($sortedQrCodes->isEmpty()) {
+                return response()->json([
+                    'message' => 'No orders found for this phone number',
+                    'phone' => $normalizedPhone,
+                    'total' => 0,
+                    'data' => [],
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Orders retrieved successfully',
+                'phone' => $normalizedPhone,
+                'total' => $sortedQrCodes->count(),
+                'data' => $sortedQrCodes,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Failed to retrieve orders by phone', [
+                'phone' => $phone,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to retrieve orders',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Shape an order from any payment table for the phone lookup response.
+     */
+    private function formatOrderByPhone($item): array
+    {
+        return [
+            'id' => $item->id,
+            'paymentReferenceId' => $item->paid_qr_code ?? $item->un_paid_qr_code,
+            'paymentGateway' => $item->table_name,
+            'clientId' => $item->clientId,
+
+            'fullName' => $item->full_name,
+            'phone' => $item->phone,
+            'address' => $item->address,
+
+            'model' => $item->model,
+            'manufactureYear' => $item->full_year,
+
+            'plan' => $item->plan,
+            'branch' => $item->branch,
+            'service' => $item->service,
+            'additionalServices' => $item->additionalServices,
+
+            'price' => $item->price,
+            'websiteDiscount' => $item->affiliate,
+            'discountCode' => $item->discountCode,
+            'marketerShare' => $item->marketerShare,
+            'redeemeAmoumntValue' => $item->redeemeAmoumntValue,
+
+            'isShipped' => $item->isShipped,
+            'isCanceled' => $item->isCanceled,
+            'isSentToInternalSystem' => $item->is_sent_to_internal_system,
+
+            'created_at' => $item->created_at,
+            'updated_at' => $item->updated_at,
+        ];
+    }
+
+
+    /**
      * Get all QR codes from both paid and unpaid tables with service = "مرتاح" or "مرتاح+مخدوم",
      * ordered by created_at.
      */

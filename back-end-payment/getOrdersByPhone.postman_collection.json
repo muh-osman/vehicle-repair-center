@@ -1,0 +1,110 @@
+{
+  "info": {
+    "_postman_id": "15936657-97d3-4189-b906-dad929f3a134",
+    "name": "getAllOrdersByPhone",
+    "description": "Returns every order for one phone number, Newest orders come first. The phone is matched with or without a leading 0.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "28083639",
+    "_collection_link": "https://go.postman.co/collection/28083639-15936657-97d3-4189-b906-dad929f3a134?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get orders by phone",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://cashif.cc/payment-system/back-end/public/api/get-orders-by-phone/0506445921",
+          "protocol": "https",
+          "host": [
+            "cashif",
+            "cc"
+          ],
+          "path": [
+            "payment-system",
+            "back-end",
+            "public",
+            "api",
+            "get-orders-by-phone",
+            "0506445921"
+          ]
+        },
+        "description": "Returns every order for one phone number. Newest orders come first. The phone is matched with or without a leading 0.\n\n## Environment URLs\n\n| Environment | Base URL |\n| --- | --- |\n| Production | [https://cashif.cc/payment-system/back-end/public/api/get-orders-by-phone/{{phone}}](https://cashif.cc/payment-system/back-end/public/api/get-orders-by-phone/%7B%7Bphone%7D%7D) |\n\n## Path parameter\n\n| Field | Type | Example |\n| --- | --- | --- |\n| phone | string | 0506445921 |\n\n## Response status codes\n\n| Status Code | Description |\n| --- | --- |\n| 200 | Orders retrieved successfully |\n| 404 | No orders found for this phone number |\n| 422 | A valid phone number is required |\n| 500 | Failed to retrieve orders |"
+      },
+      "response": [
+        {
+          "name": "200 Orders retrieved successfully",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://cashif.cc/payment-system/back-end/public/api/get-orders-by-phone/0506445921",
+              "protocol": "https",
+              "host": [
+                "cashif",
+                "cc"
+              ],
+              "path": [
+                "payment-system",
+                "back-end",
+                "public",
+                "api",
+                "get-orders-by-phone",
+                "0506445921"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "",
+              "enabled": true
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"Orders retrieved successfully\",\n  \"phone\": \"0506445921\",\n  \"total\": 1,\n  \"data\": [\n    {\n      \"id\": 2108,\n      \"paymentReferenceId\": \"f188685f-3fef-4db2-bd75-495ccd307925\",\n      \"paymentGateway\": \"Moyasar\",\n      \"clientId\": \"60100\",\n      \"fullName\": \"test test test\",\n      \"phone\": \"599060389\",\n      \"address\": \"عنوان تجريبي\",\n      \"model\": \"كروز\",\n      \"manufactureYear\": \"2025\",\n      \"plan\": \"الفحص الشامل\",\n      \"branch\": \"الدمام\",\n      \"service\": null,\n      \"additionalServices\": \"لايوجد\",\n      \"price\": \"225.00\",\n      \"websiteDiscount\": \"225\",\n      \"discountCode\": null,\n      \"marketerShare\": null,\n      \"redeemeAmoumntValue\": \"0.00\",\n      \"isShipped\": 0,\n      \"isCanceled\": 1,\n      \"isSentToInternalSystem\": true,\n      \"created_at\": \"2026-10-26T08:33:21.000000Z\",\n      \"updated_at\": \"2026-11-09T09:18:18.000000Z\"\n    }\n  ]\n}"
+        },
+        {
+          "name": "404 No orders found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://cashif.cc/payment-system/back-end/public/api/get-orders-by-phone/0506445921",
+              "protocol": "https",
+              "host": [
+                "cashif",
+                "cc"
+              ],
+              "path": [
+                "payment-system",
+                "back-end",
+                "public",
+                "api",
+                "get-orders-by-phone",
+                "0506445921"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "",
+              "enabled": true
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"No orders found for this phone number\",\n  \"phone\": \"0506445921\",\n  \"total\": 0,\n  \"data\": []\n}"
+        }
+      ]
+    }
+  ]
+}
